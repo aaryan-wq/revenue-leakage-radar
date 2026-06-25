@@ -1,0 +1,3 @@
+line_item_id,invoice_id,product_id,sku,quantity,unit_price,extended_price
+li_001,inv_001,prod_basic,SKU-BASIC,10,99.00,990.00
+li_002,inv_002,prod_pro,SKU-PRO,5,199.00,995.00

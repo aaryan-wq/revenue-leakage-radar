@@ -1,4 +1,14 @@
-import type { AuditCreateResponse, AuditStatusResponse, UploadResponse } from "@rlr/shared";
+import type {
+  AuditCreateResponse,
+  AuditStatus,
+  AuditStatusResponse,
+  ScanReportResponse,
+  ScanResponse,
+  UploadResponse,
+  ValidateResponse,
+  ValidationReportResponse,
+} from "@rlr/shared";
+import { PROCESSING_STATUSES, SCAN_PROCESSING_STATUSES } from "@rlr/shared";
 
 import { apiFetch } from "./api";
 
@@ -47,6 +57,90 @@ export async function createAuditSession(): Promise<AuditSession> {
 export async function getAuditStatus(session: AuditSession): Promise<AuditStatusResponse> {
   return apiFetch<AuditStatusResponse>(`/audit/${session.auditId}`, {
     auditSession: session.sessionToken,
+  });
+}
+
+export async function startValidation(session: AuditSession): Promise<ValidateResponse> {
+  return apiFetch<ValidateResponse>(`/audit/${session.auditId}/validate`, {
+    method: "POST",
+    auditSession: session.sessionToken,
+  });
+}
+
+export async function getValidationReport(
+  session: AuditSession,
+): Promise<ValidationReportResponse> {
+  return apiFetch<ValidationReportResponse>(`/audit/${session.auditId}/validation`, {
+    auditSession: session.sessionToken,
+  });
+}
+
+export function isProcessingStatus(status: AuditStatus): boolean {
+  return PROCESSING_STATUSES.includes(status);
+}
+
+export function isScanProcessingStatus(status: AuditStatus): boolean {
+  return SCAN_PROCESSING_STATUSES.includes(status);
+}
+
+export async function startScan(session: AuditSession): Promise<ScanResponse> {
+  return apiFetch<ScanResponse>(`/audit/${session.auditId}/scan`, {
+    method: "POST",
+    auditSession: session.sessionToken,
+  });
+}
+
+export async function getScanReport(session: AuditSession): Promise<ScanReportResponse> {
+  return apiFetch<ScanReportResponse>(`/audit/${session.auditId}/scan`, {
+    auditSession: session.sessionToken,
+  });
+}
+
+export async function pollScanUntil(
+  session: AuditSession,
+  shouldContinue: (report: ScanReportResponse) => boolean,
+  onTick?: (report: ScanReportResponse) => void,
+  intervalMs = 2000,
+): Promise<ScanReportResponse> {
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const report = await getScanReport(session);
+        onTick?.(report);
+        if (!shouldContinue(report)) {
+          resolve(report);
+          return;
+        }
+        setTimeout(() => void poll(), intervalMs);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    void poll();
+  });
+}
+
+export async function pollAuditUntil(
+  session: AuditSession,
+  shouldContinue: (status: AuditStatusResponse) => boolean,
+  onTick?: (status: AuditStatusResponse) => void,
+  intervalMs = 2000,
+): Promise<AuditStatusResponse> {
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const status = await getAuditStatus(session);
+        onTick?.(status);
+        if (!shouldContinue(status)) {
+          resolve(status);
+          return;
+        }
+        setTimeout(() => void poll(), intervalMs);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    void poll();
   });
 }
 

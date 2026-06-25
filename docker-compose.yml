@@ -29,5 +29,23 @@ services:
       timeout: 5s
       retries: 5
 
+  api-worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: rlr-api-worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://rlr:rlr_dev_password@postgres:5432/revenue_leakage_radar
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A workers.celery_app worker -l info
+
 volumes:
   postgres_data:

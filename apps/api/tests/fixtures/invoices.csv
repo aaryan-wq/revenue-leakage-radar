@@ -1,0 +1,3 @@
+invoice_id,customer_id,subscription_id,invoice_number,invoice_date,period_start,period_end,subtotal,discount,total,currency
+inv_001,cust_001,sub_001,INV-001,2024-06-01,2024-06-01,2024-07-01,990.00,0,990.00,USD
+inv_002,cust_002,sub_002,INV-002,2024-06-01,2024-06-01,2024-07-01,995.00,0,995.00,USD

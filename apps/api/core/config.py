@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     clerk_secret_key: str = ""
     clerk_jwt_issuer: str = ""
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
+    celery_task_always_eager: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:

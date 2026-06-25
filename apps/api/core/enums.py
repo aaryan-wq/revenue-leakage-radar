@@ -7,6 +7,7 @@ class AuditStatus(str, enum.Enum):
     MAPPING = "mapping"
     VALIDATING = "validating"
     NORMALIZING = "normalizing"
+    READY_FOR_SCAN = "ready_for_scan"
     SCANNING = "scanning"
     GENERATING_REPORT = "generating_report"
     COMPLETED = "completed"
@@ -53,6 +54,33 @@ FILENAME_TO_FILE_TYPE: dict[str, FileType] = {
     "contracts": FileType.CRM_CONTRACTS,
     "contracts.csv": FileType.CRM_CONTRACTS,
 }
+
+class Platform(str, enum.Enum):
+    STRIPE = "stripe"
+    CHARGEBEE = "chargebee"
+    MAXIO = "maxio"
+    ZUORA = "zuora"
+    GENERIC = "generic"
+
+
+class ValidationResult(str, enum.Enum):
+    READY = "ready"
+    WARNINGS = "warnings"
+    BLOCKING = "blocking"
+
+
+PROCESSING_STATUSES: set[AuditStatus] = {
+    AuditStatus.MAPPING,
+    AuditStatus.VALIDATING,
+    AuditStatus.NORMALIZING,
+}
+
+
+SCAN_PROCESSING_STATUSES: set[AuditStatus] = {
+    AuditStatus.SCANNING,
+    AuditStatus.GENERATING_REPORT,
+}
+
 
 REQUIRED_BILLING_FILE_TYPES: set[FileType] = {
     FileType.SUBSCRIPTIONS,

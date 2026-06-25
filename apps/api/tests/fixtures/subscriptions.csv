@@ -1,0 +1,3 @@
+subscription_id,customer_id,product_id,plan,quantity,billing_interval,price,currency,start_date,renewal_date,status,coupon_id
+sub_001,cust_001,prod_basic,Basic,10,monthly,99.00,USD,2024-01-01,2025-01-01,active,
+sub_002,cust_002,prod_pro,Pro,5,monthly,199.00,USD,2024-02-01,2025-02-01,active,

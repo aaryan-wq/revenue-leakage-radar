@@ -12,7 +12,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.session import Base
@@ -40,6 +40,13 @@ class Audit(Base):
     clerk_user_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     session_token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="created")
+    platform: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    column_mappings: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    validation_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    validation_result: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    ingestion_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    scan_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    scan_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -117,6 +124,7 @@ class Invoice(Base):
     subscription_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("subscriptions.id"), nullable=True, index=True
     )
+    external_invoice_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     invoice_number: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     invoice_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     period_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -124,6 +132,7 @@ class Invoice(Base):
     subtotal: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     discount: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     total: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    credit_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     customer: Mapped["Customer"] = relationship(back_populates="invoices")
@@ -138,11 +147,13 @@ class InvoiceLineItem(Base):
     invoice_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("invoices.id"), nullable=False, index=True
     )
+    external_line_item_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     product_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     sku: Mapped[str | None] = mapped_column(String(255), nullable=True)
     quantity: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unit_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     extended_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    is_manual_override: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     invoice: Mapped["Invoice"] = relationship(back_populates="line_items")
 
@@ -174,6 +185,45 @@ class PriceCatalog(Base):
     effective_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     list_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+
+class CrmAccount(Base):
+    __tablename__ = "crm_accounts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False, index=True
+    )
+    external_account_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id"), nullable=True, index=True
+    )
+    name: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    seat_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CrmContract(Base):
+    __tablename__ = "crm_contracts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False, index=True
+    )
+    external_contract_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    account_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("crm_accounts.id"), nullable=True, index=True
+    )
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id"), nullable=True, index=True
+    )
+    contract_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    price_increase_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expected_renewal_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    end_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    seat_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class Finding(Base):

@@ -12,3 +12,5 @@ celery==5.4.0
 redis==5.2.1
 pandas==2.2.3
 polars==1.19.0
+pytest==8.3.4
+pytest-asyncio==0.25.0

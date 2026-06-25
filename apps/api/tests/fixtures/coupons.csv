@@ -1,0 +1,2 @@
+coupon_id,code,discount_type,discount_value,expires_at,active
+cpn_001,WELCOME10,percent,10,2024-12-31,true

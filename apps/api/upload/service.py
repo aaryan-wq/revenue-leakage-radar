@@ -1,9 +1,13 @@
+import logging
 import uuid
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from audit.service import get_missing_required_file_types, trigger_ingestion
 from core.config import settings
 from core.enums import FILENAME_TO_FILE_TYPE, AuditStatus, FileType, UploadStatus
 from models import Audit, Upload
@@ -80,6 +84,7 @@ async def save_upload(
         existing.storage_path = str(storage_path)
         existing.file_size = file_size
         existing.status = UploadStatus.UPLOADED.value
+        _reset_ingestion_state(audit)
         db.commit()
         db.refresh(existing)
         return existing
@@ -95,6 +100,38 @@ async def save_upload(
     db.add(upload)
 
     audit.status = AuditStatus.UPLOADING.value
+    _reset_ingestion_state(audit)
     db.commit()
     db.refresh(upload)
     return upload
+
+
+def _reset_ingestion_state(audit: Audit) -> None:
+    audit.platform = None
+    audit.column_mappings = None
+    audit.validation_report = None
+    audit.validation_result = None
+    audit.ingestion_error = None
+    audit.scan_report = None
+    audit.scan_error = None
+    if audit.status in (
+        AuditStatus.READY_FOR_SCAN.value,
+        AuditStatus.VALIDATION_FAILED.value,
+        AuditStatus.PROCESSING_FAILED.value,
+        AuditStatus.COMPLETED.value,
+        AuditStatus.SCANNING.value,
+        AuditStatus.GENERATING_REPORT.value,
+    ):
+        audit.status = AuditStatus.UPLOADING.value
+
+
+def maybe_auto_trigger_ingestion(db: Session, audit: Audit) -> None:
+    missing = get_missing_required_file_types(audit)
+    if missing:
+        return
+
+    try:
+        trigger_ingestion(db, audit)
+        logger.info("Auto-triggered ingestion for audit %s", audit.id)
+    except ValueError as exc:
+        logger.info("Skipped auto-trigger for audit %s: %s", audit.id, exc)

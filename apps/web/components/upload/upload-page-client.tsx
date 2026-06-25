@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import { RequiredFilesChecklist } from "@/components/upload/required-files-checklist";
@@ -20,6 +21,7 @@ function generateId(): string {
 }
 
 export function UploadPageClient() {
+  const router = useRouter();
   const [files, setFiles] = useState<UploadFileItem[]>([]);
   const [uploadedTypes, setUploadedTypes] = useState<FileType[]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -37,6 +39,10 @@ export function UploadPageClient() {
         const status = await getAuditStatus(session);
         setUploadedTypes(status.uploads.map((u) => u.file_type));
         setAuditReady(true);
+
+        if (status.required_files_present) {
+          router.push("/validation");
+        }
       } catch {
         setError("Unable to start audit session. Please refresh and try again.");
       } finally {
@@ -44,7 +50,7 @@ export function UploadPageClient() {
       }
     }
     void init();
-  }, []);
+  }, [router]);
 
   const handleFilesSelected = useCallback((newFiles: File[]) => {
     setError(null);
@@ -94,6 +100,10 @@ export function UploadPageClient() {
 
       const status = await getAuditStatus(session);
       setUploadedTypes(status.uploads.map((u) => u.file_type));
+
+      if (status.required_files_present) {
+        router.push("/validation");
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed";
       setError(message);
@@ -103,7 +113,7 @@ export function UploadPageClient() {
     } finally {
       setIsUploading(false);
     }
-  }, [files]);
+  }, [files, router]);
 
   const allRequiredUploaded = REQUIRED_BILLING_FILES.every((type) =>
     uploadedTypes.includes(type),
@@ -149,14 +159,14 @@ export function UploadPageClient() {
             )}
           </Button>
           {allRequiredUploaded && (
-            <Button variant="secondary" disabled>
+            <Button variant="secondary" onClick={() => router.push("/validation")}>
               Continue to Validation
             </Button>
           )}
         </div>
         {allRequiredUploaded && (
           <p className="mt-4 text-small text-gray-500">
-            All required files uploaded. Validation begins in Sprint 2.
+            All required files uploaded. Validation will begin automatically.
           </p>
         )}
       </div>
