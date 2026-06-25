@@ -1,0 +1,17 @@
+{
+  "name": "revenue-leakage-radar",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@rlr/web",
+    "dev:web": "npm run dev --workspace=@rlr/web",
+    "build": "npm run build --workspace=@rlr/web",
+    "lint": "npm run lint --workspace=@rlr/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
