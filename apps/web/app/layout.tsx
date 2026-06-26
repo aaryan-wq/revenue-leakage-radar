@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { TopNav } from "@/components/layout/top-nav";
+import { AppProviders } from "@/components/providers/app-providers";
 import { ClerkProviderWrapper } from "@/components/providers/clerk-provider";
 
 import "./globals.css";
@@ -21,8 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.variable}>
       <body>
         <ClerkProviderWrapper>
-          <TopNav />
-          <main>{children}</main>
+          <AppProviders>{children}</AppProviders>
         </ClerkProviderWrapper>
       </body>
     </html>
