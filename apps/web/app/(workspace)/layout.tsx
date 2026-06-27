@@ -1,4 +1,4 @@
-import { WorkspaceNav } from "@/components/layout/workspace-nav";
+import { WorkspaceNav } from "@/components/workspace-nav";
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (

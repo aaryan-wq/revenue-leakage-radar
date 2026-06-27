@@ -5,14 +5,23 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAppAuth } from "@/lib/app-auth";
 import { Check, Copy, Link2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
-import { SeverityBadge } from "@/components/findings/severity-badge";
+import { CountUp } from "@/components/count-up";
+import {
+  getSeverityDotClass,
+  getSeverityLabel,
+} from "@/components/findings/severity-utils";
+import { glide } from "@/components/motion";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { getStoredAuditSession } from "@/lib/audit-session";
 import { getFinding } from "@/lib/report-api";
 import { formatCurrency, type FindingDetailResponse } from "@rlr/shared";
+
+function findingDisplayId(finding: FindingDetailResponse): string {
+  return finding.rule_id || finding.id.slice(0, 8).toUpperCase();
+}
 
 export function FindingPageClient() {
   const params = useParams<{ id: string }>();
@@ -61,113 +70,185 @@ export function FindingPageClient() {
 
   if (error && !finding) {
     return (
-      <GlassCard padding="md" className="border-error/20 bg-error-bg text-center">
-        <p className="text-body text-gray-700">{error}</p>
+      <div className="mx-auto max-w-report px-6 py-20 text-center md:px-10">
+        <p className="text-lg text-muted-foreground">{error}</p>
         <Button className="mt-6" onClick={() => void loadFinding()}>
           Retry
         </Button>
-      </GlassCard>
+      </div>
     );
   }
 
   if (!finding) return null;
 
   return (
-    <div className="space-y-12">
-      <GlassCard padding="lg" elevated>
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
+    <div className="mx-auto max-w-report px-6 py-16 md:px-10 md:py-20">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={finding.id}
+          initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+          transition={{ duration: 0.6, ease: glide }}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="flex flex-wrap items-center gap-3">
-              <SeverityBadge severity={finding.severity} />
-              <span className="text-small text-gray-500">{finding.category_label}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                {findingDisplayId(finding)}
+              </span>
+              <span className="flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.14em]">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${getSeverityDotClass(finding.severity)}`}
+                />
+                {getSeverityLabel(finding.severity)}
+              </span>
+              <span className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                {finding.category_label}
+              </span>
             </div>
-            <h1 className="mt-4 text-h2 font-semibold text-gray-900">{finding.title}</h1>
-            <p className="mt-2 text-caption text-gray-500">Rule: {finding.rule_id}</p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" size="sm" onClick={() => void handleCopyLink()}>
-              {copied ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" strokeWidth={1.75} />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="mr-2 h-4 w-4" strokeWidth={1.75} />
-                  Copy Link
-                </>
+            <div className="flex gap-3">
+              <Button variant="secondary" size="sm" onClick={() => void handleCopyLink()}>
+                {copied ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" strokeWidth={1.75} />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-4 w-4" strokeWidth={1.75} />
+                    Copy Link
+                  </>
+                )}
+              </Button>
+              {finding.report_id && (
+                <Link href={`/report/${finding.report_id}`}>
+                  <Button variant="ghost" size="sm">
+                    <Link2 className="mr-2 h-4 w-4" strokeWidth={1.75} />
+                    View Report
+                  </Button>
+                </Link>
               )}
-            </Button>
-            {finding.report_id && (
-              <Link href={`/report/${finding.report_id}`}>
-                <Button variant="ghost" size="sm">
-                  <Link2 className="mr-2 h-4 w-4" strokeWidth={1.75} />
-                  View Report
-                </Button>
-              </Link>
+            </div>
+          </div>
+
+          <h1 className="mt-5 max-w-2xl font-heading text-[clamp(1.8rem,4vw,2.8rem)] leading-[1.05] tracking-tight text-balance">
+            {finding.title}
+          </h1>
+
+          <div className="mt-10 flex flex-wrap items-end gap-x-14 gap-y-8 border-y border-line py-10">
+            <div>
+              <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                Recoverable, annualized
+              </p>
+              <div className="mt-3 font-heading text-[clamp(2.6rem,6vw,4.4rem)] leading-none tracking-tight tnum">
+                <CountUp
+                  to={parseFloat(finding.estimated_arr_loss) || 0}
+                  prefix="$"
+                  duration={1.4}
+                />
+              </div>
+            </div>
+            <div className="flex gap-x-12 gap-y-6">
+              <div>
+                <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  Monthly
+                </p>
+                <p className="mt-3 font-heading text-2xl tracking-tight tnum">
+                  {formatCurrency(finding.estimated_monthly_loss)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  Confidence
+                </p>
+                <p className="mt-3 font-heading text-2xl tracking-tight tnum">
+                  {finding.confidence}%
+                </p>
+              </div>
+              {finding.customer_id && (
+                <div>
+                  <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    Customer
+                  </p>
+                  <p className="mt-3 font-heading text-2xl tracking-tight">
+                    {finding.customer_id}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {finding.recommendation && (
+            <div className="mt-10 max-w-2xl border-l-2 border-primary/40 pl-5">
+              <p className="text-[0.72rem] uppercase tracking-[0.12em] text-primary">
+                Recommended remedy
+              </p>
+              <p className="mt-2 text-lg leading-relaxed text-foreground">
+                {finding.recommendation}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-10">
+            <p className="mb-5 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+              Evidence
+            </p>
+            {finding.evidence_records.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-line">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-line text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
+                      <th className="px-5 py-4 font-medium">Field</th>
+                      <th className="px-5 py-4 font-medium">Expected</th>
+                      <th className="px-5 py-4 font-medium">Actual</th>
+                      <th className="px-5 py-4 font-medium">References</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {finding.evidence_records.map((record, index) => (
+                      <tr key={index} className="border-b border-line last:border-b-0">
+                        <td className="px-5 py-4 text-foreground">{record.field}</td>
+                        <td className="px-5 py-4 tnum text-muted-foreground">
+                          {record.expected ?? "—"}
+                        </td>
+                        <td className="px-5 py-4 tnum text-foreground">
+                          {record.actual ?? "—"}
+                        </td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">
+                          {record.reference_ids
+                            ? Object.entries(record.reference_ids)
+                                .map(([key, value]) => `${key}: ${value}`)
+                                .join(", ")
+                            : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No detailed evidence records.</p>
             )}
           </div>
-        </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Metric label="Estimated ARR" value={formatCurrency(finding.estimated_arr_loss)} />
-          <Metric label="Monthly Impact" value={formatCurrency(finding.estimated_monthly_loss)} />
-          <Metric label="Confidence" value={`${finding.confidence}%`} />
-          <Metric label="Customer ID" value={finding.customer_id ?? "—"} />
-        </div>
-
-        {finding.recommendation && (
-          <div className="mt-10 max-w-reading">
-            <p className="text-overline uppercase text-gray-500">Recommendation</p>
-            <p className="mt-2 text-body text-gray-700">{finding.recommendation}</p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            {finding.report_id && (
+              <Link
+                href={`/report/${finding.report_id}`}
+                className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                ← Back to report
+              </Link>
+            )}
+            <Link
+              href="/dashboard"
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Open workspace
+            </Link>
           </div>
-        )}
-      </GlassCard>
-
-      <GlassCard padding="md">
-        <h2 className="text-h3 font-semibold text-gray-900">Evidence</h2>
-        {finding.evidence_records.length > 0 ? (
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-small">
-              <thead>
-                <tr className="border-b border-border text-caption text-gray-500">
-                  <th className="pb-3 pr-4 font-medium">Field</th>
-                  <th className="pb-3 pr-4 font-medium">Expected</th>
-                  <th className="pb-3 pr-4 font-medium">Actual</th>
-                  <th className="pb-3 font-medium">References</th>
-                </tr>
-              </thead>
-              <tbody>
-                {finding.evidence_records.map((record, index) => (
-                  <tr key={index} className="border-b border-border">
-                    <td className="py-3 pr-4 text-gray-900">{record.field}</td>
-                    <td className="py-3 pr-4 tabular-nums text-gray-700">{record.expected ?? "—"}</td>
-                    <td className="py-3 pr-4 tabular-nums text-gray-700">{record.actual ?? "—"}</td>
-                    <td className="py-3 text-caption text-gray-500">
-                      {record.reference_ids
-                        ? Object.entries(record.reference_ids)
-                            .map(([k, v]) => `${k}: ${v}`)
-                            .join(", ")
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="mt-4 text-body text-gray-500">No detailed evidence records.</p>
-        )}
-      </GlassCard>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="glass-subtle rounded-card p-5">
-      <p className="text-caption text-gray-500">{label}</p>
-      <p className="mt-2 text-h4 font-semibold tabular-nums text-gray-900">{value}</p>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

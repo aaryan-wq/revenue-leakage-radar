@@ -1,237 +1,276 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, Shield, Upload, Zap } from "lucide-react";
 
-import { SiteFooter } from "@/components/marketing/site-footer";
-import { GlassCard } from "@/components/ui/glass-card";
-import { fadeUp, staggerContainer } from "@/lib/motion/variants";
-import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
+import { CountUp } from "@/components/count-up";
+import { glide, Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { FreeReportPreview } from "@/components/marketing/free-report-preview";
+import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { SiteFooter } from "@/components/site-footer";
 
-const VERIFICATION_CHECKS = [
-  { title: "Expired Discounts", description: "Coupons still applied after expiration date." },
-  { title: "Legacy Pricing", description: "Subscriptions billed below current catalog rates." },
-  { title: "Renewal Drift", description: "Renewal prices diverging from contract terms." },
-  { title: "Duplicate Discounts", description: "Stacked discounts exceeding policy limits." },
-  { title: "Price Catalog Mismatch", description: "Invoice line items not matching catalog." },
-  { title: "Contract vs Billing", description: "CRM contract price differs from billed amount." },
+const HERO_STATS = [
+  ["2.4 B+", "rows audited"],
+  ["$340 M+", "revenue recovered"],
+  ["< 90 s", "average runtime"],
+] as const;
+
+const STATS = [
+  { value: 312, prefix: "$", suffix: "M", decimals: 0, label: "Transaction value examined" },
+  { value: 11, prefix: "", suffix: "", decimals: 0, label: "Source systems reconciled" },
+  { value: 94, prefix: "", suffix: "%", decimals: 0, label: "Median finding confidence" },
+  { value: 9, prefix: "", suffix: " days", decimals: 0, label: "Average time to recovery" },
 ];
 
-const EXAMPLE_FINDINGS = [
-  { customer: "Acme Corp", arr: "$48,000", category: "Legacy Pricing" },
-  { customer: "Northwind LLC", arr: "$12,400", category: "Expired Discount" },
-  { customer: "Globex Inc", arr: "$31,200", category: "Renewal Drift" },
-];
-
-const STEPS = [
+const METHOD_STEPS = [
   {
-    icon: Upload,
-    title: "Upload CSVs",
-    description:
-      "Export invoice line items and your price catalog — two files to start core pricing analysis.",
+    n: "01",
+    title: "Reconcile",
+    body: "We ingest exports from your billing, payment processor, and ledger, then align every transaction across systems — no integration required.",
   },
   {
-    icon: Zap,
-    title: "Revenue Verification",
-    description: "Deterministic rules scan subscriptions, invoices, and pricing for leakage.",
+    n: "02",
+    title: "Detect",
+    body: "Each revenue path is examined against its intended behavior. Where reality diverges from policy, we measure the gap and annualize the impact.",
   },
   {
-    icon: Shield,
-    title: "Recover Revenue",
-    description: "Get evidence-backed findings with estimated ARR impact and remediation steps.",
+    n: "03",
+    title: "Present",
+    body: "Findings arrive as a board-ready report: ranked by recoverable dollars, supported by evidence, and paired with a precise remedy.",
   },
 ];
 
-function HeroUploadZone({ motionEnabled }: { motionEnabled: boolean }) {
+function HeroUploadZone() {
   const router = useRouter();
+  const [hover, setHover] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const goToUpload = useCallback(() => {
+    router.push("/upload");
+  }, [router]);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragActive(false);
+      setHover(false);
+      goToUpload();
+    },
+    [goToUpload],
+  );
 
   return (
     <motion.div
-      role="button"
-      tabIndex={0}
-      onClick={() => router.push("/upload")}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") router.push("/upload");
-      }}
-      className="glass group mx-auto mt-12 flex min-h-[320px] max-w-2xl cursor-pointer flex-col items-center justify-center rounded-hero border-2 border-dashed border-border p-12 text-center transition-all duration-normal hover:border-blue hover:shadow-elevation-2 motion-safe-float"
-      whileHover={motionEnabled ? { scale: 1.01 } : undefined}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: glide, delay: 0.4 }}
+      className="flex flex-col gap-4"
     >
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-surface-glass-subtle transition-colors group-hover:bg-blue-light">
-        <Upload className="h-8 w-8 text-gray-500 transition-colors group-hover:text-blue" strokeWidth={1.75} />
-      </div>
-      <p className="text-h3 text-gray-900">Drop your billing CSVs here</p>
-      <p className="mt-2 max-w-md text-small text-gray-500">
-        Invoice line items and price catalog required. Start your free revenue scan in minutes.
-      </p>
-      <span className="mt-8 inline-flex h-10 items-center gap-2 rounded-button bg-primary px-6 text-small font-medium text-white transition-all group-hover:brightness-[1.04]">
-        Browse Files
-        <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
-      </span>
+      <motion.div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") goToUpload();
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+          setHover(true);
+        }}
+        onDragEnter={() => {
+          setDragActive(true);
+          setHover(true);
+        }}
+        onDragLeave={() => {
+          setDragActive(false);
+          setHover(false);
+        }}
+        onDrop={handleDrop}
+        onClick={goToUpload}
+        animate={{ scale: dragActive ? 1.008 : 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 24 }}
+        className="relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-line bg-card transition-colors duration-300 hover:border-primary/40"
+      >
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          animate={{ opacity: hover ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
+          style={{
+            background:
+              "radial-gradient(110% 80% at 50% 0%, color-mix(in oklch, var(--primary) 6%, transparent), transparent 60%)",
+          }}
+        />
+
+        <div className="relative flex flex-col items-center px-8 py-16 text-center">
+          <motion.div
+            animate={{ y: hover ? -5 : 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 18 }}
+            className="relative mb-7 flex h-16 w-16 items-center justify-center"
+          >
+            <motion.span
+              className="absolute inset-0 rounded-xl border border-primary/25"
+              animate={{
+                scale: hover ? [1, 1.22, 1] : 1,
+                opacity: hover ? [0.5, 0, 0.5] : 0.3,
+              }}
+              transition={{ duration: 2, repeat: hover ? Infinity : 0 }}
+            />
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 15V4m0 0L8 8m4-4l4 4" />
+                <path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" />
+              </svg>
+            </div>
+          </motion.div>
+
+          <p className="font-heading text-xl tracking-tight">
+            {dragActive ? "Release to begin" : "Drop your billing CSVs here"}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            or{" "}
+            <span className="text-foreground/70 underline decoration-primary/50 underline-offset-2">
+              click to browse
+            </span>{" "}
+            — invoice line items and price catalog to start
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.75rem] text-muted-foreground">
+            {["End-to-end encrypted", "No account required", "Results in minutes"].map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <span className="h-1 w-1 rounded-full bg-primary/50" />
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      <RunFreeAuditCta size="lg" />
     </motion.div>
   );
 }
 
+function MethodSection() {
+  return (
+    <section className="mx-auto max-w-marketing px-6 py-28 md:px-10">
+      <Reveal>
+        <p className="mb-3 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+          The method
+        </p>
+        <h2 className="max-w-2xl font-heading text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] tracking-tight text-balance">
+          Three deliberate movements, from raw export to recovered revenue.
+        </h2>
+      </Reveal>
+
+      <Stagger className="mt-20 grid gap-x-12 gap-y-16 md:grid-cols-3">
+        {METHOD_STEPS.map((s) => (
+          <StaggerItem key={s.n}>
+            <div className="group">
+              <div className="mb-6 flex items-baseline gap-4 border-t border-line pt-5">
+                <span className="font-heading text-sm text-primary tnum">{s.n}</span>
+                <span className="font-heading text-2xl tracking-tight">{s.title}</span>
+              </div>
+              <p className="text-pretty leading-relaxed text-muted-foreground">{s.body}</p>
+            </div>
+          </StaggerItem>
+        ))}
+      </Stagger>
+    </section>
+  );
+}
+
 export function LandingPageClient() {
-  const motionEnabled = useMotionEnabled();
-
-  const enterProps = motionEnabled
-    ? { variants: staggerContainer, initial: "hidden" as const, animate: "visible" as const }
-    : { initial: false as const };
-
-  const scrollProps = motionEnabled
-    ? {
-        variants: staggerContainer,
-        initial: "hidden" as const,
-        whileInView: "visible" as const,
-        viewport: { once: true, margin: "-80px" },
-      }
-    : { initial: false as const };
-
-  const childVariants = motionEnabled ? fadeUp : undefined;
-
   return (
     <>
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-container px-8 pb-24 pt-20 md:pt-28">
-          <motion.div className="mx-auto max-w-reading text-center" {...enterProps}>
-            <motion.p variants={childVariants} className="text-overline uppercase text-gray-500">
-              Revenue Verification for Finance Teams
+      <section className="relative mx-auto max-w-marketing px-6 pt-20 pb-16 md:px-10 md:pt-28 md:pb-24">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: glide }}
+              className="mb-7 inline-flex items-center gap-2.5 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground"
+            >
+              <span className="h-px w-8 bg-primary/50" />
+              Free instant audit
             </motion.p>
-            <motion.h1 variants={childVariants} className="mt-4 text-display-hero text-primary md:text-[4.5rem]">
-              Find recoverable revenue in your billing data
-            </motion.h1>
-            <motion.p variants={childVariants} className="mt-6 text-large text-gray-500">
-              Upload billing CSVs and receive a free Revenue Verification Summary in minutes.
-              Deterministic checks. CFO-grade evidence.
-            </motion.p>
-            <motion.div variants={childVariants}>
-              <HeroUploadZone motionEnabled={motionEnabled} />
-            </motion.div>
-            <motion.p variants={childVariants} className="mt-6 text-caption text-gray-400">
-              No account required · Stripe, Chargebee, Maxio, Zuora exports supported
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-container px-8 py-24">
-        <motion.div {...scrollProps}>
-          <motion.h2 variants={childVariants} className="text-center text-h2 text-primary">
-            How it works
-          </motion.h2>
-          <div className="mt-16 grid gap-8 md:grid-cols-3">
-            {STEPS.map((step) => (
-              <motion.div key={step.title} variants={childVariants}>
-                <GlassCard interactive padding="md" className="h-full">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-glass-subtle">
-                    <step.icon className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                  </div>
-                  <h3 className="mt-6 text-h4 text-gray-900">{step.title}</h3>
-                  <p className="mt-3 text-body text-gray-500">{step.description}</p>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      <section className="border-y border-border">
-        <div className="mx-auto max-w-container px-8 py-24">
-          <motion.div className="text-center" {...scrollProps}>
-            <motion.h2 variants={childVariants} className="text-h2 text-primary">
-              Example Report Preview
-            </motion.h2>
-            <motion.p variants={childVariants} className="mx-auto mt-4 max-w-reading text-body text-gray-600">
-              See the kind of recoverable ARR your finance team could act on.
-            </motion.p>
-            <motion.div variants={childVariants} className="mx-auto mt-12 max-w-reading">
-              <GlassCard padding="md">
-                <div className="space-y-4">
-                  {EXAMPLE_FINDINGS.map((finding) => (
-                    <div
-                      key={finding.customer}
-                      className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0"
-                    >
-                      <div>
-                        <p className="select-none text-body font-medium text-gray-400 blur-[3px]">
-                          {finding.customer}
-                        </p>
-                        <p className="text-small text-gray-500">{finding.category}</p>
-                      </div>
-                      <p className="text-h4 font-semibold tabular-nums text-gray-900">{finding.arr}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-8 text-center text-small text-gray-500">
-                  Customer names blurred in free summary. Unlock for full evidence.
-                </p>
-              </GlassCard>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-container px-8 py-24">
-        <motion.div {...scrollProps}>
-          <motion.h2 variants={childVariants} className="text-center text-h2 text-primary">
-            Verification Checks
-          </motion.h2>
-          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {VERIFICATION_CHECKS.map((check) => (
-              <motion.div key={check.title} variants={childVariants}>
-                <GlassCard padding="sm" className="h-full">
-                  <h3 className="text-h4 text-gray-900">{check.title}</h3>
-                  <p className="mt-2 text-body text-gray-500">{check.description}</p>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-container px-8 py-24">
-          <div className="grid gap-12 lg:grid-cols-2">
-            <GlassCard padding="lg">
-              <h2 className="text-h2 text-primary">Simple, transparent pricing</h2>
-              <p className="mt-4 text-body text-gray-600">
-                Start free. Purchase a detailed report when you need invoice-level evidence.
-              </p>
-              <ul className="mt-8 space-y-4 text-body text-gray-600">
-                <li>Free — Revenue Verification Summary</li>
-                <li>Detailed Report — One-time purchase per audit</li>
-                <li>Annual Membership — 12 reports per year for teams</li>
-              </ul>
-              <Link href="/pricing" className="mt-8 inline-block">
-                <span className="inline-flex h-12 items-center rounded-button bg-primary px-6 text-body font-medium text-white transition-all hover:brightness-[1.04] active:scale-[0.98]">
-                  View Pricing
+            <h1 className="font-heading text-[clamp(2.6rem,5.5vw,4.4rem)] leading-[0.95] tracking-tight text-balance">
+              {["Drop your CSV.", "See exactly where", "revenue is leaking."].map((line, i) => (
+                <span key={line} className="block overflow-hidden">
+                  <motion.span
+                    className="block"
+                    initial={{ y: "110%" }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 1.1, ease: glide, delay: 0.08 + i * 0.12 }}
+                  >
+                    {i === 1 ? <span className="italic text-primary">{line}</span> : line}
+                  </motion.span>
                 </span>
-              </Link>
-            </GlassCard>
-            <GlassCard padding="lg">
-              <div className="flex items-center gap-3">
-                <Lock className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                <h3 className="text-h3 font-semibold text-gray-900">Enterprise-grade security</h3>
-              </div>
-              <ul className="mt-6 space-y-3 text-body text-gray-600">
-                <li>HTTPS encryption in transit</li>
-                <li>Uploaded CSVs deleted after processing</li>
-                <li>Provider-managed database encryption at rest</li>
-              </ul>
-              <Link
-                href="/security"
-                className="mt-6 inline-block text-body text-primary underline-offset-4 hover:underline"
-              >
-                Learn more about security →
-              </Link>
-            </GlassCard>
+              ))}
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: glide, delay: 0.5 }}
+              className="mt-7 text-pretty text-[1.05rem] leading-relaxed text-muted-foreground"
+            >
+              Upload billing CSV exports. Our engine reconciles every row and surfaces missed
+              revenue, duplicate charges, and pricing drift — in minutes. Deterministic checks.
+              CFO-grade evidence.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: glide, delay: 0.65 }}
+              className="mt-10 flex flex-wrap gap-x-8 gap-y-3"
+            >
+              {HERO_STATS.map(([val, label]) => (
+                <div key={label}>
+                  <p className="font-heading text-2xl tracking-tight text-foreground tnum">{val}</p>
+                  <p className="text-[0.78rem] text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </motion.div>
           </div>
+
+          <HeroUploadZone />
         </div>
       </section>
 
+      <section className="border-y border-line">
+        <div className="mx-auto grid max-w-marketing grid-cols-2 gap-px bg-line md:grid-cols-4">
+          {STATS.map((s, i) => (
+            <Reveal key={s.label} delay={i * 0.08} className="bg-background px-6 py-10 md:px-10">
+              <div className="font-heading text-3xl tracking-tight tnum md:text-4xl">
+                <CountUp
+                  to={s.value}
+                  prefix={s.prefix}
+                  suffix={s.suffix}
+                  decimals={s.decimals}
+                />
+              </div>
+              <p className="mt-3 text-[0.82rem] leading-relaxed text-muted-foreground">
+                {s.label}
+              </p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <MethodSection />
+      <FreeReportPreview />
       <SiteFooter />
     </>
   );

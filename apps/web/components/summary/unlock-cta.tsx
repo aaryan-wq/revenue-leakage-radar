@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { CheckoutButton } from "@/components/summary/checkout-button";
+import { Reveal } from "@/components/motion";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { useAppAuth } from "@/lib/app-auth";
@@ -55,83 +56,94 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
 
   if (purchased) {
     return (
-      <GlassCard padding="lg" elevated className="text-center">
-        <h3 className="text-h3 font-semibold text-gray-900">Full Report Unlocked</h3>
-        <p className="mt-3 text-body text-gray-600">
-          Your detailed evidence-backed report is ready to review.
-        </p>
-        <Link href={`/report/${reportId}`} className="mt-8 inline-block">
-          <Button size="lg">View Full Report</Button>
-        </Link>
-      </GlassCard>
+      <Reveal>
+        <section className="border-t border-line pt-12">
+          <GlassCard padding="lg" elevated className="text-center">
+            <h3 className="font-heading text-2xl tracking-tight text-foreground">
+              Full report unlocked
+            </h3>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Your detailed evidence-backed report is ready to review.
+            </p>
+            <Link href={`/report/${reportId}`} className="mt-8 inline-block">
+              <Button size="lg">View Full Report</Button>
+            </Link>
+          </GlassCard>
+        </section>
+      </Reveal>
     );
   }
 
   return (
-    <GlassCard padding="lg" elevated className="text-center">
-      <h3 className="text-h3 font-semibold text-gray-900">Unlock Full Report</h3>
-      <p className="mt-3 text-body text-gray-600">
-        Get customer-level findings, invoice evidence, and remediation guidance.
-      </p>
+    <Reveal>
+      <section className="border-t border-line pt-12">
+        <GlassCard padding="lg" elevated className="text-center">
+          <h3 className="font-heading text-2xl tracking-tight text-foreground">Unlock Detailed Report</h3>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Get customer-level findings, invoice evidence, and remediation guidance.
+          </p>
 
-      {!isSignedIn ? (
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          {isClerkConfigured() ? (
-            <Link href={`/sign-in?redirect_url=${encodeURIComponent("/summary")}`}>
-              <Button size="lg" type="button">
-                Sign In to Unlock
-              </Button>
-            </Link>
+          {!isSignedIn ? (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              {isClerkConfigured() ? (
+                <Link href={`/sign-in?redirect_url=${encodeURIComponent("/summary")}`}>
+                  <Button size="lg" type="button">
+                    Sign In to Unlock
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  size="lg"
+                  disabled
+                  title="Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to .env to enable sign-in"
+                >
+                  Sign In to Unlock
+                </Button>
+              )}
+              <Link href={`/pricing?report_id=${reportId}`}>
+                <Button variant="secondary" size="lg">
+                  View Pricing
+                </Button>
+              </Link>
+            </div>
           ) : (
-            <Button
-              size="lg"
-              disabled
-              title="Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to .env to enable sign-in"
-            >
-              Sign In to Unlock
-            </Button>
-          )}
-          <Link href={`/pricing?report_id=${reportId}`}>
-            <Button variant="secondary" size="lg">
-              View Pricing
-            </Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-8 space-y-6">
-          {reportsRemaining > 0 && (
-            <div>
-              <p className="mb-4 text-small text-gray-500">
-                You have {reportsRemaining} report credit{reportsRemaining === 1 ? "" : "s"} remaining.
-              </p>
-              <Button size="lg" onClick={() => void handleUseCredit()} disabled={isUsingCredit}>
-                {isUsingCredit ? "Unlocking…" : "Use 1 Credit"}
-              </Button>
-              {creditError && <p className="mt-2 text-caption text-error">{creditError}</p>}
+            <div className="mt-8 space-y-6">
+              {reportsRemaining > 0 && (
+                <div>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    You have {reportsRemaining} report credit
+                    {reportsRemaining === 1 ? "" : "s"} remaining.
+                  </p>
+                  <Button size="lg" onClick={() => void handleUseCredit()} disabled={isUsingCredit}>
+                    {isUsingCredit ? "Unlocking…" : "Use 1 Credit"}
+                  </Button>
+                  {creditError && <p className="mt-2 text-sm text-leak">{creditError}</p>}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <CheckoutButton
+                  reportId={reportId}
+                  plan="single_report"
+                  label="Purchase Report"
+                  onCreditUnlock={onUnlocked}
+                />
+                <CheckoutButton
+                  reportId={reportId}
+                  plan="annual_membership"
+                  label="Annual Membership"
+                  variant="secondary"
+                  onCreditUnlock={onUnlocked}
+                />
+                <Link href={`/pricing?report_id=${reportId}`}>
+                  <Button variant="ghost" size="lg">
+                    Compare Plans
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <CheckoutButton
-              reportId={reportId}
-              plan="single_report"
-              label="Purchase Report"
-              onCreditUnlock={onUnlocked}
-            />
-            <CheckoutButton
-              reportId={reportId}
-              plan="annual_membership"
-              label="Annual Membership"
-              variant="secondary"
-              onCreditUnlock={onUnlocked}
-            />
-            <Link href={`/pricing?report_id=${reportId}`}>
-              <Button variant="ghost" size="lg">
-                Compare Plans
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
-    </GlassCard>
+        </GlassCard>
+      </section>
+    </Reveal>
   );
 }

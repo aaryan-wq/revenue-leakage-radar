@@ -4,59 +4,47 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-import { SiteFooter } from "@/components/marketing/site-footer";
-import { GlassCard } from "@/components/ui/glass-card";
-import { fadeUp, staggerContainer } from "@/lib/motion/variants";
+import { Reveal } from "@/components/motion";
+import { SiteFooter } from "@/components/site-footer";
+import { HairlineCard } from "@/components/ui/hairline-card";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 
 const FAQ_ITEMS = [
   {
-    q: "Do I need an account to run a free scan?",
-    a: "No. You can upload billing CSVs and receive a free Revenue Verification Summary without creating an account. Sign in is only required when purchasing a detailed report.",
+    q: "How secure are my uploads?",
+    a: "All uploads are encrypted in transit (HTTPS/TLS). Raw CSV files are processed temporarily and automatically deleted after ingestion. Free audits do not persist raw uploads beyond what is required to produce your summary.",
   },
   {
-    q: "What billing platforms are supported?",
-    a: "We support CSV exports from Stripe, Chargebee, Maxio, Zuora, and generic billing exports. Upload invoice line items and a price catalog to begin; additional files unlock more rules.",
+    q: "What billing systems work?",
+    a: "Any system that exports CSV. We commonly see Stripe, Chargebee, Maxio, Zuora, HubSpot, and Salesforce exports. Upload invoice line items and a price catalog to begin.",
   },
   {
-    q: "What files do I need to upload?",
-    a: "Required (Tier 0): invoice_line_items.csv and prices.csv (or price_catalog.csv). Strongly recommended (Tier 1): subscriptions, invoices, and customers. Optional: coupons and CRM exports for discount and contract rules.",
+    q: "How accurate are findings?",
+    a: "Every finding is produced by deterministic verification rules — not AI. Each includes a confidence score based on data coverage and evidence quality. AI assists with narratives only.",
   },
   {
-    q: "How long does verification take?",
-    a: "Most scans complete within a few minutes depending on data volume. You will see real-time progress during analysis.",
+    q: "How long does an audit take?",
+    a: "Most audits complete in a few minutes. You will see real-time progress during validation and verification.",
   },
   {
-    q: "What is included in the free summary?",
-    a: "Estimated recoverable ARR, opportunity breakdown by category, verification checklist status, and a blurred preview of top findings.",
+    q: "Can I upload multiple exports?",
+    a: "Yes. Add subscriptions, invoices, customers, and coupons to improve coverage and unlock additional verification rules.",
   },
   {
-    q: "What is included in the detailed report?",
-    a: "Customer-level findings, invoice-level evidence, executive narrative, remediation guidance, and PDF/CSV exports.",
+    q: "Do you store my data?",
+    a: "Raw CSVs are deleted after processing. Normalized audit results are retained only for purchased reports and your workspace history. You retain full ownership of your data.",
   },
   {
-    q: "How does annual membership work?",
-    a: "Annual membership includes 12 detailed report credits per year. Credits are consumed when you unlock a specific audit report.",
+    q: "Do I need an account for a free audit?",
+    a: "No. Upload and receive a free summary without signing in. An account is only required when purchasing a detailed report or saving results to your workspace.",
   },
   {
-    q: "When are my CSV files deleted?",
-    a: "Raw uploaded CSV files are automatically deleted after processing completes. See our Security page for details.",
+    q: "What is included in the free summary vs. the detailed report?",
+    a: "The free summary shows estimated recoverable ARR, top categories, coverage, and confidence — with customer names and evidence blurred. The detailed report unlocks full evidence, remediation steps, and exports.",
   },
   {
-    q: "Does AI make financial decisions?",
-    a: "No. Revenue leakage detection, ARR calculations, and confidence scoring are fully deterministic. AI assists with column mapping and narrative generation only.",
-  },
-  {
-    q: "What payment methods are accepted?",
-    a: "Payments are processed securely through Stripe Checkout. Major credit cards are accepted.",
-  },
-  {
-    q: "Can I get a receipt?",
-    a: "Yes. Receipts are available through Stripe after purchase and listed on your Billing page.",
-  },
-  {
-    q: "What is your refund policy?",
-    a: "Contact support within 7 days of purchase if you believe there was a processing error. We review refund requests on a case-by-case basis.",
+    q: "What is the ROI on a $999 detailed report?",
+    a: "Most finance teams recover more than the report cost in the first finding. Annual membership delivers the strongest ROI for teams running quarterly audits.",
   },
 ];
 
@@ -65,16 +53,16 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   const motionEnabled = useMotionEnabled();
 
   return (
-    <div className="border-b border-border last:border-0">
+    <div className="border-b border-line last:border-0">
       <button
         type="button"
         className="focus-ring flex w-full items-center justify-between py-5 text-left"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        <span className="text-body font-medium text-gray-900">{question}</span>
+        <span className="font-medium text-foreground">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 shrink-0 text-gray-400 transition-transform duration-normal ${open ? "rotate-180" : ""}`}
+          className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-normal ${open ? "rotate-180" : ""}`}
           strokeWidth={1.75}
         />
       </button>
@@ -85,7 +73,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
             animate={{ opacity: 1, height: "auto" }}
             exit={motionEnabled ? { opacity: 0, height: 0 } : { opacity: 0 }}
             transition={{ duration: motionEnabled ? 0.2 : 0.15 }}
-            className="overflow-hidden pb-5 text-body text-gray-600"
+            className="overflow-hidden pb-5 leading-relaxed text-muted-foreground"
           >
             {answer}
           </motion.p>
@@ -96,44 +84,26 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function FaqPage() {
-  const motionEnabled = useMotionEnabled();
-
-  const enterProps = motionEnabled
-    ? { variants: staggerContainer, initial: "hidden" as const, animate: "visible" as const }
-    : { initial: false as const };
-
-  const scrollProps = motionEnabled
-    ? {
-        variants: fadeUp,
-        initial: "hidden" as const,
-        whileInView: "visible" as const,
-        viewport: { once: true },
-      }
-    : { initial: false as const };
-
-  const childVariants = motionEnabled ? fadeUp : undefined;
-
   return (
     <>
-      <div className="mx-auto max-w-reading px-8 py-24">
-        <motion.div {...enterProps}>
-          <motion.p variants={childVariants} className="text-overline uppercase text-gray-500">
-            FAQ
-          </motion.p>
-          <motion.h1 variants={childVariants} className="mt-4 text-h1 text-primary">
+      <div className="mx-auto max-w-reading px-6 py-28 md:px-10">
+        <Reveal>
+          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">FAQ</p>
+          <h1 className="mt-4 font-heading text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.02] tracking-tight text-balance">
             Frequently Asked Questions
-          </motion.h1>
-          <motion.p variants={childVariants} className="mt-4 text-body text-gray-600">
+          </h1>
+          <p className="mt-4 leading-relaxed text-muted-foreground">
             Common questions about uploads, pricing, and data handling.
-          </motion.p>
-        </motion.div>
-        <motion.div className="mt-12" {...scrollProps}>
-          <GlassCard padding="md">
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.1} className="mt-12">
+          <HairlineCard padding="md">
             {FAQ_ITEMS.map((item) => (
               <FaqItem key={item.q} question={item.q} answer={item.a} />
             ))}
-          </GlassCard>
-        </motion.div>
+          </HairlineCard>
+        </Reveal>
       </div>
       <SiteFooter />
     </>

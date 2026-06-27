@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 
+import { AnimatedScanPipeline } from "@/components/analysis/animated-scan-pipeline";
 import { ScanPipeline } from "@/components/analysis/scan-pipeline";
-import { ScanSkeleton } from "@/components/analysis/scan-skeleton";
+import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
 import {
   getScanReport,
   getStoredAuditSession,
@@ -15,31 +16,18 @@ import {
   pollScanUntil,
   startScan,
 } from "@/lib/audit-session";
-import type { AuditStatus, ScanReportResponse } from "@rlr/shared";
-
-function formatArr(value: string): string {
-  const num = Number.parseFloat(value);
-  if (Number.isNaN(num)) return "$0";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(num);
-}
+import { toast } from "@/lib/toast";
+import { formatCurrency, type ScanReportResponse } from "@rlr/shared";
 
 export function AnalysisPageClient() {
   const router = useRouter();
   const [report, setReport] = useState<ScanReportResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<AuditStatus | null>(null);
+  const [backendComplete, setBackendComplete] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
-  const loadReport = useCallback(async () => {
-    const session = getStoredAuditSession();
-    if (!session) return;
-    const data = await getScanReport(session);
-    setReport(data);
-    setCurrentStatus(data.status);
+  const handleAnimationComplete = useCallback(() => {
+    setAnimationComplete(true);
   }, []);
 
   useEffect(() => {
@@ -52,11 +40,25 @@ export function AnalysisPageClient() {
 
       try {
         let initial = await getScanReport(session);
-        setCurrentStatus(initial.status);
+        setReport(initial);
 
         if (initial.status === "ready_for_scan") {
-          await startScan(session);
-        } else if (initial.status !== "completed" && !isScanProcessingStatus(initial.status)) {
+          try {
+            await startScan(session);
+          } catch {
+            initial = await getScanReport(session);
+            setReport(initial);
+            if (
+              initial.status !== "completed" &&
+              !isScanProcessingStatus(initial.status)
+            ) {
+              throw new Error("Unable to start verification scan.");
+            }
+          }
+        } else if (
+          initial.status !== "completed" &&
+          !isScanProcessingStatus(initial.status)
+        ) {
           router.replace("/validation");
           return;
         }
@@ -65,73 +67,49 @@ export function AnalysisPageClient() {
           initial = await pollScanUntil(
             session,
             (tick) => isScanProcessingStatus(tick.status),
-            (tick) => {
-              setCurrentStatus(tick.status);
-              setReport(tick);
-            },
+            (tick) => setReport(tick),
           );
         }
 
         setReport(initial);
-        setCurrentStatus(initial.status);
+        if (initial.status === "completed") {
+          toast.success("Analysis complete. Your revenue summary is ready.");
+        }
+        setBackendComplete(true);
       } catch {
         setError("Unable to complete verification scan. Please try again.");
-      } finally {
-        setIsLoading(false);
+        toast.error("Verification scan failed.");
+        setBackendComplete(true);
+        setAnimationComplete(true);
       }
     }
 
     void run();
   }, [router]);
 
-  const handleRetry = async () => {
-    const session = getStoredAuditSession();
-    if (!session) return;
+  const isProcessing = !backendComplete || !animationComplete;
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      router.replace("/validation");
-    } catch {
-      setError("Unable to restart scan. Return to validation and try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (isLoading || (currentStatus && isScanProcessingStatus(currentStatus))) {
+  if (isProcessing && !error) {
     return (
-      <div>
-        <div className="mb-8 flex items-center gap-3">
-          <Loader2 className="h-5 w-5 animate-spin text-gray-400" strokeWidth={1.75} />
-          <p className="text-body text-gray-500">
-            {currentStatus === "scanning" && "Running deterministic verification checks…"}
-            {currentStatus === "generating_report" && "Estimating recoverable revenue…"}
-            {(!currentStatus || currentStatus === "ready_for_scan") && "Starting verification scan…"}
-          </p>
-        </div>
-        <ScanSkeleton />
-        {report && (
-          <div className="mt-10">
-            <ScanPipeline
-              status={currentStatus ?? report.status}
-              rulesCompleted={report.rules_completed}
-              rulesTotal={report.rules_total}
-            />
-          </div>
-        )}
-      </div>
+      <section className="mx-auto flex min-h-[50vh] max-w-processing flex-col items-center justify-center px-6 py-10 md:px-10">
+        <AnimatedScanPipeline
+          rulesCompleted={report?.rules_completed ?? 0}
+          rulesTotal={report?.rules_total ?? 0}
+          onCycleComplete={handleAnimationComplete}
+        />
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-card border border-error/20 bg-error-bg p-8 text-center">
-        <p className="text-body text-gray-700">{error}</p>
-        <Button className="mt-6" onClick={() => void handleRetry()}>
-          Back to Validation
-        </Button>
+      <div className="mx-auto max-w-processing px-6 py-10 md:px-10">
+        <GlassCard padding="md" className="border-line bg-secondary/40 text-center">
+          <p className="text-body text-foreground">{error}</p>
+          <Button className="mt-6" onClick={() => router.replace("/validation")}>
+            Back to Validation
+          </Button>
+        </GlassCard>
       </div>
     );
   }
@@ -139,32 +117,36 @@ export function AnalysisPageClient() {
   if (!report || report.status !== "completed") return null;
 
   return (
-    <div className="space-y-10">
-      <section className="rounded-card border border-success/20 bg-success-bg p-10 text-center shadow-card">
-        <p className="text-caption font-medium uppercase tracking-wide text-success">Scan Complete</p>
-        <h2 className="mt-4 text-h2 font-semibold text-gray-900 tabular-nums">
-          {formatArr(report.recoverable_arr)}
-        </h2>
-        <p className="mt-2 text-body text-gray-600">Estimated Recoverable ARR</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-8 text-body text-gray-600">
-          <div>
-            <span className="font-medium text-gray-900 tabular-nums">{report.finding_count}</span>{" "}
-            findings
-          </div>
-          <div>
-            <span className="font-medium text-gray-900 tabular-nums">{report.rules_completed}</span>{" "}
-            rules executed
-          </div>
-          {report.overall_confidence && (
+    <div className="mx-auto max-w-processing space-y-16 px-6 py-10 md:px-10">
+      <Reveal>
+        <GlassCard padding="lg" elevated className="text-center">
+          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Scan complete
+          </p>
+          <h2 className="mt-4 font-heading text-[clamp(2.5rem,7vw,4rem)] leading-none tracking-tight tnum">
+            {formatCurrency(report.recoverable_arr)}
+          </h2>
+          <p className="mt-2 text-body text-muted-foreground">Estimated recoverable ARR</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-8 text-body text-muted-foreground">
             <div>
-              <span className="font-medium text-gray-900 tabular-nums">
-                {report.overall_confidence}%
-              </span>{" "}
-              confidence
+              <span className="font-heading text-foreground tnum">{report.finding_count}</span>{" "}
+              findings
             </div>
-          )}
-        </div>
-      </section>
+            <div>
+              <span className="font-heading text-foreground tnum">{report.rules_completed}</span>{" "}
+              rules executed
+            </div>
+            {report.overall_confidence && (
+              <div>
+                <span className="font-heading text-foreground tnum">
+                  {report.overall_confidence}%
+                </span>{" "}
+                confidence
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      </Reveal>
 
       <ScanPipeline
         status={report.status}
@@ -173,17 +155,13 @@ export function AnalysisPageClient() {
       />
 
       <div className="flex flex-wrap items-center gap-4">
-        <Button disabled>View Full Summary</Button>
-        <Link
-          href="/validation"
-          className="inline-flex h-12 items-center justify-center rounded-button border border-gray-200 bg-white px-6 text-body font-medium text-primary hover:border-gray-300"
-        >
-          Back to Validation
+        <Link href="/summary">
+          <Button>View Full Summary</Button>
+        </Link>
+        <Link href="/validation">
+          <Button variant="secondary">Back to Validation</Button>
         </Link>
       </div>
-      <p className="text-small text-gray-500">
-        Detailed revenue summary and findings report will be available in Sprint 4.
-      </p>
     </div>
   );
 }
