@@ -22,6 +22,7 @@ def test_weighted_confidence():
     findings = [
         RuleFinding(
             rule_id="a",
+            rule_name="A",
             title="A",
             severity="high",
             confidence=Decimal("90"),
@@ -30,6 +31,7 @@ def test_weighted_confidence():
         ),
         RuleFinding(
             rule_id="b",
+            rule_name="B",
             title="B",
             severity="low",
             confidence=Decimal("50"),

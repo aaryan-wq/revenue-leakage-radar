@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { CheckoutButton } from "@/components/summary/checkout-button";
+import { LegalConsent } from "@/components/legal/legal-consent";
 import { Reveal } from "@/components/motion";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useAppAuth } from "@/lib/app-auth";
 import { isClerkConfigured } from "@/lib/clerk";
 import { getBilling, unlockWithCredit } from "@/lib/report-api";
 import { getStoredAuditSession } from "@/lib/audit-session";
+import { PRODUCT_NAMES, VERIFICATION_REPORT_PRICE } from "@/lib/pricing-content";
 
 interface UnlockCtaProps {
   reportId: string;
@@ -60,13 +62,13 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
         <section className="border-t border-line pt-12">
           <GlassCard padding="lg" elevated className="text-center">
             <h3 className="font-heading text-2xl tracking-tight text-foreground">
-              Full report unlocked
+              {PRODUCT_NAMES.verificationReport} unlocked
             </h3>
             <p className="mt-3 text-sm text-muted-foreground">
-              Your detailed evidence-backed report is ready to review.
+              Your evidence-backed report is ready to review.
             </p>
             <Link href={`/report/${reportId}`} className="mt-8 inline-block">
-              <Button size="lg">View Full Report</Button>
+              <Button size="lg">View Report</Button>
             </Link>
           </GlassCard>
         </section>
@@ -78,9 +80,12 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
     <Reveal>
       <section className="border-t border-line pt-12">
         <GlassCard padding="lg" elevated className="text-center">
-          <h3 className="font-heading text-2xl tracking-tight text-foreground">Unlock Detailed Report</h3>
+          <h3 className="font-heading text-2xl tracking-tight text-foreground">
+            Unlock {PRODUCT_NAMES.verificationReport}
+          </h3>
           <p className="mt-3 text-sm text-muted-foreground">
-            Get customer-level findings, invoice evidence, and remediation guidance.
+            Get customer-level findings, invoice evidence, calculation traces, and remediation
+            guidance. {VERIFICATION_REPORT_PRICE} per audit.
           </p>
 
           {!isSignedIn ? (
@@ -124,22 +129,16 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
                 <CheckoutButton
                   reportId={reportId}
                   plan="single_report"
-                  label="Purchase Report"
-                  onCreditUnlock={onUnlocked}
-                />
-                <CheckoutButton
-                  reportId={reportId}
-                  plan="annual_membership"
-                  label="Annual Membership"
-                  variant="secondary"
+                  label={`Purchase ${PRODUCT_NAMES.verificationReport}`}
                   onCreditUnlock={onUnlocked}
                 />
                 <Link href={`/pricing?report_id=${reportId}`}>
                   <Button variant="ghost" size="lg">
-                    Compare Plans
+                    View Pricing
                   </Button>
                 </Link>
               </div>
+              <LegalConsent action="purchasing" className="text-center" />
             </div>
           )}
         </GlassCard>

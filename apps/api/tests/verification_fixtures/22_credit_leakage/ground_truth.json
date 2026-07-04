@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_3120",
+    "name": "Synthetic Co 3120",
+    "industry": "Fintech",
+    "arr_target": "4639654",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "hubspot",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 230909568,
+  "injected_rules": [
+    "credit_leakage"
+  ],
+  "findings": [
+    {
+      "rule_id": "credit_leakage",
+      "customer_id": "cust_00005",
+      "subscription_id": null,
+      "invoice_id": "inv_credit_cust_00005",
+      "expected_monthly_leakage": "500.0000",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

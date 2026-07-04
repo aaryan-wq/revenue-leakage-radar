@@ -8,31 +8,33 @@ export function ColumnMappingTable({ mappings }: ColumnMappingTableProps) {
   const entries = Object.entries(mappings);
 
   if (entries.length === 0) {
-    return (
-      <p className="text-small text-gray-500">No column mappings available yet.</p>
-    );
+    return <p className="text-sm text-muted-foreground">No column mappings available yet.</p>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {entries.map(([fileType, fileMappings]) => (
         <div key={fileType}>
-          <h4 className="text-h4 text-gray-900">
+          <h4 className="font-heading text-lg tracking-tight text-foreground">
             {FILE_TYPE_LABELS[fileType as FileType] ?? fileType}
           </h4>
-          <div className="mt-3 overflow-hidden rounded-table border border-gray-100">
+          <div className="mt-4 overflow-hidden rounded-xl border border-line bg-card">
             <table className="w-full text-left">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-caption font-medium text-gray-500">Source</th>
-                  <th className="px-4 py-3 text-caption font-medium text-gray-500">Canonical</th>
+              <thead>
+                <tr className="border-b border-line">
+                  <th className="px-5 py-3 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    Source
+                  </th>
+                  <th className="px-5 py-3 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    Canonical
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(fileMappings).map(([source, canonical]) => (
-                  <tr key={source} className="border-t border-gray-100 hover:bg-gray-25">
-                    <td className="px-4 py-3 text-small text-gray-700">{source}</td>
-                    <td className="px-4 py-3 text-small font-medium text-gray-900">{canonical}</td>
+                  <tr key={source} className="border-t border-line transition-colors hover:bg-secondary/30">
+                    <td className="px-5 py-3 text-sm text-muted-foreground">{source}</td>
+                    <td className="px-5 py-3 text-sm font-medium text-foreground">{canonical}</td>
                   </tr>
                 ))}
               </tbody>

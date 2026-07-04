@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_4968",
+    "name": "Synthetic Co 4968",
+    "industry": "Manufacturing",
+    "arr_target": "886736",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "salesforce",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 16634365,
+  "injected_rules": [
+    "cancelled_subscription_still_billing"
+  ],
+  "findings": [
+    {
+      "rule_id": "cancelled_subscription_still_billing",
+      "customer_id": "cust_00034",
+      "subscription_id": "sub_00034",
+      "invoice_id": "inv_0000626",
+      "expected_monthly_leakage": "1055.7000",
+      "expected_annual_leakage": "12668.4000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

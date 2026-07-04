@@ -4,15 +4,18 @@ import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex h-7 items-center rounded-pill px-3 text-caption font-medium capitalize",
+  "inline-flex h-7 items-center rounded-full px-3 text-[0.72rem] font-medium uppercase tracking-[0.12em]",
   {
     variants: {
       variant: {
-        success: "bg-success-bg text-success",
-        warning: "bg-warning-bg text-warning",
-        error: "bg-error-bg text-error",
-        info: "bg-info-bg text-info",
-        gray: "bg-gray-100 text-gray-700",
+        success: "bg-primary/10 text-primary",
+        warning: "bg-leak/10 text-leak",
+        error: "bg-destructive/10 text-destructive",
+        info: "bg-secondary text-muted-foreground",
+        gray: "bg-secondary text-muted-foreground",
+        leak: "bg-leak/10 text-leak",
+        elevated: "bg-primary/10 text-primary",
+        monitor: "bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {

@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9573",
+    "name": "Synthetic Co 9573",
+    "industry": "Fintech",
+    "arr_target": "1881965",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "attio",
+    "currency": "GBP",
+    "locale": "en-GB",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 96414327,
+  "injected_rules": [
+    "missing_scheduled_increase"
+  ],
+  "findings": [
+    {
+      "rule_id": "missing_scheduled_increase",
+      "customer_id": "cust_00012",
+      "subscription_id": "sub_00072",
+      "invoice_id": null,
+      "expected_monthly_leakage": "46.2300",
+      "expected_annual_leakage": "554.7600",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

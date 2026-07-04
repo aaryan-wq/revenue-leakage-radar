@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_2105",
+    "name": "Synthetic Co 2105",
+    "industry": "EdTech",
+    "arr_target": "1663136",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "salesforce",
+    "currency": "USD",
+    "locale": "en-GB",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 171943277,
+  "injected_rules": [
+    "renewal_price_drift"
+  ],
+  "findings": [
+    {
+      "rule_id": "renewal_price_drift",
+      "customer_id": "cust_00019",
+      "subscription_id": "sub_00079",
+      "invoice_id": "inv_0001003",
+      "expected_monthly_leakage": "124.7500",
+      "expected_annual_leakage": "1497.0000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+account_id,customer_id,name,seat_count
+acct_cust_00050,cust_00050,Account cust_00050,11
+acct_cust_00100,cust_00100,Account cust_00100,50
+acct_cust_00011,cust_00011,Account cust_00011,5

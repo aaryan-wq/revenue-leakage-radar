@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @celery_app.task(name="workers.tasks.verification.run_verification", bind=True, max_retries=0)
 def run_verification_task(self, audit_id: str) -> dict[str, str]:
     from database.session import SessionLocal
-    from verification.engine import run_verification_pipeline
+    from verification.engine.pipeline import run_verification_pipeline
 
     db = SessionLocal()
     try:

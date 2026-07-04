@@ -1,0 +1,11 @@
+{
+  "fixture_id": "28_edge_zero_quantity",
+  "name": "Zero Quantity",
+  "description": "Zero-quantity subscription \u2014 no pricing leakage.",
+  "fixture_type": "edge",
+  "target_rules": [],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

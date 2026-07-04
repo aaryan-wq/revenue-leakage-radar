@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_5048",
+    "name": "Synthetic Co 5048",
+    "industry": "Retail",
+    "arr_target": "2233261",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "paddle",
+    "crm_platform": "hubspot",
+    "currency": "GBP",
+    "locale": "de-DE",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 55465350,
+  "injected_rules": [
+    "missing_expected_invoice"
+  ],
+  "findings": [
+    {
+      "rule_id": "missing_expected_invoice",
+      "customer_id": "cust_00003",
+      "subscription_id": "sub_00063",
+      "invoice_id": "inv_0000947",
+      "expected_monthly_leakage": "924.6000",
+      "expected_annual_leakage": "11095.2000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

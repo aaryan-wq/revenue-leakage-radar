@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_3792",
+    "name": "Synthetic Co 3792",
+    "industry": "Fintech",
+    "arr_target": "2944650",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "hubspot",
+    "currency": "GBP",
+    "locale": "en-US",
+    "pricing_strategy": "flat",
+    "seat_based": true
+  },
+  "seed": 43828348,
+  "injected_rules": [
+    "duplicate_customer"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_customer",
+      "customer_id": "cust_00001",
+      "subscription_id": null,
+      "invoice_id": null,
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "low",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

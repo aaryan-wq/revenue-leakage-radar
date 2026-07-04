@@ -1,0 +1,15 @@
+{
+  "fixture_id": "22_missing_expected_invoice",
+  "name": "Missing Expected Invoice",
+  "description": "Positive test for missing_expected_invoice via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "missing_expected_invoice"
+  ],
+  "seed": 55465350,
+  "rule_ids": [
+    "missing_expected_invoice"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

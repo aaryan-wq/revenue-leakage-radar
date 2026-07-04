@@ -1,0 +1,103 @@
+{
+  "company": "AcmeCRM",
+  "description": "Synthetic Stripe-like billing export with intentional revenue leakage scenarios",
+  "history": {
+    "start": "2023-06-01",
+    "end": "2025-06-01"
+  },
+  "counts": {
+    "customers": 300,
+    "subscriptions": 450,
+    "invoices": 4506,
+    "invoice_line_items": 4506,
+    "price_catalog_entries": 24,
+    "coupons": 4
+  },
+  "injected_scenarios": {
+    "expired_discount_still_applied": {
+      "count": 15,
+      "subscription_ids": [
+        "sub_0001",
+        "sub_0002",
+        "sub_0003",
+        "sub_0004",
+        "sub_0005",
+        "sub_0006",
+        "sub_0007",
+        "sub_0008",
+        "sub_0009",
+        "sub_0010",
+        "sub_0011",
+        "sub_0012",
+        "sub_0013",
+        "sub_0014",
+        "sub_0015"
+      ],
+      "rule_id": "expired_discount_still_applied",
+      "notes": "LAUNCH20 coupon expired 2024-03-31; post-expiry invoices still carry discount."
+    },
+    "legacy_pricing_after_renewal": {
+      "count": 10,
+      "subscription_ids": [
+        "sub_0016",
+        "sub_0017",
+        "sub_0018",
+        "sub_0019",
+        "sub_0020",
+        "sub_0021",
+        "sub_0022",
+        "sub_0023",
+        "sub_0024",
+        "sub_0025"
+      ],
+      "rule_id": "legacy_sku_pricing_drift",
+      "notes": "Subscriptions renewed after catalog v2 (2024-07-01) but remain on v1 list prices."
+    },
+    "invoice_line_item_price_mismatch": {
+      "count": 8,
+      "subscription_ids": [
+        "sub_0227",
+        "sub_0260",
+        "sub_0389",
+        "sub_0351",
+        "sub_0209",
+        "sub_0302",
+        "sub_0334",
+        "sub_0396"
+      ],
+      "rule_id": "invoice_subscription_price_mismatch",
+      "notes": "Most recent invoice line item unit_price differs from subscription price."
+    },
+    "duplicate_discount_stacking": {
+      "count": 5,
+      "subscription_ids": [
+        "sub_0026",
+        "sub_0027",
+        "sub_0028",
+        "sub_0029",
+        "sub_0030"
+      ],
+      "rule_id": "duplicate_discount_stacking",
+      "notes": "Active coupon on subscription plus additional invoice-level discount."
+    },
+    "undercharged_subscriptions": {
+      "count": 12,
+      "subscription_ids": [
+        "sub_0031",
+        "sub_0032",
+        "sub_0033",
+        "sub_0034",
+        "sub_0035",
+        "sub_0036",
+        "sub_0037",
+        "sub_0038",
+        "sub_0039",
+        "sub_0040",
+        "sub_0041",
+        "sub_0042"
+      ],
+      "rule_id": "grandfathered_without_contract",
+      "notes": "Active subscriptions priced 10-20% below current catalog without CRM contract exception."
+    }
+  }
+}

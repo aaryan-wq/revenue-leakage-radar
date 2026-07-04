@@ -22,9 +22,18 @@ class UploadStatus(str, enum.Enum):
     UPLOADING = "uploading"
     UPLOADED = "uploaded"
     FAILED = "failed"
+    PURGED = "purged"
+
+
+class DataTier(str, enum.Enum):
+    INSUFFICIENT = "insufficient"
+    TIER_0 = "tier_0"
+    TIER_1 = "tier_1"
+    TIER_2_PLUS = "tier_2_plus"
 
 
 class FileType(str, enum.Enum):
+    CUSTOMERS = "customers"
     SUBSCRIPTIONS = "subscriptions"
     INVOICES = "invoices"
     INVOICE_LINE_ITEMS = "invoice_line_items"
@@ -37,6 +46,8 @@ class FileType(str, enum.Enum):
 
 
 FILENAME_TO_FILE_TYPE: dict[str, FileType] = {
+    "customers": FileType.CUSTOMERS,
+    "customers.csv": FileType.CUSTOMERS,
     "subscriptions": FileType.SUBSCRIPTIONS,
     "subscriptions.csv": FileType.SUBSCRIPTIONS,
     "invoices": FileType.INVOICES,
@@ -47,12 +58,20 @@ FILENAME_TO_FILE_TYPE: dict[str, FileType] = {
     "coupons.csv": FileType.COUPONS,
     "price_catalog": FileType.PRICE_CATALOG,
     "price_catalog.csv": FileType.PRICE_CATALOG,
+    "prices": FileType.PRICE_CATALOG,
+    "prices.csv": FileType.PRICE_CATALOG,
     "accounts": FileType.CRM_ACCOUNTS,
     "accounts.csv": FileType.CRM_ACCOUNTS,
+    "crm_accounts": FileType.CRM_ACCOUNTS,
+    "crm_accounts.csv": FileType.CRM_ACCOUNTS,
     "opportunities": FileType.CRM_OPPORTUNITIES,
     "opportunities.csv": FileType.CRM_OPPORTUNITIES,
+    "crm_opportunities": FileType.CRM_OPPORTUNITIES,
+    "crm_opportunities.csv": FileType.CRM_OPPORTUNITIES,
     "contracts": FileType.CRM_CONTRACTS,
     "contracts.csv": FileType.CRM_CONTRACTS,
+    "crm_contracts": FileType.CRM_CONTRACTS,
+    "crm_contracts.csv": FileType.CRM_CONTRACTS,
 }
 
 class Platform(str, enum.Enum):
@@ -82,10 +101,27 @@ SCAN_PROCESSING_STATUSES: set[AuditStatus] = {
 }
 
 
-REQUIRED_BILLING_FILE_TYPES: set[FileType] = {
-    FileType.SUBSCRIPTIONS,
-    FileType.INVOICES,
-    FileType.INVOICE_LINE_ITEMS,
-    FileType.COUPONS,
-    FileType.PRICE_CATALOG,
-}
+class CheckoutPlan(str, enum.Enum):
+    SINGLE_REPORT = "single_report"
+    ANNUAL_MEMBERSHIP = "annual_membership"
+
+
+class MembershipPlan(str, enum.Enum):
+    NONE = "none"
+    ANNUAL = "annual"
+
+
+class MembershipStatus(str, enum.Enum):
+    ACTIVE = "active"
+    CANCELED = "canceled"
+    PAST_DUE = "past_due"
+
+
+class PurchasePlan(str, enum.Enum):
+    SINGLE_REPORT = "single_report"
+    MEMBERSHIP_CREDIT = "membership_credit"
+    ANNUAL_MEMBERSHIP = "annual_membership"
+
+
+# No hard-required file types, any billing export satisfies the minimum upload.
+REQUIRED_BILLING_FILE_TYPES: set[FileType] = set()

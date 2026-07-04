@@ -1,5 +1,5 @@
 ﻿
-# Revenue Leakage Radar — Technical Specification v1.0 (High-Level Architecture)
+# Revenue Leakage Radar, Technical Specification v1.0 (High-Level Architecture)
 
 ----------
 
@@ -505,11 +505,42 @@ generated_at
 
 # 7. CSV Requirements
 
-## Billing (Required)
+## Data Tier Framework
+
+The system adapts to whatever files are uploaded. Only Tier 0 files block ingestion; Tier 1 missing files emit warnings; Tier 2/3 are optional.
+
+| Tier | Files | Role |
+|------|-------|------|
+| 0 (Required) | invoice_line_items.csv, prices.csv / price_catalog.csv | Core pricing drift and catalog mismatch rules |
+| 1 (Recommended) | subscriptions.csv, invoices.csv, customers.csv | Subscription, invoice, and customer-level rules |
+| 2 (Optional) | coupons.csv | Discount and coupon rules |
+| 3 (Optional) | accounts.csv, contracts.csv, opportunities.csv | CRM contract and seat validation |
+
+## Tier 0, Required
 
 File
 
 Primary Key
+
+invoice_line_items.csv
+
+line_item_id
+
+prices.csv / price_catalog.csv
+
+product_id (+ effective_date for versioning)
+
+----------
+
+## Tier 1, Strongly Recommended
+
+File
+
+Primary Key
+
+customers.csv
+
+customer_id
 
 subscriptions.csv
 
@@ -519,21 +550,21 @@ invoices.csv
 
 invoice_id
 
-invoice_line_items.csv
+----------
 
-line_item_id
+## Tier 2, Optional
+
+File
+
+Primary Key
 
 coupons.csv
 
 coupon_id
 
-price_catalog.csv
-
-product_id + effective_date
-
 ----------
 
-## CRM (Recommended)
+## Tier 3, CRM (Optional)
 
 File
 
@@ -691,6 +722,13 @@ Deterministic Rules
     
 -   Future extensible rules
     
+
+Each rule declares:
+
+-   `minimum_dataset`, files required to execute (missing → `skipped`)
+-   `optimal_dataset`, files that improve confidence (missing → `partial` with downgrade)
+
+Rule execution statuses: `ran`, `partial`, `skipped`, `error`.
 
 ----------
 

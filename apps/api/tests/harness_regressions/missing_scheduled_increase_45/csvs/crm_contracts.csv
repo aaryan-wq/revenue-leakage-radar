@@ -1,0 +1,4 @@
+end_date,seat_count,Account ID,contract_price,price_increase_date,StartDate,expected_renewal_price,CustId,Contract ID,component_id,allocation
+2024-01-01,10,acct_00006,117.30,,01/01/2023,117.30,cust_00006,ctr_cust_00006,,
+01/01/2026,1,acct_00023,67.62,,01/01/2024,67.62,cust_00023,ctr_sub_dup_cust_00023_0,,
+2026-01-01,10,acct_00013,563.50,,01/01/2024,7043.75,cust_00013,ctr_ren_sub_00013,,

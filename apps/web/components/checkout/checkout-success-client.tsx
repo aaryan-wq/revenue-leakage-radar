@@ -5,10 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppAuth } from "@/lib/app-auth";
 
+import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
+import { HairlineCard } from "@/components/ui/hairline-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCheckoutStatus } from "@/lib/report-api";
+import { captureEvent } from "@/lib/analytics/client";
+import { AnalyticsEvents } from "@rlr/shared";
 
 const PAID_STATUSES = new Set(["paid", "no_payment_required"]);
 
@@ -35,6 +38,11 @@ export function CheckoutSuccessClient() {
         PAID_STATUSES.has(result.payment_status) &&
         result.fulfilled
       ) {
+        captureEvent(AnalyticsEvents.CHECKOUT_COMPLETED, {
+          report_id: result.report_id ?? undefined,
+          checkout_type: result.plan ?? "single_report",
+          payment_provider: "stripe",
+        });
         setStatus("ready");
         router.replace("/dashboard?checkout=success");
       }
@@ -69,33 +77,37 @@ export function CheckoutSuccessClient() {
   if (status === "error") {
     return (
       <div className="mx-auto max-w-reading px-8 py-24">
-        <GlassCard padding="lg" elevated className="text-center">
-          <h1 className="text-h2 text-primary">Payment Processing</h1>
-          <p className="mt-4 text-body text-gray-600">
-            Your payment may still be processing. Check your dashboard in a moment.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Link href="/dashboard">
-              <Button>Go to Dashboard</Button>
-            </Link>
-            {reportId && (
-              <Link href={`/report/${reportId}`}>
-                <Button variant="secondary">View Report</Button>
+        <Reveal>
+          <HairlineCard padding="lg" className="text-center">
+            <h1 className="font-heading text-2xl tracking-tight">Payment Processing</h1>
+            <p className="mt-4 text-muted-foreground">
+              Your payment may still be processing. Check your dashboard in a moment.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <Link href="/dashboard">
+                <Button>Go to Dashboard</Button>
               </Link>
-            )}
-          </div>
-        </GlassCard>
+              {reportId && (
+                <Link href={`/report/${reportId}`}>
+                  <Button variant="secondary">View Report</Button>
+                </Link>
+              )}
+            </div>
+          </HairlineCard>
+        </Reveal>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-reading px-8 py-24 text-center">
-      <Skeleton className="mx-auto h-8 w-8 rounded-full" />
-      <h1 className="mt-6 text-h2 text-primary">Updating your account…</h1>
-      <p className="mt-4 text-body text-gray-600">
-        Payment received. We are applying your purchase to your account.
-      </p>
+      <Reveal>
+        <Skeleton className="mx-auto h-8 w-8 rounded-full" />
+        <h1 className="mt-6 font-heading text-2xl tracking-tight">Updating your account…</h1>
+        <p className="mt-4 text-muted-foreground">
+          Payment received. We are applying your purchase to your account.
+        </p>
+      </Reveal>
     </div>
   );
 }

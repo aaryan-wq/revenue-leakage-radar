@@ -1,7 +1,7 @@
 import { WorkspacePlaceholderPage } from "@/components/workspace/workspace-placeholder-page";
 
 const ROADMAP = [
-  { title: "Stripe", body: "Direct billing data sync — invoices, subscriptions, and catalog." },
+  { title: "Stripe", body: "Direct billing data sync for invoices, subscriptions, and catalog." },
   { title: "Chargebee", body: "Subscription and invoice reconciliation without CSV exports." },
   { title: "HubSpot", body: "CRM contract terms vs. billed amounts." },
   { title: "Salesforce", body: "Opportunity and contract data for renewal verification." },
@@ -13,7 +13,7 @@ export default function IntegrationsPage() {
   return (
     <WorkspacePlaceholderPage
       title="Integrations"
-      description="API integrations are on the roadmap. Today, upload CSV exports from any billing system. Connectors will eliminate manual exports for supported platforms."
+      description="API integrations are on the roadmap. Today, upload CSV exports from your billing and CRM systems. Connectors will eliminate manual exports for supported platforms."
       items={ROADMAP}
       links={[{ href: "/upload", label: "Upload CSV exports now" }]}
     />

@@ -1,0 +1,2 @@
+product_id,sku,version,effective_date,list_price,currency,billing_interval
+prod_free_mo,SKU-FREE,v1,2024-01-01,0.00,USD,monthly

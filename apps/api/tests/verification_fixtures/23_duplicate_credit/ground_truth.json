@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_6744",
+    "name": "Synthetic Co 6744",
+    "industry": "EdTech",
+    "arr_target": "4337892",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "none",
+    "currency": "EUR",
+    "locale": "de-DE",
+    "pricing_strategy": "seat_based",
+    "seat_based": false
+  },
+  "seed": 16831553,
+  "injected_rules": [
+    "duplicate_credit"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_credit",
+      "customer_id": "cust_00007",
+      "subscription_id": null,
+      "invoice_id": "inv_dup_credit_cust_00007_1",
+      "expected_monthly_leakage": "50.0000",
+      "expected_annual_leakage": "600.0000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

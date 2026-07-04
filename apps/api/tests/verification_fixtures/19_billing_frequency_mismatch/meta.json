@@ -1,0 +1,15 @@
+{
+  "fixture_id": "19_billing_frequency_mismatch",
+  "name": "Billing Frequency Mismatch",
+  "description": "Positive test for billing_frequency_mismatch via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "billing_frequency_mismatch"
+  ],
+  "seed": 151033881,
+  "rule_ids": [
+    "billing_frequency_mismatch"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

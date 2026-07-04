@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9533",
+    "name": "Synthetic Co 9533",
+    "industry": "Healthcare",
+    "arr_target": "3071108",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "hubspot",
+    "currency": "EUR",
+    "locale": "de-DE",
+    "pricing_strategy": "flat",
+    "seat_based": true
+  },
+  "seed": 166639531,
+  "injected_rules": [
+    "incorrect_addon_price"
+  ],
+  "findings": [
+    {
+      "rule_id": "incorrect_addon_price",
+      "customer_id": "cust_00020",
+      "subscription_id": "sub_00080",
+      "invoice_id": "inv_0001008",
+      "expected_monthly_leakage": "70.3800",
+      "expected_annual_leakage": "844.5600",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

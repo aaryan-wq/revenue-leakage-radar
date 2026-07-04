@@ -7,8 +7,8 @@ import { Reveal } from "@/components/motion";
 import { AuditsTable } from "@/components/workspace/audits-table";
 import { Button } from "@/components/ui/button";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
-import { getStoredAuditSession } from "@/lib/audit-session";
-import { sortAuditsByValue, useWorkspaceDashboard } from "@/lib/hooks/use-workspace-dashboard";
+import { WORKSPACE_UPLOAD_HREF, getStoredAuditSession } from "@/lib/audit-session";
+import { useWorkspaceDashboard } from "@/lib/hooks/use-workspace-dashboard";
 import { useAppAuth } from "@/lib/app-auth";
 import {
   deleteAudit,
@@ -72,8 +72,8 @@ export function AuditsPageClient() {
     }
   };
 
-  if (isLoading) {
-    return <PageLoadingSkeleton message="Loading audits…" />;
+  if (isLoading && !dashboard) {
+    return <PageLoadingSkeleton message="Loading audits…" variant="list" />;
   }
 
   if (error && !dashboard) {
@@ -87,7 +87,7 @@ export function AuditsPageClient() {
     );
   }
 
-  const audits = dashboard ? sortAuditsByValue(dashboard.audits) : [];
+  const audits = dashboard?.audits ?? [];
 
   return (
     <div className="mx-auto max-w-marketing px-6 py-12 md:px-10">
@@ -96,11 +96,12 @@ export function AuditsPageClient() {
           <div>
             <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">Audits</p>
             <h1 className="mt-2 font-heading text-3xl tracking-tight">Audit history</h1>
-            <p className="mt-2 text-muted-foreground">
-              Every verification run with status, coverage, and estimated recoverable ARR.
+            <p className="mt-2 max-w-2xl text-muted-foreground">
+              Every verification run with status, coverage, and estimated recoverable ARR. Open
+              reports, export findings, and manage your audit history.
             </p>
           </div>
-          <Link href="/upload">
+          <Link href={WORKSPACE_UPLOAD_HREF}>
             <Button>Start New Audit</Button>
           </Link>
         </div>
@@ -109,7 +110,7 @@ export function AuditsPageClient() {
       {audits.length === 0 ? (
         <div className="mt-16 text-center">
           <p className="text-muted-foreground">No audits yet.</p>
-          <Link href="/upload" className="mt-6 inline-block">
+          <Link href={WORKSPACE_UPLOAD_HREF} className="mt-6 inline-block">
             <Button>Start New Audit</Button>
           </Link>
         </div>
@@ -127,6 +128,14 @@ export function AuditsPageClient() {
           />
         </div>
       )}
+
+      <Reveal delay={0.1} className="mt-12 rounded-xl border border-dashed border-line p-6">
+        <p className="text-sm font-medium text-foreground">Compare audits over time</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Trend analysis and version history are coming soon. You&apos;ll be able to run multiple audits
+          and track recovery progress quarter over quarter.
+        </p>
+      </Reveal>
     </div>
   );
 }

@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_1394",
+    "name": "Synthetic Co 1394",
+    "industry": "Healthcare",
+    "arr_target": "1273395",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "salesforce",
+    "currency": "GBP",
+    "locale": "fr-FR",
+    "pricing_strategy": "seat_based",
+    "seat_based": false
+  },
+  "seed": 1854170,
+  "injected_rules": [
+    "incorrect_addon_price"
+  ],
+  "findings": [
+    {
+      "rule_id": "incorrect_addon_price",
+      "customer_id": "cust_00017",
+      "subscription_id": "sub_00017",
+      "invoice_id": "inv_0000322",
+      "expected_monthly_leakage": "7.3317",
+      "expected_annual_leakage": "87.9804",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

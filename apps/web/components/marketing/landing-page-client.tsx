@@ -6,28 +6,32 @@ import { motion } from "framer-motion";
 
 import { CountUp } from "@/components/count-up";
 import { glide, Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { AnalyticsEvents } from "@rlr/shared";
+import { captureEvent } from "@/lib/analytics/client";
 import { FreeReportPreview } from "@/components/marketing/free-report-preview";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { LandingPageTracker } from "@/components/analytics/marketing-page-tracker";
 import { SiteFooter } from "@/components/site-footer";
+import { VERIFICATION_RULE_COUNT } from "@/lib/verification-rules";
 
 const HERO_STATS = [
-  ["2.4 B+", "rows audited"],
-  ["$340 M+", "revenue recovered"],
+  [String(VERIFICATION_RULE_COUNT), "verification checks"],
+  ["9", "CSV export types"],
   ["< 90 s", "average runtime"],
 ] as const;
 
 const STATS = [
-  { value: 312, prefix: "$", suffix: "M", decimals: 0, label: "Transaction value examined" },
-  { value: 11, prefix: "", suffix: "", decimals: 0, label: "Source systems reconciled" },
+  { value: 8, prefix: "", suffix: "", decimals: 0, label: "Billing & CRM platforms supported" },
+  { value: 4, prefix: "", suffix: "", decimals: 0, label: "Data coverage tiers" },
   { value: 94, prefix: "", suffix: "%", decimals: 0, label: "Median finding confidence" },
-  { value: 9, prefix: "", suffix: " days", decimals: 0, label: "Average time to recovery" },
+  { value: 100, prefix: "", suffix: "%", decimals: 0, label: "Deterministic financial math" },
 ];
 
 const METHOD_STEPS = [
   {
     n: "01",
     title: "Reconcile",
-    body: "We ingest exports from your billing, payment processor, and ledger, then align every transaction across systems — no integration required.",
+    body: "We ingest billing and CRM exports from your payment processor, ledger, and sales systems, then align every transaction across systems. No integration required.",
   },
   {
     n: "02",
@@ -47,6 +51,7 @@ function HeroUploadZone() {
   const [dragActive, setDragActive] = useState(false);
 
   const goToUpload = useCallback(() => {
+    captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED, { source: "hero_upload_zone" });
     router.push("/upload");
   }, [router]);
 
@@ -133,14 +138,14 @@ function HeroUploadZone() {
           </motion.div>
 
           <p className="font-heading text-xl tracking-tight">
-            {dragActive ? "Release to begin" : "Drop your billing CSVs here"}
+            {dragActive ? "Release to begin" : "Drop your billing and CRM CSVs here"}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             or{" "}
             <span className="text-foreground/70 underline decoration-primary/50 underline-offset-2">
               click to browse
             </span>{" "}
-            — invoice line items and price catalog to start
+            Invoice line items and price catalog to start; CRM exports for contract checks
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.75rem] text-muted-foreground">
@@ -191,6 +196,7 @@ function MethodSection() {
 export function LandingPageClient() {
   return (
     <>
+      <LandingPageTracker />
       <section className="relative mx-auto max-w-marketing px-6 pt-20 pb-16 md:px-10 md:pt-28 md:pb-24">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
@@ -205,7 +211,7 @@ export function LandingPageClient() {
             </motion.p>
 
             <h1 className="font-heading text-[clamp(2.6rem,5.5vw,4.4rem)] leading-[0.95] tracking-tight text-balance">
-              {["Drop your CSV.", "See exactly where", "revenue is leaking."].map((line, i) => (
+              {["Drop billing and CRM CSVs.", "See exactly where", "revenue is leaking."].map((line, i) => (
                 <span key={line} className="block overflow-hidden">
                   <motion.span
                     className="block"
@@ -225,8 +231,8 @@ export function LandingPageClient() {
               transition={{ duration: 1, ease: glide, delay: 0.5 }}
               className="mt-7 text-pretty text-[1.05rem] leading-relaxed text-muted-foreground"
             >
-              Upload billing CSV exports. Our engine reconciles every row and surfaces missed
-              revenue, duplicate charges, and pricing drift — in minutes. Deterministic checks.
+              Upload billing and CRM CSV exports. Our engine reconciles every row and surfaces missed
+              revenue, duplicate charges, and pricing drift in minutes. Deterministic checks.
               CFO-grade evidence.
             </motion.p>
 

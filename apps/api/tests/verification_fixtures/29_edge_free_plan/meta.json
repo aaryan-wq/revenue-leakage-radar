@@ -1,0 +1,11 @@
+{
+  "fixture_id": "29_edge_free_plan",
+  "name": "Free Plan",
+  "description": "Free tier subscription \u2014 no leakage.",
+  "fixture_type": "edge",
+  "target_rules": [],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

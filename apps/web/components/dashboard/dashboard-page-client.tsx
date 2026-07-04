@@ -2,41 +2,90 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppAuth } from "@/lib/app-auth";
-import { ArrowRight, Download, Radar, Trash2 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
+import { ArrowRight, Download, Trash2 } from "lucide-react";
 
+import { CountUp } from "@/components/count-up";
+import { Reveal } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
+import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { ApiError } from "@/lib/api";
-import { deleteAudit, downloadReportCsv, downloadReportPdf, getDashboard } from "@/lib/report-api";
-import { getStoredAuditSession } from "@/lib/audit-session";
-import { formatCurrency, type DashboardResponse } from "@rlr/shared";
+import { WORKSPACE_UPLOAD_HREF, getStoredAuditSession } from "@/lib/audit-session";
+import {
+  deleteAudit,
+  downloadReportCsv,
+  downloadReportPdf,
+  getDashboard,
+  getReport,
+} from "@/lib/report-api";
+import {
+  formatCurrency,
+  type DashboardResponse,
+  type FindingResponse,
+} from "@rlr/shared";
 import { toast } from "@/lib/toast";
+import { PRODUCT_NAMES } from "@/lib/pricing-content";
 
 export function DashboardPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getToken, isSignedIn, isLoaded } = useAppAuth();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [findings, setFindings] = useState<FindingResponse[]>([]);
+  const [activeReportId, setActiveReportId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadingCsvId, setDownloadingCsvId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const loadFindingsForAudit = useCallback(
+    async (reportId: string, authToken: string) => {
+      const session = getStoredAuditSession();
+      try {
+        const report = await getReport(reportId, {
+          auditSession: session?.sessionToken,
+          authToken,
+        });
+        setFindings(report.findings);
+        setActiveReportId(reportId);
+      } catch {
+        setFindings([]);
+        setActiveReportId(reportId);
+      }
+    },
+    [],
+  );
+
   const loadDashboard = useCallback(async () => {
     if (!isSignedIn) return;
     try {
       const token = await getToken();
       if (!token) {
-        setError("Authentication required.");
+        setError("Unable to load your session token. Sign out and sign in again.");
         return;
       }
       const data = await getDashboard(token);
       setDashboard(data);
+
+      if (data.audits.length > 0) {
+        const topAudit =
+          [...data.audits].sort((a, b) => {
+            if (a.purchased !== b.purchased) return a.purchased ? -1 : 1;
+            return (
+              parseFloat(b.recoverable_arr || "0") - parseFloat(a.recoverable_arr || "0")
+            );
+          })[0] ?? null;
+
+        if (topAudit) {
+          await loadFindingsForAudit(topAudit.report_id, token);
+        }
+      }
+
       setError(null);
     } catch (err) {
       const message =
@@ -45,7 +94,7 @@ export function DashboardPageClient() {
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, isSignedIn]);
+  }, [getToken, isSignedIn, loadFindingsForAudit]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -115,33 +164,39 @@ export function DashboardPageClient() {
     }
   };
 
+  const handleSelectAudit = async (reportId: string) => {
+    const authToken = await getToken();
+    if (!authToken) return;
+    await loadFindingsForAudit(reportId, authToken);
+  };
+
   if (!isLoaded || isLoading) {
-    return <PageLoadingSkeleton message="Loading executive workspace…" />;
+    return <PageLoadingSkeleton message="Loading executive workspace…" variant="dashboard" />;
   }
 
   if (error && !dashboard) {
     return (
-      <GlassCard padding="md" className="border-error/20 bg-error-bg text-center">
-        <p className="text-body text-gray-700">{error}</p>
+      <div className="px-6 py-20 text-center">
+        <p className="text-lg text-muted-foreground">{error}</p>
         <Button className="mt-6" onClick={() => void loadDashboard()}>
           Retry
         </Button>
-      </GlassCard>
+      </div>
     );
   }
 
   if (!dashboard || dashboard.audits.length === 0) {
     return (
-      <GlassCard padding="lg" elevated className="text-center">
-        <Radar className="mx-auto h-12 w-12 text-gray-300" strokeWidth={1.5} />
-        <h2 className="mt-6 text-h3 font-semibold text-gray-900">No audits yet</h2>
-        <p className="mt-3 text-body text-gray-500">
+      <div className="mx-auto max-w-report px-6 py-24 text-center md:px-10">
+        <Logo variant="short" href={null} className="mx-auto h-16 w-16 opacity-40" />
+        <h2 className="mt-6 font-heading text-2xl tracking-tight">No audits yet</h2>
+        <p className="mt-3 text-muted-foreground">
           Run your first revenue verification scan to see results here.
         </p>
-        <Link href="/upload" className="mt-8 inline-block">
+        <Link href={WORKSPACE_UPLOAD_HREF} className="mt-8 inline-block">
           <Button>Run Free Scan</Button>
         </Link>
-      </GlassCard>
+      </div>
     );
   }
 
@@ -150,109 +205,85 @@ export function DashboardPageClient() {
     0,
   );
   const totalFindings = dashboard.audits.reduce((sum, audit) => sum + audit.finding_count, 0);
-  const purchasedCount = dashboard.audits.filter((a) => a.purchased).length;
-  const topAudits = [...dashboard.audits]
-    .sort((a, b) => Number.parseFloat(b.recoverable_arr) - Number.parseFloat(a.recoverable_arr))
-    .slice(0, 3);
-  const nextUnpurchased = dashboard.audits.find((a) => !a.purchased);
+  const purchasedCount = dashboard.audits.filter((audit) => audit.purchased).length;
+  const nextUnpurchased = dashboard.audits.find((audit) => !audit.purchased);
 
   return (
-    <div className="space-y-16">
-      {(dashboard.company_name || dashboard.reports_remaining > 0) && (
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-8">
-          <div>
-            {dashboard.company_name && (
-              <p className="text-h3 font-semibold text-gray-900">{dashboard.company_name}</p>
-            )}
-            <p className="mt-1 text-body text-gray-500">Revenue verification workspace</p>
-          </div>
-          <div className="text-right">
-            <p className="text-caption text-gray-500">Reports Remaining</p>
-            <p className="text-h3 font-semibold tabular-nums text-gray-900">
-              {dashboard.reports_remaining}
-            </p>
-          </div>
+    <div>
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-marketing px-6 py-12 md:px-10">
+          <Reveal>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
+                  Revenue recovered
+                </p>
+                {dashboard.company_name && (
+                  <p className="mt-2 font-heading text-xl tracking-tight">
+                    {dashboard.company_name}
+                  </p>
+                )}
+                <div className="mt-6 font-heading text-[clamp(2.4rem,5vw,3.6rem)] leading-none tracking-tight tnum">
+                  <CountUp to={totalRecoverable} prefix="$" duration={1.4} />
+                </div>
+                <p className="mt-3 text-muted-foreground">
+                  {totalFindings} findings across {dashboard.audits.length} audit
+                  {dashboard.audits.length === 1 ? "" : "s"} · {purchasedCount} unlocked
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-4">
+                <div className="text-right">
+                  <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    Report credits
+                  </p>
+                  <p className="mt-2 font-heading text-3xl tracking-tight tnum">
+                    {dashboard.reports_remaining}
+                  </p>
+                </div>
+                {nextUnpurchased ? (
+                  <Link
+                    href={`/report/${nextUnpurchased.report_id}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Unlock {PRODUCT_NAMES.verificationReport}
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
+                  </Link>
+                ) : (
+                  <Link href={WORKSPACE_UPLOAD_HREF}>
+                    <Button size="sm">New audit</Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-marketing border-b border-line">
+        <WorkspaceView findings={findings} reportId={activeReportId} />
+      </div>
+
+      {findings.length === 0 && activeReportId && (
+        <div className="mx-auto max-w-report border-b border-line px-6 py-10 text-center md:px-10">
+          <p className="text-muted-foreground">
+            Detailed findings require a purchased report.
+          </p>
+          <Link href={`/report/${activeReportId}`} className="mt-4 inline-block">
+            <Button variant="secondary">View report</Button>
+          </Link>
         </div>
       )}
 
-      <section>
-        <p className="text-overline uppercase text-gray-500">Revenue Recovered</p>
-        <p className="mt-4 text-metric-xl font-semibold tabular-nums text-gray-900">
-          {formatCurrency(String(totalRecoverable))}
-        </p>
-        <p className="mt-2 text-body text-gray-500">
-          Total estimated recoverable ARR across {dashboard.audits.length} audit
-          {dashboard.audits.length === 1 ? "" : "s"}
-        </p>
-      </section>
-
-      <section className="grid gap-8 md:grid-cols-3">
-        <GlassCard padding="md">
-          <p className="text-overline uppercase text-gray-500">High-Impact Audits</p>
-          <ul className="mt-4 space-y-4">
-            {topAudits.map((audit) => (
-              <li key={audit.audit_id} className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="truncate text-body font-medium text-gray-900">
-                    {audit.date
-                      ? new Date(audit.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "Recent audit"}
-                  </p>
-                  <p className="text-caption text-gray-500">{audit.finding_count} findings</p>
-                </div>
-                <p className="shrink-0 text-h4 font-semibold tabular-nums text-gray-900">
-                  {formatCurrency(audit.recoverable_arr)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </GlassCard>
-
-        <GlassCard padding="md">
-          <p className="text-overline uppercase text-gray-500">Audit Coverage</p>
-          <p className="mt-4 text-h2 font-semibold tabular-nums text-gray-900">
-            {dashboard.audits.length}
-          </p>
-          <p className="mt-2 text-body text-gray-500">Total audits completed</p>
-          <div className="mt-6 space-y-2 text-small text-gray-600">
-            <p>{purchasedCount} detailed reports unlocked</p>
-            <p>{totalFindings} total findings identified</p>
-            <p>{dashboard.reports_remaining} report credits remaining</p>
-          </div>
-        </GlassCard>
-
-        <GlassCard padding="md" elevated>
-          <p className="text-overline uppercase text-gray-500">Next Action</p>
-          {nextUnpurchased ? (
-            <>
-              <p className="mt-4 text-body text-gray-700">
-                Unlock your highest-value unpurchased report for full evidence.
-              </p>
-              <Link href={`/report/${nextUnpurchased.report_id}`} className="mt-6 inline-flex items-center gap-2 text-body font-medium text-primary underline-offset-4 hover:underline">
-                Review report
-                <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="mt-4 text-body text-gray-700">Run a new audit to discover additional recoverable revenue.</p>
-              <Link href="/upload" className="mt-6 inline-block">
-                <Button>New Audit</Button>
-              </Link>
-            </>
-          )}
-        </GlassCard>
-      </section>
-
-      <section>
+      <section className="mx-auto max-w-marketing px-6 py-16 md:px-10">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-h3 font-semibold text-gray-900">Audit History</h2>
+          <div>
+            <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
+              Audit history
+            </p>
+            <h2 className="mt-2 font-heading text-2xl tracking-tight">All completed audits</h2>
+          </div>
           <div className="flex gap-3">
-            <Link href="/upload">
+            <Link href={WORKSPACE_UPLOAD_HREF}>
               <Button size="sm">New Audit</Button>
             </Link>
             <Link href="/billing">
@@ -263,97 +294,104 @@ export function DashboardPageClient() {
           </div>
         </div>
 
-        <GlassCard padding="none" className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-body">
-              <thead className="bg-surface-glass-subtle">
-                <tr className="border-b border-border text-caption text-gray-500">
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 text-right font-medium">ARR Found</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Access</th>
-                  <th className="px-6 py-4 text-right font-medium">Findings</th>
-                  <th className="px-6 py-4 text-right font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboard.audits.map((audit) => (
-                  <tr
-                    key={audit.audit_id}
-                    className="border-b border-border transition-colors hover:bg-surface-glass-subtle"
-                  >
-                    <td className="px-6 py-4 text-gray-900">
-                      {audit.date
-                        ? new Date(audit.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-4 text-right tabular-nums text-gray-900">
-                      {formatCurrency(audit.recoverable_arr)}
-                    </td>
-                    <td className="px-6 py-4 capitalize text-gray-600">
-                      {audit.status.replace(/_/g, " ")}
-                    </td>
-                    <td className="px-6 py-4">
-                      {audit.purchased ? (
-                        <Badge variant="success">Purchased</Badge>
-                      ) : (
-                        <Badge variant="gray">Free summary</Badge>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right tabular-nums text-gray-700">
-                      {audit.finding_count}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/report/${audit.report_id}`}>
-                          <Button variant="ghost" size="sm">
-                            Open
-                          </Button>
-                        </Link>
-                        {audit.purchased && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={downloadingId === audit.report_id}
-                              onClick={() => void handleDownload(audit.report_id)}
-                            >
-                              <Download className="mr-1 h-4 w-4" strokeWidth={1.75} />
-                              {downloadingId === audit.report_id ? "…" : "PDF"}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={downloadingCsvId === audit.report_id}
-                              onClick={() => void handleDownloadCsv(audit.report_id)}
-                            >
-                              <Download className="mr-1 h-4 w-4" strokeWidth={1.75} />
-                              {downloadingCsvId === audit.report_id ? "…" : "CSV"}
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={deletingId === audit.audit_id}
-                          onClick={() => void handleDelete(audit.audit_id)}
-                          className="text-error hover:text-error"
-                        >
-                          <Trash2 className="mr-1 h-4 w-4" strokeWidth={1.75} />
-                          {deletingId === audit.audit_id ? "…" : "Delete"}
+        <div className="overflow-x-auto rounded-xl border border-line">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-line text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
+                <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 text-right font-medium">ARR Found</th>
+                <th className="px-6 py-4 font-medium">Status</th>
+                <th className="px-6 py-4 font-medium">Access</th>
+                <th className="px-6 py-4 text-right font-medium">Findings</th>
+                <th className="px-6 py-4 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard.audits.map((audit) => (
+                <tr
+                  key={audit.audit_id}
+                  className={`border-b border-line transition-colors last:border-b-0 hover:bg-secondary/30 ${
+                    audit.report_id === activeReportId ? "bg-secondary/20" : ""
+                  }`}
+                >
+                  <td className="px-6 py-4 text-foreground">
+                    {audit.date
+                      ? new Date(audit.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "-"}
+                  </td>
+                  <td className="px-6 py-4 text-right tnum text-foreground">
+                    {formatCurrency(audit.recoverable_arr)}
+                  </td>
+                  <td className="px-6 py-4 capitalize text-muted-foreground">
+                    {audit.status.replace(/_/g, " ")}
+                  </td>
+                  <td className="px-6 py-4">
+                    {audit.purchased ? (
+                      <Badge variant="success">Purchased</Badge>
+                    ) : (
+                      <Badge variant="gray">Free summary</Badge>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right tnum text-muted-foreground">
+                    {audit.finding_count}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void handleSelectAudit(audit.report_id)}
+                      >
+                        Explore
+                      </Button>
+                      <Link href={`/report/${audit.report_id}`}>
+                        <Button variant="ghost" size="sm">
+                          Open
                         </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
+                      </Link>
+                      {audit.purchased && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={downloadingId === audit.report_id}
+                            onClick={() => void handleDownload(audit.report_id)}
+                          >
+                            <Download className="mr-1 h-4 w-4" strokeWidth={1.75} />
+                            {downloadingId === audit.report_id ? "…" : "PDF"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={downloadingCsvId === audit.report_id}
+                            onClick={() => void handleDownloadCsv(audit.report_id)}
+                          >
+                            <Download className="mr-1 h-4 w-4" strokeWidth={1.75} />
+                            {downloadingCsvId === audit.report_id ? "…" : "CSV"}
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={deletingId === audit.audit_id}
+                        onClick={() => void handleDelete(audit.audit_id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" strokeWidth={1.75} />
+                        {deletingId === audit.audit_id ? "…" : "Delete"}
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

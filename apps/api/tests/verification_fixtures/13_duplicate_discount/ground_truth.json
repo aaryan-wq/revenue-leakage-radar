@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_1353",
+    "name": "Synthetic Co 1353",
+    "industry": "Media",
+    "arr_target": "4134018",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "salesforce",
+    "currency": "GBP",
+    "locale": "en-GB",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": true
+  },
+  "seed": 132971298,
+  "injected_rules": [
+    "duplicate_discount"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_discount",
+      "customer_id": "cust_00011",
+      "subscription_id": "sub_00011",
+      "invoice_id": "inv_0000211",
+      "expected_monthly_leakage": "116.7300",
+      "expected_annual_leakage": "1400.7600",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

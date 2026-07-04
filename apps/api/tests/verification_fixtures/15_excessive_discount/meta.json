@@ -1,0 +1,15 @@
+{
+  "fixture_id": "15_excessive_discount",
+  "name": "Excessive Discount",
+  "description": "Positive test for excessive_discount via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "excessive_discount"
+  ],
+  "seed": 16445872,
+  "rule_ids": [
+    "excessive_discount"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,38 @@
+{
+  "profile": {
+    "company_id": "co_03",
+    "name": "Legacy Pricing Co",
+    "industry": "SaaS",
+    "arr_target": "120000",
+    "customer_count": 1,
+    "product_count": 1,
+    "billing_platform": "stripe",
+    "crm_platform": "none",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 0,
+  "injected_rules": [
+    "legacy_pricing"
+  ],
+  "findings": [
+    {
+      "rule_id": "legacy_pricing",
+      "customer_id": "cust_001",
+      "subscription_id": "sub_001",
+      "invoice_id": null,
+      "expected_monthly_leakage": "600",
+      "expected_annual_leakage": "7200",
+      "expected_severity": "medium",
+      "expected_evidence": {
+        "catalog_v2_price": "600.00",
+        "subscription_price": "500.00",
+        "quantity": "6",
+        "calculation": "(600.00 - 500.00) \u00d7 6 seats = $600/mo \u2192 $7,200 ARR"
+      },
+      "is_negative": false
+    }
+  ]
+}

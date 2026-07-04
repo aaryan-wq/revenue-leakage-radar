@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_1230",
+    "name": "Synthetic Co 1230",
+    "industry": "SaaS",
+    "arr_target": "2902076",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "none",
+    "currency": "EUR",
+    "locale": "fr-FR",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 67866056,
+  "injected_rules": [
+    "billing_frequency_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "billing_frequency_mismatch",
+      "customer_id": "cust_00045",
+      "subscription_id": "sub_00045",
+      "invoice_id": "inv_0000755",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

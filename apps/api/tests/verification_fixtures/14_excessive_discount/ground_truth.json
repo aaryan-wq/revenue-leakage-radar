@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8316",
+    "name": "Synthetic Co 8316",
+    "industry": "Healthcare",
+    "arr_target": "3810144",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "pipedrive",
+    "currency": "USD",
+    "locale": "en-GB",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 130801214,
+  "injected_rules": [
+    "excessive_discount"
+  ],
+  "findings": [
+    {
+      "rule_id": "excessive_discount",
+      "customer_id": "cust_00046",
+      "subscription_id": "sub_00046",
+      "invoice_id": "inv_abuse_cust_00046_0",
+      "expected_monthly_leakage": "10.0000",
+      "expected_annual_leakage": "120.0000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

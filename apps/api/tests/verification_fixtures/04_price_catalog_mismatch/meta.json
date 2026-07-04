@@ -1,0 +1,15 @@
+{
+  "fixture_id": "04_price_catalog_mismatch",
+  "name": "Price Catalog Mismatch",
+  "description": "Positive test for price_catalog_mismatch via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "price_catalog_mismatch"
+  ],
+  "seed": 114585391,
+  "rule_ids": [
+    "price_catalog_mismatch"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

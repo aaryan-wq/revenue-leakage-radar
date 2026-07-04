@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9742",
+    "name": "Synthetic Co 9742",
+    "industry": "Fintech",
+    "arr_target": "3148458",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "hubspot",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": true
+  },
+  "seed": 119049736,
+  "injected_rules": [
+    "manual_price_override"
+  ],
+  "findings": [
+    {
+      "rule_id": "manual_price_override",
+      "customer_id": "cust_00050",
+      "subscription_id": "sub_00050",
+      "invoice_id": "inv_0000805",
+      "expected_monthly_leakage": "360.5800",
+      "expected_annual_leakage": "4326.9600",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

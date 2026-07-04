@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8708",
+    "name": "Synthetic Co 8708",
+    "industry": "Retail",
+    "arr_target": "2345075",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "pipedrive",
+    "currency": "EUR",
+    "locale": "en-US",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 37709388,
+  "injected_rules": [
+    "duplicate_discount"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_discount",
+      "customer_id": "cust_00048",
+      "subscription_id": "sub_00048",
+      "invoice_id": "inv_0000787",
+      "expected_monthly_leakage": "557.5200",
+      "expected_annual_leakage": "6690.2400",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

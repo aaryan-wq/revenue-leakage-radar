@@ -1,0 +1,15 @@
+{
+  "fixture_id": "10_incorrect_addon_price",
+  "name": "Incorrect Addon Price",
+  "description": "Positive test for incorrect_addon_price via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "incorrect_addon_price"
+  ],
+  "seed": 1854170,
+  "rule_ids": [
+    "incorrect_addon_price"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

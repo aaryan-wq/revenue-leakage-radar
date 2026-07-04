@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8401",
+    "name": "Synthetic Co 8401",
+    "industry": "Manufacturing",
+    "arr_target": "3748182",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "pipedrive",
+    "currency": "GBP",
+    "locale": "en-GB",
+    "pricing_strategy": "flat",
+    "seat_based": true
+  },
+  "seed": 151033881,
+  "injected_rules": [
+    "billing_frequency_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "billing_frequency_mismatch",
+      "customer_id": "cust_00059",
+      "subscription_id": "sub_00059",
+      "invoice_id": "inv_0000902",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

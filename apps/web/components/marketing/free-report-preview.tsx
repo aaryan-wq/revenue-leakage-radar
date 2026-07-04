@@ -6,6 +6,7 @@ import { Lock } from "lucide-react";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { GlassCard } from "@/components/ui/glass-card";
 import { formatCurrency } from "@rlr/shared";
+import { PRODUCT_NAMES } from "@/lib/pricing-content";
 
 const SAMPLE_FINDINGS = [
   {
@@ -50,17 +51,17 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
       <div className={isCompact ? "" : "mx-auto max-w-marketing px-6 py-20 md:px-10 md:py-24"}>
         <Reveal>
           <p className="mb-3 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Your free report
+            Your free audit
           </p>
           <h2 className="max-w-xl font-heading text-[clamp(1.6rem,3.5vw,2.4rem)] leading-[1.05] tracking-tight text-balance">
             {isCompact
-              ? "Every upload includes a free executive summary."
+              ? "Every upload includes a free audit summary."
               : "See recoverable revenue before you pay for anything."}
           </h2>
           <p className="mt-4 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
-            After your scan completes, you receive a free summary with total recoverable ARR,
+            After your scan completes, you receive a free audit with recoverable ARR, MRR,
             confidence scores, and a preview of top findings. Customer names and invoice evidence
-            stay locked until you unlock the full report.
+            stay locked until you unlock the {PRODUCT_NAMES.verificationReport}.
           </p>
         </Reveal>
 
@@ -102,7 +103,8 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
             </h3>
           </div>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Unlock the full report to view customer names, invoice evidence, and remediation steps.
+            Unlock the {PRODUCT_NAMES.verificationReport} to view customer names, invoice evidence,
+            and remediation steps.
           </p>
         </Reveal>
 
@@ -128,7 +130,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
         {showCta && (
           <Reveal delay={0.15} className="mt-10 flex flex-wrap items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              Customer names blurred in free summary. Unlock for full evidence.
+              Customer names blurred in the free audit. Unlock for full evidence.
             </p>
             <Link
               href="/pricing"

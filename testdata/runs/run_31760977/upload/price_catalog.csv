@@ -1,0 +1,10 @@
+product_id,sku,version,effective_date,list_price,currency,billing_interval
+prod_starter_mo,SKU-STAR-MO,v2,2024-07-01,57.50,USD,monthly
+prod_starter_yr,SKU-STAR-YR,v2,2024-07-01,575.00,USD,annual
+prod_growth_mo,SKU-GROW-MO,v2,2024-07-01,116.15,USD,monthly
+prod_growth_yr,SKU-GROW-YR,v2,2024-07-01,1161.50,USD,annual
+prod_professional_mo,SKU-PROF-MO,v2,2024-07-01,239.20,USD,monthly
+prod_professional_yr,SKU-PROF-YR,v2,2024-07-01,2392.00,USD,annual
+prod_business_mo,SKU-BUSI-MO,v2,2024-07-01,466.90,USD,monthly
+prod_business_yr,SKU-BUSI-YR,v2,2024-07-01,4669.00,USD,annual
+addon_prod_starter_mo,addon_prod_starter_mo,v2,2024-07-01,57.50,USD,monthly

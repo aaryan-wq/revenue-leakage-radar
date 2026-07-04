@@ -1,6 +1,6 @@
-import { formatCurrency, type OpportunityBreakdownItem } from "@rlr/shared";
-
+import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { GlassCard } from "@/components/ui/glass-card";
+import { formatCurrency, type OpportunityBreakdownItem } from "@rlr/shared";
 
 interface OpportunityBreakdownProps {
   items: OpportunityBreakdownItem[];
@@ -9,34 +9,57 @@ interface OpportunityBreakdownProps {
 export function OpportunityBreakdown({ items }: OpportunityBreakdownProps) {
   if (items.length === 0) {
     return (
-      <GlassCard padding="md">
-        <h3 className="text-h3 font-semibold text-gray-900">Opportunity Breakdown</h3>
-        <p className="mt-4 text-body text-gray-500">No recoverable opportunities identified.</p>
-      </GlassCard>
+      <Reveal>
+        <section className="border-t border-line pt-12">
+          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Opportunity breakdown
+          </p>
+          <h3 className="mt-4 font-heading text-2xl tracking-tight text-foreground">
+            No recoverable opportunities identified
+          </h3>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Verification checks did not surface material leakage in the uploaded datasets.
+          </p>
+        </section>
+      </Reveal>
     );
   }
 
   return (
-    <GlassCard padding="md">
-      <h3 className="text-h3 font-semibold text-gray-900">Opportunity Breakdown</h3>
-      <p className="mt-2 text-body text-gray-500">
-        Recoverable ARR grouped by verification category.
-      </p>
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {items.map((item) => (
-          <GlassCard key={item.category} interactive padding="sm" subtle className="h-full">
-            <p className="text-body font-medium text-gray-900">{item.label}</p>
-            <p className="mt-3 text-h3 font-semibold tabular-nums text-gray-900">
-              {formatCurrency(item.arr)}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-4 text-small text-gray-500">
-              <span>{item.issue_count} issues</span>
-              {item.confidence && <span>{item.confidence}% confidence</span>}
-              {item.account_count > 0 && <span>{item.account_count} accounts</span>}
-            </div>
-          </GlassCard>
-        ))}
+    <section className="border-y border-line bg-secondary/30">
+      <div className="py-16">
+        <Reveal>
+          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Where it leaks
+          </p>
+          <h3 className="mt-4 font-heading text-[clamp(1.7rem,3.5vw,2.6rem)] leading-[1.05] tracking-tight text-balance">
+            Recoverable ARR by verification category
+          </h3>
+          <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">
+            Grouped by the deterministic rules that surfaced each opportunity.
+          </p>
+        </Reveal>
+
+        <Stagger className="mt-12 grid gap-4 md:grid-cols-2">
+          {items.map((item) => (
+            <StaggerItem key={item.category}>
+              <GlassCard padding="sm" subtle className="h-full">
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="mt-3 font-heading text-2xl tracking-tight tnum">
+                  {formatCurrency(item.arr)}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                  <span className="tnum">{item.issue_count} issues</span>
+                  {item.confidence && <span className="tnum">{item.confidence}% confidence</span>}
+                  {item.account_count > 0 && (
+                    <span className="tnum">{item.account_count} accounts</span>
+                  )}
+                </div>
+              </GlassCard>
+            </StaggerItem>
+          ))}
+        </Stagger>
       </div>
-    </GlassCard>
+    </section>
   );
 }

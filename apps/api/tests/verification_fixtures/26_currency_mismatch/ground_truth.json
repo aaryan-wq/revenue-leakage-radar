@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_4955",
+    "name": "Synthetic Co 4955",
+    "industry": "Retail",
+    "arr_target": "831588",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "none",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "seat_based",
+    "seat_based": false
+  },
+  "seed": 74302930,
+  "injected_rules": [
+    "currency_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "currency_mismatch",
+      "customer_id": "cust_00043",
+      "subscription_id": "sub_00043",
+      "invoice_id": "inv_0000751",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

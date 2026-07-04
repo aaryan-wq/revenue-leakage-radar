@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_7329",
+    "name": "Synthetic Co 7329",
+    "industry": "Fintech",
+    "arr_target": "4165816",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "attio",
+    "currency": "GBP",
+    "locale": "fr-FR",
+    "pricing_strategy": "seat_based",
+    "seat_based": false
+  },
+  "seed": 257706066,
+  "injected_rules": [
+    "invoice_price_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "invoice_price_mismatch",
+      "customer_id": "cust_00021",
+      "subscription_id": "sub_00081",
+      "invoice_id": "inv_0001002",
+      "expected_monthly_leakage": "20.3550",
+      "expected_annual_leakage": "244.2600",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

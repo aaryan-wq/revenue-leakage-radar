@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_2674",
+    "name": "Synthetic Co 2674",
+    "industry": "EdTech",
+    "arr_target": "3557967",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "paddle",
+    "crm_platform": "hubspot",
+    "currency": "USD",
+    "locale": "en-GB",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 131361687,
+  "injected_rules": [
+    "discount_stacking"
+  ],
+  "findings": [
+    {
+      "rule_id": "discount_stacking",
+      "customer_id": "cust_00013",
+      "subscription_id": "sub_00073",
+      "invoice_id": "inv_0000945",
+      "expected_monthly_leakage": "89.1250",
+      "expected_annual_leakage": "1069.5000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

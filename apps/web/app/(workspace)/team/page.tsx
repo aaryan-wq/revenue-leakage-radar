@@ -11,7 +11,7 @@ export default function TeamPage() {
   return (
     <WorkspacePlaceholderPage
       title="Team"
-      description="Invite colleagues to your revenue recovery workspace. Team management with role-based access is coming soon — powered by organization-level authentication."
+      description="Invite colleagues to your revenue recovery workspace. Team management with role-based access is coming soon, powered by organization-level authentication."
       items={ROLES}
       links={[
         { href: "/account", label: "Account settings" },

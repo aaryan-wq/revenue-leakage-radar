@@ -1,0 +1,388 @@
+{
+  "seed": 3437452345,
+  "customer_count": 100,
+  "product_count": 4,
+  "rules_total": 25,
+  "rules_injected": 25,
+  "upload_rules": 24,
+  "harness_only_rules": [
+    "orphaned_records"
+  ],
+  "injected_scenarios": {
+    "legacy_pricing": {
+      "rule_id": "legacy_pricing",
+      "customer_ids": [
+        "cust_00036"
+      ],
+      "subscription_ids": [
+        "sub_00036"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "207.0000",
+      "expected_annual_leakage": "2484.0000",
+      "expected_severity": "medium"
+    },
+    "price_catalog_mismatch": {
+      "rule_id": "price_catalog_mismatch",
+      "customer_ids": [
+        "cust_00054"
+      ],
+      "subscription_ids": [
+        "sub_00054"
+      ],
+      "invoice_ids": [
+        "inv_0001244"
+      ],
+      "expected_monthly_leakage": "182.1600",
+      "expected_annual_leakage": "2185.9200",
+      "expected_severity": "high"
+    },
+    "grandfathered_pricing": {
+      "rule_id": "grandfathered_pricing",
+      "customer_ids": [
+        "cust_00025"
+      ],
+      "subscription_ids": [
+        "sub_00025"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "30.0000",
+      "expected_annual_leakage": "360.0000",
+      "expected_severity": "medium"
+    },
+    "missing_scheduled_increase": {
+      "rule_id": "missing_scheduled_increase",
+      "customer_ids": [
+        "cust_00075"
+      ],
+      "subscription_ids": [
+        "sub_00075"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "298.0800",
+      "expected_annual_leakage": "3576.9600",
+      "expected_severity": "high"
+    },
+    "renewal_price_drift": {
+      "rule_id": "renewal_price_drift",
+      "customer_ids": [
+        "cust_00080"
+      ],
+      "subscription_ids": [
+        "sub_00080"
+      ],
+      "invoice_ids": [
+        "inv_0001844"
+      ],
+      "expected_monthly_leakage": "138.0000",
+      "expected_annual_leakage": "1656.0000",
+      "expected_severity": "medium"
+    },
+    "manual_price_override": {
+      "rule_id": "manual_price_override",
+      "customer_ids": [
+        "cust_00081"
+      ],
+      "subscription_ids": [
+        "sub_00081"
+      ],
+      "invoice_ids": [
+        "inv_0001867"
+      ],
+      "expected_monthly_leakage": "183.4800",
+      "expected_annual_leakage": "2201.7600",
+      "expected_severity": "high"
+    },
+    "incorrect_seat_price": {
+      "rule_id": "incorrect_seat_price",
+      "customer_ids": [
+        "cust_00092"
+      ],
+      "subscription_ids": [
+        "sub_00092"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "4600.0000",
+      "expected_annual_leakage": "55200.0000",
+      "expected_severity": "high"
+    },
+    "incorrect_addon_price": {
+      "rule_id": "incorrect_addon_price",
+      "customer_ids": [
+        "cust_00011"
+      ],
+      "subscription_ids": [
+        "sub_00011"
+      ],
+      "invoice_ids": [
+        "inv_0000253"
+      ],
+      "expected_monthly_leakage": "37.2600",
+      "expected_annual_leakage": "447.1200",
+      "expected_severity": "medium"
+    },
+    "expired_discount": {
+      "rule_id": "expired_discount",
+      "customer_ids": [
+        "cust_00040"
+      ],
+      "subscription_ids": [
+        "sub_00040"
+      ],
+      "invoice_ids": [
+        "inv_0000899"
+      ],
+      "expected_monthly_leakage": "276.0000",
+      "expected_annual_leakage": "3312.0000",
+      "expected_severity": "high"
+    },
+    "discount_stacking": {
+      "rule_id": "discount_stacking",
+      "customer_ids": [
+        "cust_00089"
+      ],
+      "subscription_ids": [
+        "sub_00089"
+      ],
+      "invoice_ids": [
+        "inv_0002051"
+      ],
+      "expected_monthly_leakage": "60.0300",
+      "expected_annual_leakage": "720.3600",
+      "expected_severity": "high"
+    },
+    "duplicate_discount": {
+      "rule_id": "duplicate_discount",
+      "customer_ids": [
+        "cust_00014"
+      ],
+      "subscription_ids": [
+        "sub_00014"
+      ],
+      "invoice_ids": [
+        "inv_0000322"
+      ],
+      "expected_monthly_leakage": "139.1500",
+      "expected_annual_leakage": "1669.8000",
+      "expected_severity": "high"
+    },
+    "permanent_promotional_discount": {
+      "rule_id": "permanent_promotional_discount",
+      "customer_ids": [
+        "cust_00074"
+      ],
+      "subscription_ids": [
+        "sub_00074"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high"
+    },
+    "excessive_discount": {
+      "rule_id": "excessive_discount",
+      "customer_ids": [
+        "cust_00041"
+      ],
+      "subscription_ids": [
+        "sub_00041"
+      ],
+      "invoice_ids": [
+        "inv_abuse_cust_00041_0"
+      ],
+      "expected_monthly_leakage": "10.0000",
+      "expected_annual_leakage": "120.0000",
+      "expected_severity": "medium"
+    },
+    "discount_wrong_product": {
+      "rule_id": "discount_wrong_product",
+      "customer_ids": [
+        "cust_00067"
+      ],
+      "subscription_ids": [
+        "sub_00067"
+      ],
+      "invoice_ids": [
+        "inv_0001544"
+      ],
+      "expected_monthly_leakage": "124.2000",
+      "expected_annual_leakage": "1490.4000",
+      "expected_severity": "high"
+    },
+    "invoice_price_mismatch": {
+      "rule_id": "invoice_price_mismatch",
+      "customer_ids": [
+        "cust_00099"
+      ],
+      "subscription_ids": [
+        "sub_00099"
+      ],
+      "invoice_ids": [
+        "inv_0002281"
+      ],
+      "expected_monthly_leakage": "238.4800",
+      "expected_annual_leakage": "2861.7600",
+      "expected_severity": "medium"
+    },
+    "duplicate_subscription": {
+      "rule_id": "duplicate_subscription",
+      "customer_ids": [
+        "cust_00013"
+      ],
+      "subscription_ids": [
+        "sub_dup_cust_00013_1"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "66.7000",
+      "expected_annual_leakage": "800.4000",
+      "expected_severity": "high"
+    },
+    "billing_frequency_mismatch": {
+      "rule_id": "billing_frequency_mismatch",
+      "customer_ids": [
+        "cust_00043"
+      ],
+      "subscription_ids": [
+        "sub_00043"
+      ],
+      "invoice_ids": [
+        "inv_0000991"
+      ],
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium"
+    },
+    "active_subscription_not_billing": {
+      "rule_id": "active_subscription_not_billing",
+      "customer_ids": [
+        "cust_00052"
+      ],
+      "subscription_ids": [
+        "sub_free_cust_00052"
+      ],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "66.70",
+      "expected_annual_leakage": "800.40",
+      "expected_severity": "medium"
+    },
+    "cancelled_subscription_still_billing": {
+      "rule_id": "cancelled_subscription_still_billing",
+      "customer_ids": [
+        "cust_00064"
+      ],
+      "subscription_ids": [
+        "sub_00064"
+      ],
+      "invoice_ids": [
+        "inv_0001475"
+      ],
+      "expected_monthly_leakage": "4600.0000",
+      "expected_annual_leakage": "55200.0000",
+      "expected_severity": "high"
+    },
+    "missing_expected_invoice": {
+      "rule_id": "missing_expected_invoice",
+      "customer_ids": [
+        "cust_00062"
+      ],
+      "subscription_ids": [
+        "sub_00062"
+      ],
+      "invoice_ids": [
+        "inv_0001429"
+      ],
+      "expected_monthly_leakage": "506.0000",
+      "expected_annual_leakage": "6072.0000",
+      "expected_severity": "medium"
+    },
+    "credit_leakage": {
+      "rule_id": "credit_leakage",
+      "customer_ids": [
+        "cust_00032"
+      ],
+      "subscription_ids": [],
+      "invoice_ids": [
+        "inv_credit_cust_00032"
+      ],
+      "expected_monthly_leakage": "500.0000",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium"
+    },
+    "duplicate_credit": {
+      "rule_id": "duplicate_credit",
+      "customer_ids": [
+        "cust_00085"
+      ],
+      "subscription_ids": [],
+      "invoice_ids": [
+        "inv_dup_credit_cust_00085_1"
+      ],
+      "expected_monthly_leakage": "50.0000",
+      "expected_annual_leakage": "600.0000",
+      "expected_severity": "high"
+    },
+    "duplicate_customer": {
+      "rule_id": "duplicate_customer",
+      "customer_ids": [
+        "cust_00032"
+      ],
+      "subscription_ids": [],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "low"
+    },
+    "currency_mismatch": {
+      "rule_id": "currency_mismatch",
+      "customer_ids": [
+        "cust_00069"
+      ],
+      "subscription_ids": [
+        "sub_00069"
+      ],
+      "invoice_ids": [
+        "inv_0001590"
+      ],
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high"
+    },
+    "orphaned_records": {
+      "rule_id": "orphaned_records",
+      "customer_ids": [
+        "cust_00001"
+      ],
+      "subscription_ids": [],
+      "invoice_ids": [],
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "low"
+    }
+  },
+  "injected_leakage_monthly": "12313.2400",
+  "injected_leakage_annual": "141758.8800",
+  "upload_primary_arr": "168874.16",
+  "upload_primary_arr_delta_pct": "19.1",
+  "counts": {
+    "customers": 100,
+    "subscriptions": 103,
+    "invoices": 2312,
+    "invoice_line_items": 2307,
+    "coupons": 3,
+    "price_catalog": 9,
+    "crm_accounts": 100,
+    "crm_contracts": 2
+  },
+  "upload_validation": {
+    "matched": 24,
+    "expected": 24,
+    "passed": true
+  },
+  "full_validation": {
+    "matched": 1,
+    "expected": 1,
+    "passed": true
+  },
+  "regenerate": "python scripts/generate_verification_dataset.py --seed 3437452345 --customers 100",
+  "verify": "python scripts/verify_verification_dataset.py --seed 3437452345"
+}

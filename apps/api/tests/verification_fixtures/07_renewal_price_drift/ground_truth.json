@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_7738",
+    "name": "Synthetic Co 7738",
+    "industry": "SaaS",
+    "arr_target": "2978800",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "hubspot",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "tiered",
+    "seat_based": false
+  },
+  "seed": 233534567,
+  "injected_rules": [
+    "renewal_price_drift"
+  ],
+  "findings": [
+    {
+      "rule_id": "renewal_price_drift",
+      "customer_id": "cust_00012",
+      "subscription_id": "sub_00012",
+      "invoice_id": "inv_0000236",
+      "expected_monthly_leakage": "240.3500",
+      "expected_annual_leakage": "2884.2000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_6302",
+    "name": "Synthetic Co 6302",
+    "industry": "Healthcare",
+    "arr_target": "3950826",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "none",
+    "currency": "EUR",
+    "locale": "de-DE",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 114585391,
+  "injected_rules": [
+    "price_catalog_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "price_catalog_mismatch",
+      "customer_id": "cust_00054",
+      "subscription_id": "sub_00054",
+      "invoice_id": "inv_0000865",
+      "expected_monthly_leakage": "47.1900",
+      "expected_annual_leakage": "566.2800",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

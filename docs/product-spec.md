@@ -1,5 +1,5 @@
 ﻿
-# Revenue Leakage Radar MVP — Product Specification v1.0
+# Revenue Leakage Radar MVP, Product Specification v1.0
 
 > **Product Statement:** Revenue Leakage Radar enables finance teams to upload billing (required) and CRM (recommended) CSV exports, receive a free Revenue Verification Summary in minutes, and purchase a detailed Revenue Verification Report containing evidence, customer-level findings, and remediation guidance.
 
@@ -37,7 +37,7 @@ CSV uploads only (API integrations later)
 
 AI Usage
 
-CSV mapping, validation, summaries, recommendations—not primary financial decisions
+CSV mapping, validation, summaries, recommendations, not primary financial decisions
 
 Detection
 
@@ -222,32 +222,42 @@ Contact
 
 ## Objective
 
-Collect required data.
+Collect billing data with progressive coverage tiers, start with the minimum viable dataset and enrich as files become available.
 
 ----------
 
-## Required
+## Tier 0, Required (Minimum Viable Data)
 
-Billing
+Core pricing drift detection runs on exactly two files:
+
+-   invoice_line_items.csv
+    
+-   prices.csv (alias: price_catalog.csv)
+    
+
+----------
+
+## Tier 1, Strongly Recommended
+
+Improves confidence and unlocks subscription, invoice, and customer-level rules:
 
 -   subscriptions.csv
     
 -   invoices.csv
     
--   invoice_line_items.csv
-    
--   coupons.csv
-    
--   price_catalog.csv
+-   customers.csv
     
 
 ----------
 
-## Strongly Recommended
+## Tier 2 & 3, Optional Power-Ups
 
-CRM export
+-   coupons.csv, discount and coupon rules
+    
+-   CRM exports (accounts, contracts, opportunities), contract and seat-count validation
+    
 
-Supported:
+Supported CRM platforms:
 
 HubSpot
 

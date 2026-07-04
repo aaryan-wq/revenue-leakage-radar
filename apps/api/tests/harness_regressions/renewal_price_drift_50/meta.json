@@ -1,0 +1,7 @@
+{
+  "case_id": "renewal_price_drift_50",
+  "rule_id": "renewal_price_drift",
+  "seed": 50,
+  "created_at": "2026-06-27T03:17:58.415035+00:00",
+  "mismatch": "No finding for customer=cust_00021 sub=sub_00021 inv=inv_0000346"
+}

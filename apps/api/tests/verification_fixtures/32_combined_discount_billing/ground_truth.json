@@ -1,0 +1,57 @@
+{
+  "profile": {
+    "company_id": "co_3034",
+    "name": "Synthetic Co 3034",
+    "industry": "Fintech",
+    "arr_target": "734228",
+    "customer_count": 80,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "salesforce",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "tiered",
+    "seat_based": false
+  },
+  "seed": 9999,
+  "injected_rules": [
+    "discount_stacking",
+    "duplicate_subscription",
+    "invoice_price_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "discount_stacking",
+      "customer_id": "cust_00032",
+      "subscription_id": "sub_00032",
+      "invoice_id": "inv_0000634",
+      "expected_monthly_leakage": "144.2100",
+      "expected_annual_leakage": "1730.5200",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "duplicate_subscription",
+      "customer_id": "cust_00037",
+      "subscription_id": "sub_dup_cust_00037_1",
+      "invoice_id": null,
+      "expected_monthly_leakage": "64.4000",
+      "expected_annual_leakage": "772.8000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "invoice_price_mismatch",
+      "customer_id": "cust_00030",
+      "subscription_id": "sub_00110",
+      "invoice_id": "inv_0001371",
+      "expected_monthly_leakage": "13.8000",
+      "expected_annual_leakage": "165.6000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

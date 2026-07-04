@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_1772",
+    "name": "Synthetic Co 1772",
+    "industry": "Media",
+    "arr_target": "1090274",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "pipedrive",
+    "currency": "USD",
+    "locale": "fr-FR",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 184429710,
+  "injected_rules": [
+    "discount_wrong_product"
+  ],
+  "findings": [
+    {
+      "rule_id": "discount_wrong_product",
+      "customer_id": "cust_00032",
+      "subscription_id": "sub_00032",
+      "invoice_id": "inv_0000590",
+      "expected_monthly_leakage": "232.3000",
+      "expected_annual_leakage": "2787.6000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

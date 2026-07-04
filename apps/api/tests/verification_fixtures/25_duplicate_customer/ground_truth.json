@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_4887",
+    "name": "Synthetic Co 4887",
+    "industry": "Fintech",
+    "arr_target": "1772564",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "pipedrive",
+    "currency": "GBP",
+    "locale": "fr-FR",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 208259284,
+  "injected_rules": [
+    "duplicate_customer"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_customer",
+      "customer_id": "cust_00054",
+      "subscription_id": null,
+      "invoice_id": null,
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "low",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

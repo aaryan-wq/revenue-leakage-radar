@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_4321",
+    "name": "Synthetic Co 4321",
+    "industry": "EdTech",
+    "arr_target": "4922965",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "paddle",
+    "crm_platform": "attio",
+    "currency": "USD",
+    "locale": "en-GB",
+    "pricing_strategy": "flat",
+    "seat_based": true
+  },
+  "seed": 179437163,
+  "injected_rules": [
+    "invoice_price_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "invoice_price_mismatch",
+      "customer_id": "cust_00009",
+      "subscription_id": "sub_00009",
+      "invoice_id": "inv_0000179",
+      "expected_monthly_leakage": "78.2000",
+      "expected_annual_leakage": "938.4000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

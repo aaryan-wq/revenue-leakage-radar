@@ -1,0 +1,2 @@
+subscription_id,customer_id,product_id,plan,quantity,billing_interval,price,currency,start_date,renewal_date,status,coupon_id
+sub_001,cust_001,prod_growth_mo,Growth,6,monthly,500.00,USD,2022-06-01,2025-06-01,active,

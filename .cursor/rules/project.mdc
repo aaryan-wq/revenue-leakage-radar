@@ -1,0 +1,500 @@
+---
+description: Revenue Leakage Radar Project Rules
+alwaysApply: true
+---
+
+# Revenue Leakage Radar, Cursor Project Rules
+
+## Project Mission
+
+Build a production-quality SaaS called Revenue Leakage Radar.
+
+The goal is to detect recoverable recurring revenue from billing data using deterministic verification rules and produce CFO-grade evidence reports.
+
+The MVP is CSV-first.
+
+API integrations come later.
+
+---
+
+# Source of Truth
+
+Always treat the following files as authoritative.
+
+docs/product-spec.md
+
+docs/design-system.md
+
+docs/technical-spec.md
+
+docs/build-plan.md
+
+If there is any conflict:
+
+1. Product Spec
+2. Technical Spec
+3. Design System
+4. Build Plan
+
+Never invent functionality that contradicts these documents.
+
+---
+
+# Development Philosophy
+
+Optimize for:
+
+- simplicity
+- readability
+- maintainability
+- deterministic behavior
+- production quality
+
+Never optimize for cleverness.
+
+Always choose the simplest architecture that scales.
+
+---
+
+# Tech Stack
+
+Frontend
+
+- Next.js 15
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- TanStack Query
+- React Hook Form
+- Zod
+
+Backend
+
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- Pydantic
+- Pandas
+- Polars
+
+Authentication
+
+- Clerk
+
+Payments
+
+- Stripe Checkout
+
+Deployment
+
+Frontend:
+Vercel
+
+Backend:
+Railway
+
+Database:
+PostgreSQL
+
+---
+
+# Architecture Rules
+
+Organize code by business domains.
+
+GOOD
+
+audit/
+
+verification/
+
+reports/
+
+payments/
+
+upload/
+
+BAD
+
+controllers/
+
+services/
+
+helpers/
+
+misc/
+
+---
+
+Never duplicate business logic.
+
+Business logic belongs inside domain modules.
+
+UI should remain thin.
+
+---
+
+# AI Rules
+
+AI is NOT allowed to make financial decisions.
+
+AI may only perform:
+
+- CSV mapping
+- header normalization
+- customer matching
+- narrative generation
+- executive summaries
+- recommendations
+
+AI NEVER performs:
+
+- pricing calculations
+- ARR calculations
+- revenue leakage detection
+- confidence calculations
+- invoice comparisons
+
+Those MUST remain deterministic.
+
+---
+
+# Verification Engine
+
+The verification engine is the product moat.
+
+Rules must:
+
+- be deterministic
+- be reproducible
+- produce evidence
+- never depend on LLM output
+
+Every rule returns:
+
+Finding
+
+Evidence
+
+Monthly Leakage
+
+Annual Leakage
+
+Confidence
+
+Recommendation
+
+Rule ID
+
+---
+
+# Canonical Data Model
+
+Everything is converted into canonical objects.
+
+Never build logic directly from CSV files.
+
+CSV
+
+↓
+
+Canonical Objects
+
+↓
+
+Verification Engine
+
+↓
+
+Findings
+
+↓
+
+Reports
+
+Future APIs must map into the same canonical model.
+
+---
+
+# Code Style
+
+Prefer:
+
+small files
+
+pure functions
+
+explicit types
+
+descriptive names
+
+composition over inheritance
+
+Avoid:
+
+large classes
+
+magic values
+
+global state
+
+nested conditionals
+
+---
+
+# Type Safety
+
+No "any"
+
+No ignored TypeScript errors
+
+No ignored Python typing unless unavoidable
+
+Always prefer explicit types.
+
+---
+
+# UI Rules
+
+Always follow the Design System.
+
+Never invent colors.
+
+Never invent spacing.
+
+Never invent typography.
+
+Use design tokens only.
+
+---
+
+Animations:
+
+short
+
+subtle
+
+purposeful
+
+---
+
+Whitespace is preferred over visual clutter.
+
+---
+
+# Components
+
+Prefer reusable components.
+
+If repeated twice,
+
+extract.
+
+If repeated three times,
+
+must extract.
+
+---
+
+# Error Handling
+
+Never silently fail.
+
+Every async operation requires:
+
+loading state
+
+error state
+
+retry state
+
+empty state
+
+---
+
+# Security
+
+Never hardcode:
+
+API keys
+
+tokens
+
+passwords
+
+connection strings
+
+Use environment variables only.
+
+Never expose secrets to frontend.
+
+---
+
+# CSV Processing
+
+Uploads are temporary.
+
+Raw CSV files are deleted after processing.
+
+Business logic never depends on original CSV filenames.
+
+Only canonical data is processed.
+
+---
+
+# Database
+
+Always use migrations.
+
+Never modify production schema manually.
+
+Use foreign keys.
+
+Use indexes where appropriate.
+
+Never duplicate data unnecessarily.
+
+---
+
+# Performance
+
+Prefer server-side processing.
+
+Minimize unnecessary API calls.
+
+Avoid N+1 queries.
+
+Process CSVs in batches when possible.
+
+---
+
+# Testing
+
+Every feature should include:
+
+happy path
+
+error path
+
+edge cases
+
+Validation logic must be tested.
+
+Verification rules must have deterministic tests.
+
+---
+
+# Git
+
+Implement one feature at a time.
+
+Keep commits focused.
+
+Never refactor unrelated code.
+
+---
+
+# Definition of Complete
+
+A feature is complete only when:
+
+✓ Backend implemented
+
+✓ Frontend implemented
+
+✓ Types complete
+
+✓ Validation complete
+
+✓ Loading state exists
+
+✓ Error state exists
+
+✓ Empty state exists
+
+✓ Responsive
+
+✓ Tested
+
+✓ No lint errors
+
+✓ No TODOs
+
+---
+
+# When Unsure
+
+Never guess.
+
+Search the project documentation first.
+
+Reuse existing components.
+
+Keep architecture consistent.
+
+If multiple approaches exist:
+
+Choose the simpler one.
+
+Explain the tradeoff in comments only if necessary.
+
+---
+
+# Priority Order
+
+1. Correctness
+
+2. Evidence quality
+
+3. Simplicity
+
+4. Performance
+
+5. Polish
+
+Never sacrifice correctness for speed.
+
+---
+
+# Working Style
+
+Implement complete vertical slices.
+
+Preferred workflow:
+
+UI
+
+↓
+
+API
+
+↓
+
+Business Logic
+
+↓
+
+Database
+
+↓
+
+Testing
+
+↓
+
+Polish
+
+Do not scaffold dozens of unfinished features.
+
+Each completed feature should be usable before starting the next.
+
+---
+
+# Product Goal
+
+Every decision should move toward one outcome:
+
+A finance leader uploads billing CSVs, receives a trustworthy revenue leakage analysis in minutes, and is confident enough in the evidence to pay for the detailed report.
+
+If a feature does not directly improve that outcome, question whether it belongs in the MVP.

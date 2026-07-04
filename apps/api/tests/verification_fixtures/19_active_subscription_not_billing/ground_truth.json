@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_5084",
+    "name": "Synthetic Co 5084",
+    "industry": "EdTech",
+    "arr_target": "4455841",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "attio",
+    "currency": "EUR",
+    "locale": "fr-FR",
+    "pricing_strategy": "tiered",
+    "seat_based": false
+  },
+  "seed": 219431801,
+  "injected_rules": [
+    "active_subscription_not_billing"
+  ],
+  "findings": [
+    {
+      "rule_id": "active_subscription_not_billing",
+      "customer_id": "cust_00040",
+      "subscription_id": "sub_free_cust_00040",
+      "invoice_id": null,
+      "expected_monthly_leakage": "56.35",
+      "expected_annual_leakage": "676.20",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

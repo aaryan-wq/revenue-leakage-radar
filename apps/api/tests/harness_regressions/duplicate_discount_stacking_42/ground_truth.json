@@ -1,0 +1,263 @@
+{
+  "profile": {
+    "company_id": "co_2824",
+    "name": "Synthetic Co 2824",
+    "industry": "SaaS",
+    "arr_target": "2407113",
+    "customer_count": 30,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "salesforce",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 42,
+  "injected_rules": [
+    "expired_discount_still_applied",
+    "legacy_pricing_pre_catalog",
+    "renewal_price_drift",
+    "duplicate_discount_stacking",
+    "price_catalog_mismatch",
+    "grandfathered_without_contract",
+    "missing_scheduled_increase",
+    "invoice_subscription_price_mismatch",
+    "duplicate_active_subscriptions",
+    "billing_frequency_mismatch",
+    "currency_inconsistency",
+    "credit_adjustment_leakage",
+    "manual_override_pricing",
+    "discount_past_contract_end",
+    "seat_quantity_underbilling",
+    "contract_billing_price_divergence",
+    "underpriced_renewal_vs_contract",
+    "free_plan_never_converted",
+    "discount_abuse_frequency",
+    "legacy_sku_pricing_drift"
+  ],
+  "findings": [
+    {
+      "rule_id": "expired_discount_still_applied",
+      "customer_id": "cust_00028",
+      "subscription_id": "sub_00028",
+      "invoice_id": "inv_0000435",
+      "expected_monthly_leakage": "129.6000",
+      "expected_annual_leakage": "1555.2000",
+      "expected_severity": "high",
+      "expected_evidence": {
+        "coupon": "LAUNCH20"
+      },
+      "is_negative": false
+    },
+    {
+      "rule_id": "legacy_pricing_pre_catalog",
+      "customer_id": "cust_00011",
+      "subscription_id": "sub_00011",
+      "invoice_id": null,
+      "expected_monthly_leakage": "34.6700",
+      "expected_annual_leakage": "416.0400",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "renewal_price_drift",
+      "customer_id": "cust_00005",
+      "subscription_id": "sub_00035",
+      "invoice_id": "inv_0000495",
+      "expected_monthly_leakage": "92.4600",
+      "expected_annual_leakage": "1109.5200",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "duplicate_discount_stacking",
+      "customer_id": "cust_00001",
+      "subscription_id": "sub_00001",
+      "invoice_id": "inv_0000003",
+      "expected_monthly_leakage": "14.3750",
+      "expected_annual_leakage": "172.5000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "price_catalog_mismatch",
+      "customer_id": "cust_00019",
+      "subscription_id": "sub_00019",
+      "invoice_id": "inv_0000341",
+      "expected_monthly_leakage": "55.4800",
+      "expected_annual_leakage": "665.7600",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "grandfathered_without_contract",
+      "customer_id": "cust_00009",
+      "subscription_id": "sub_00039",
+      "invoice_id": null,
+      "expected_monthly_leakage": "138.6800",
+      "expected_annual_leakage": "1664.1600",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "missing_scheduled_increase",
+      "customer_id": "cust_00008",
+      "subscription_id": "sub_00008",
+      "invoice_id": null,
+      "expected_monthly_leakage": "139.7100",
+      "expected_annual_leakage": "1676.5200",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "invoice_subscription_price_mismatch",
+      "customer_id": "cust_00011",
+      "subscription_id": "sub_00041",
+      "invoice_id": "inv_0000519",
+      "expected_monthly_leakage": "28.7500",
+      "expected_annual_leakage": "345.0000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "duplicate_active_subscriptions",
+      "customer_id": "cust_00030",
+      "subscription_id": "sub_dup_cust_00030_0",
+      "invoice_id": null,
+      "expected_monthly_leakage": "57.50",
+      "expected_annual_leakage": "690.00",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "billing_frequency_mismatch",
+      "customer_id": "cust_00009",
+      "subscription_id": "sub_00009",
+      "invoice_id": "inv_0000170",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "currency_inconsistency",
+      "customer_id": "cust_00025",
+      "subscription_id": "sub_00025",
+      "invoice_id": "inv_0000408",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "credit_adjustment_leakage",
+      "customer_id": "cust_00014",
+      "subscription_id": null,
+      "invoice_id": "inv_0000526",
+      "expected_monthly_leakage": "3493.1200",
+      "expected_annual_leakage": "41917.4400",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "manual_override_pricing",
+      "customer_id": "cust_00017",
+      "subscription_id": null,
+      "invoice_id": "inv_0000304",
+      "expected_monthly_leakage": "143.7500",
+      "expected_annual_leakage": "1725.0000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "discount_past_contract_end",
+      "customer_id": "cust_00007",
+      "subscription_id": "sub_00007",
+      "invoice_id": null,
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "seat_quantity_underbilling",
+      "customer_id": "cust_00012",
+      "subscription_id": "sub_00012",
+      "invoice_id": null,
+      "expected_monthly_leakage": "4657.5000",
+      "expected_annual_leakage": "55890.0000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "contract_billing_price_divergence",
+      "customer_id": "cust_00018",
+      "subscription_id": "sub_00018",
+      "invoice_id": null,
+      "expected_monthly_leakage": "45.5400",
+      "expected_annual_leakage": "546.4800",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "underpriced_renewal_vs_contract",
+      "customer_id": "cust_00029",
+      "subscription_id": "sub_00029",
+      "invoice_id": "inv_0000447",
+      "expected_monthly_leakage": "47.9167",
+      "expected_annual_leakage": "575.0004",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "free_plan_never_converted",
+      "customer_id": "cust_00021",
+      "subscription_id": "sub_free_cust_00021",
+      "invoice_id": null,
+      "expected_monthly_leakage": "57.50",
+      "expected_annual_leakage": "690.00",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "discount_abuse_frequency",
+      "customer_id": "cust_00001",
+      "subscription_id": null,
+      "invoice_id": null,
+      "expected_monthly_leakage": "3.3333",
+      "expected_annual_leakage": "39.9996",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    },
+    {
+      "rule_id": "legacy_sku_pricing_drift",
+      "customer_id": "cust_00002",
+      "subscription_id": "sub_00032",
+      "invoice_id": null,
+      "expected_monthly_leakage": "303.7500",
+      "expected_annual_leakage": "3645.0000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

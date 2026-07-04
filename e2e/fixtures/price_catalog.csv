@@ -1,0 +1,3 @@
+product_id,sku,version,effective_date,list_price,currency
+prod_basic,SKU-BASIC,v1,2024-01-01,99.00,USD
+prod_pro,SKU-PRO,v1,2024-01-01,199.00,USD

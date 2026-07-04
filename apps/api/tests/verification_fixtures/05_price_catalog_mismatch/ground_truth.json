@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_6634",
+    "name": "Synthetic Co 6634",
+    "industry": "Retail",
+    "arr_target": "475656",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "hubspot",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 13362689,
+  "injected_rules": [
+    "price_catalog_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "price_catalog_mismatch",
+      "customer_id": "cust_00001",
+      "subscription_id": "sub_00001",
+      "invoice_id": "inv_0000003",
+      "expected_monthly_leakage": "7.2450",
+      "expected_annual_leakage": "86.9400",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

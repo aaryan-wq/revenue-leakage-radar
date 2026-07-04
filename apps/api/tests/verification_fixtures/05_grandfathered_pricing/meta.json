@@ -1,0 +1,15 @@
+{
+  "fixture_id": "05_grandfathered_pricing",
+  "name": "Grandfathered Pricing",
+  "description": "Positive test for grandfathered_pricing via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "grandfathered_pricing"
+  ],
+  "seed": 143520502,
+  "rule_ids": [
+    "grandfathered_pricing"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,15 @@
+{
+  "fixture_id": "04_contract_billing_price_divergence",
+  "name": "Contract Billing Price Divergence",
+  "description": "Positive test for contract_billing_price_divergence via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "contract_billing_price_divergence"
+  ],
+  "seed": 247915369,
+  "rule_ids": [
+    "contract_billing_price_divergence"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

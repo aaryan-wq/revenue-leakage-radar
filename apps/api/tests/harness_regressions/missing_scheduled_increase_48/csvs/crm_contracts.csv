@@ -1,0 +1,4 @@
+Contract ID,Seat Count,cust_id,Start Date,expected_renewal_price,end_date,contract_price,price_increase_date,accountId,passthrough,paddle_subscription_id
+ctr_cust_00003,10,cust_00003,01/01/2023,251.85,2024/01/01,251.85,,acct_cust_00003,,
+ctr_sub_00043,11,cust_00013,2024/01/01,302.22,01/01/2026,302.22,,acct_cust_00013,,
+ctr_ren_sub_00002,18,cust_00002,2024/01/01,2949.75,01/01/2026,131.10,,acct_cust_00002,,

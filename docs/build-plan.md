@@ -1,5 +1,5 @@
 ﻿
-# Revenue Leakage Radar — Build Plan v1.0
+# Revenue Leakage Radar, Build Plan v1.0
 
 ----------
 
@@ -629,4 +629,4 @@ Page Load
 -   First customer audit successfully completed end-to-end.
     
 
-</> **Build Complete** = A user can land on the website, upload billing CSVs without creating an account, receive a free Revenue Verification Summary, create an account only when purchasing, pay via Stripe, instantly unlock a detailed evidence-backed report, export PDF/CSV findings, and revisit purchased reports through their dashboard—all without manual intervention.
+</> **Build Complete** = A user can land on the website, upload billing CSVs without creating an account, receive a free Revenue Verification Summary, create an account only when purchasing, pay via Stripe, instantly unlock a detailed evidence-backed report, export PDF/CSV findings, and revisit purchased reports through their dashboard, all without manual intervention.

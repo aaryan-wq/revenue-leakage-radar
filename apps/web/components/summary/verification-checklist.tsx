@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, CircleDashed, Info, XCircle } from "lucide-react";
 
-import { GlassCard } from "@/components/ui/glass-card";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { formatCurrency, type VerificationCheckItem } from "@rlr/shared";
 
 interface VerificationChecklistProps {
@@ -11,78 +11,83 @@ const STATUS_CONFIG = {
   passed: {
     label: "Passed",
     icon: CheckCircle2,
-    className: "text-success",
+    className: "text-primary",
   },
   issues_found: {
-    label: "Issues Found",
+    label: "Issues found",
     icon: AlertTriangle,
-    className: "text-warning",
+    className: "text-leak",
   },
   partial: {
-    label: "Partial Coverage",
+    label: "Partial coverage",
     icon: Info,
-    className: "text-warning",
+    className: "text-muted-foreground",
   },
   not_run: {
-    label: "Not Run",
+    label: "Not run",
     icon: CircleDashed,
-    className: "text-gray-400",
+    className: "text-muted-foreground",
   },
   error: {
     label: "Error",
     icon: XCircle,
-    className: "text-error",
+    className: "text-leak",
   },
 } as const;
 
 export function VerificationChecklist({ checks }: VerificationChecklistProps) {
   return (
-    <GlassCard padding="none" className="overflow-hidden">
-      <div className="p-8 pb-0">
-        <h3 className="text-h3 font-semibold text-gray-900">Verification Checks</h3>
-        <p className="mt-2 text-body text-gray-500">
-          Deterministic rules executed against your billing data. Partial checks ran with reduced dataset coverage.
+    <section className="border-t border-line pt-12">
+      <Reveal>
+        <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+          Verification checks
         </p>
-      </div>
-      <div className="mt-8 overflow-x-auto px-2 pb-2">
-        <table className="w-full min-w-[640px] text-left text-body">
-          <thead className="sticky top-0 bg-surface-glass-elevated backdrop-blur-lg">
-            <tr className="border-b border-border text-caption text-gray-500">
-              <th className="px-6 py-4 font-medium">Check</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 text-right font-medium">Findings</th>
-              <th className="px-6 py-4 text-right font-medium">Est. ARR</th>
-            </tr>
-          </thead>
-          <tbody>
-            {checks.map((check) => {
-              const config = STATUS_CONFIG[check.status] ?? STATUS_CONFIG.not_run;
-              const Icon = config.icon;
-              const note = check.coverage_note ?? check.skip_reason;
-              return (
-                <tr key={check.rule_id} className="border-b border-border transition-colors hover:bg-surface-glass-subtle">
-                  <td className="px-6 py-4">
-                    <p className="text-gray-900">{check.name}</p>
-                    {note && <p className="mt-1 text-caption text-gray-500">{note}</p>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-2 ${config.className}`}>
-                      <Icon className="h-4 w-4" strokeWidth={1.75} />
-                      {config.label}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right tabular-nums text-gray-700">
-                    {check.finding_count}
-                  </td>
-                  <td className="px-6 py-4 text-right tabular-nums text-gray-900">
+        <h3 className="mt-4 font-heading text-2xl tracking-tight text-foreground">
+          Deterministic rules executed
+        </h3>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+          Partial checks ran with reduced dataset coverage where noted.
+        </p>
+      </Reveal>
+
+      <Stagger className="mt-10">
+        {checks.map((check) => {
+          const config = STATUS_CONFIG[check.status] ?? STATUS_CONFIG.not_run;
+          const Icon = config.icon;
+          const note = check.coverage_note ?? check.skip_reason;
+
+          return (
+            <StaggerItem key={check.rule_id} y={12}>
+              <article className="grid gap-6 border-t border-line py-8 md:grid-cols-[1fr_auto_auto]">
+                <div className="max-w-2xl">
+                  <p className="font-heading text-lg tracking-tight text-foreground">{check.name}</p>
+                  {note && <p className="mt-2 text-sm text-muted-foreground">{note}</p>}
+                  <span
+                    className={`mt-4 inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-[0.14em] ${config.className}`}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={1.75} />
+                    {config.label}
+                  </span>
+                </div>
+                <div className="text-right md:min-w-[5rem]">
+                  <p className="text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
+                    Findings
+                  </p>
+                  <p className="mt-2 font-heading text-xl tracking-tight tnum">{check.finding_count}</p>
+                </div>
+                <div className="text-right md:min-w-[8rem]">
+                  <p className="text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
+                    Est. ARR
+                  </p>
+                  <p className="mt-2 font-heading text-xl tracking-tight tnum">
                     {formatCurrency(check.arr)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </GlassCard>
+                  </p>
+                </div>
+              </article>
+            </StaggerItem>
+          );
+        })}
+      </Stagger>
+    </section>
   );
 }

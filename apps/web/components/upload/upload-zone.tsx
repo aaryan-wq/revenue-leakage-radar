@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { CheckCircle2, FileUp, Trash2, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, FileUp, Loader2, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { glide } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
 export interface UploadFileItem {
@@ -18,11 +19,20 @@ interface UploadZoneProps {
   files: UploadFileItem[];
   onFilesSelected: (files: File[]) => void;
   onRemoveFile: (id: string) => void;
+  onRetryFile?: (id: string) => void;
+  removingIds?: Set<string>;
   disabled?: boolean;
 }
 
-export function UploadZone({ files, onFilesSelected, onRemoveFile, disabled }: UploadZoneProps) {
-  const [isDragging, setIsDragging] = useState(false);
+export function UploadZone({
+  files,
+  onFilesSelected,
+  onRemoveFile,
+  onRetryFile,
+  removingIds,
+  disabled,
+}: UploadZoneProps) {
+  const [hover, setHover] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(
@@ -37,8 +47,8 @@ export function UploadZone({ files, onFilesSelected, onRemoveFile, disabled }: U
   );
 
   return (
-    <div className="space-y-6">
-      <div
+    <div>
+      <motion.div
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -46,96 +56,171 @@ export function UploadZone({ files, onFilesSelected, onRemoveFile, disabled }: U
         }}
         onDragOver={(e) => {
           e.preventDefault();
-          if (!disabled) setIsDragging(true);
+          if (!disabled) setHover(true);
         }}
-        onDragLeave={() => setIsDragging(false)}
+        onDragLeave={() => setHover(false)}
         onDrop={(e) => {
           e.preventDefault();
-          setIsDragging(false);
+          setHover(false);
           handleFiles(e.dataTransfer.files);
         }}
         onClick={() => !disabled && inputRef.current?.click()}
+        animate={{
+          scale: hover && !disabled ? 1.012 : 1,
+          rotateX: hover && !disabled ? -2 : 0,
+        }}
+        transition={{ type: "spring", stiffness: 220, damping: 22 }}
+        style={{ transformPerspective: 1200 }}
         className={cn(
-          "flex min-h-[280px] cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed p-12 text-center transition-all duration-normal",
-          isDragging
-            ? "border-blue bg-blue-light"
-            : "border-gray-200 bg-white hover:border-gray-300",
-          disabled && "cursor-not-allowed opacity-50",
+          "group relative overflow-hidden rounded-2xl border border-line bg-card",
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
       >
-        <div
-          className={cn(
-            "mb-6 flex h-16 w-16 items-center justify-center rounded-full",
-            isDragging ? "bg-blue/10" : "bg-gray-100",
-          )}
-        >
-          <Upload className="h-8 w-8 text-gray-500" strokeWidth={1.75} />
-        </div>
-        <p className="text-h4 text-gray-900">Drop your billing CSVs here</p>
-        <p className="mt-2 max-w-reading text-small text-gray-500">
-          Required: subscriptions, invoices, invoice line items, coupons, and price catalog.
-          CRM exports are optional.
-        </p>
-        <Button variant="secondary" size="sm" className="mt-8" type="button" disabled={disabled}>
-          Browse Files
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv"
-          multiple
-          className="hidden"
-          disabled={disabled}
-          onChange={(e) => handleFiles(e.target.files)}
+        <motion.div
+          className="pointer-events-none absolute inset-0"
+          animate={{ opacity: hover && !disabled ? 1 : 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            background:
+              "radial-gradient(120% 80% at 50% 0%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 60%)",
+          }}
         />
-      </div>
 
-      {files.length > 0 && (
-        <ul className="space-y-3">
-          {files.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center gap-4 rounded-card border border-gray-100 bg-white p-4 shadow-card"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50">
-                {item.status === "uploaded" ? (
-                  <CheckCircle2 className="h-5 w-5 text-success" strokeWidth={1.75} />
-                ) : (
-                  <FileUp className="h-5 w-5 text-gray-400" strokeWidth={1.75} />
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-body font-medium text-gray-900">{item.file.name}</p>
-                <p className="text-caption text-gray-500">
-                  {(item.file.size / 1024).toFixed(1)} KB
-                  {item.status === "error" && item.error && (
-                    <span className="ml-2 text-error">— {item.error}</span>
-                  )}
-                </p>
-                {(item.status === "uploading" || item.status === "pending") && (
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      className="h-full bg-blue transition-all duration-normal"
-                      style={{ width: `${item.progress}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onRemoveFile(item.id)}
-                disabled={item.status === "uploading"}
-                className="flex h-11 w-11 items-center justify-center rounded-button text-gray-400 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50"
-                aria-label={`Remove ${item.file.name}`}
+        <div className="relative flex flex-col items-center px-8 py-20 text-center">
+          <motion.div
+            animate={{ y: hover && !disabled ? -6 : 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 18 }}
+            className="relative mb-8 flex h-20 w-20 items-center justify-center"
+          >
+            <motion.span
+              className="absolute inset-0 rounded-2xl border border-primary/30"
+              animate={{
+                scale: hover && !disabled ? [1, 1.18, 1] : 1,
+                opacity: hover && !disabled ? [0.6, 0, 0.6] : 0.4,
+              }}
+              transition={{ duration: 2, repeat: hover && !disabled ? Infinity : 0 }}
+            />
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-7 w-7 text-primary"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <Trash2 className="h-5 w-5" strokeWidth={1.75} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                <path d="M12 16V4m0 0L7 9m5-5l5 5" />
+                <path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" />
+              </svg>
+            </div>
+          </motion.div>
+
+          <h3 className="font-heading text-2xl tracking-tight">Place your data here</h3>
+          <p className="mt-3 max-w-sm text-pretty leading-relaxed text-muted-foreground">
+            Drop billing and CRM CSV exports, or click to browse. Files upload immediately and
+            coverage updates as each export is added.
+          </p>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv"
+            multiple
+            className="hidden"
+            disabled={disabled}
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {files.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.6, ease: glide }}
+            className="mt-6 overflow-hidden"
+          >
+            <div className="rounded-xl border border-line bg-card">
+              {files.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, ease: glide, delay: i * 0.06 }}
+                  className="flex items-center gap-4 border-b border-line px-5 py-4 last:border-0"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    {item.status === "uploaded" ? (
+                      <CheckCircle2 className="h-4 w-4" strokeWidth={1.6} />
+                    ) : (
+                      <FileUp className="h-4 w-4" strokeWidth={1.6} />
+                    )}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-foreground">{item.file.name}</p>
+                    <p className="text-xs text-muted-foreground tnum">
+                      {(item.file.size / 1024).toFixed(1)} KB
+                      {item.status === "error" && item.error && (
+                        <span className="ml-2 text-destructive">: {item.error}</span>
+                      )}
+                    </p>
+                    {(item.status === "uploading" || item.status === "pending") && (
+                      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-secondary">
+                        <motion.div
+                          className="h-full bg-primary"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${item.progress}%` }}
+                          transition={{ duration: 0.2, ease: "linear" }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {item.status === "uploaded" ? (
+                    <span className="text-xs uppercase tracking-wider text-primary">Uploaded</span>
+                  ) : item.status === "error" ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRetryFile?.(item.id);
+                      }}
+                      className="text-xs uppercase tracking-wider text-destructive underline-offset-2 hover:underline"
+                    >
+                      Retry
+                    </button>
+                  ) : (
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {item.status === "uploading" ? "Uploading" : "Queued"}
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFile(item.id);
+                    }}
+                    disabled={item.status === "uploading" || removingIds?.has(item.id)}
+                    className="focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                    aria-label={`Remove ${item.file.name}`}
+                  >
+                    {removingIds?.has(item.id) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.75} />
+                    ) : (
+                      <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                    )}
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

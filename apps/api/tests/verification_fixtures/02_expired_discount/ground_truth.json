@@ -1,0 +1,40 @@
+{
+  "profile": {
+    "company_id": "co_02",
+    "name": "Expired Discount Co",
+    "industry": "SaaS",
+    "arr_target": "120000",
+    "customer_count": 1,
+    "product_count": 1,
+    "billing_platform": "stripe",
+    "crm_platform": "none",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 0,
+  "injected_rules": [
+    "expired_discount"
+  ],
+  "findings": [
+    {
+      "rule_id": "expired_discount",
+      "customer_id": "cust_001",
+      "subscription_id": "sub_001",
+      "invoice_id": "inv_002",
+      "expected_monthly_leakage": "250",
+      "expected_annual_leakage": "3000",
+      "expected_severity": "high",
+      "expected_evidence": {
+        "catalog_list_price": "500.00",
+        "subscription_price": "250.00",
+        "coupon": "LAUNCH50",
+        "coupon_expires": "2024-03-31",
+        "evidence_invoice_date": "2024-06-01",
+        "calculation": "(500.00 - 250.00) \u00d7 1 seat = $250/mo \u2192 $3,000 ARR"
+      },
+      "is_negative": false
+    }
+  ]
+}

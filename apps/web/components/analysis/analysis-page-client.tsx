@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { AnimatedScanPipeline } from "@/components/analysis/animated-scan-pipeline";
 import { ScanPipeline } from "@/components/analysis/scan-pipeline";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
@@ -12,23 +11,34 @@ import { GlassCard } from "@/components/ui/glass-card";
 import {
   getScanReport,
   getStoredAuditSession,
+  isScanPollInProgress,
   isScanProcessingStatus,
   pollScanUntil,
   startScan,
 } from "@/lib/audit-session";
+import { ApiError } from "@/lib/api";
 import { toast } from "@/lib/toast";
-import { formatCurrency, type ScanReportResponse } from "@rlr/shared";
+import { formatCurrency, type AuditStatus, type ScanReportResponse } from "@rlr/shared";
+
+function processingStatus(report: ScanReportResponse | null): AuditStatus {
+  return report?.status ?? "ready_for_scan";
+}
 
 export function AnalysisPageClient() {
   const router = useRouter();
   const [report, setReport] = useState<ScanReportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [backendComplete, setBackendComplete] = useState(false);
-  const [animationComplete, setAnimationComplete] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const scanStartRequestedRef = useRef(false);
 
-  const handleAnimationComplete = useCallback(() => {
-    setAnimationComplete(true);
-  }, []);
+  const retryScan = () => {
+    setError(null);
+    setBackendComplete(false);
+    setReport(null);
+    scanStartRequestedRef.current = false;
+    setAttempt((count) => count + 1);
+  };
 
   useEffect(() => {
     async function run() {
@@ -42,19 +52,33 @@ export function AnalysisPageClient() {
         let initial = await getScanReport(session);
         setReport(initial);
 
-        if (initial.status === "ready_for_scan") {
-          try {
-            await startScan(session);
-          } catch {
-            initial = await getScanReport(session);
-            setReport(initial);
-            if (
-              initial.status !== "completed" &&
-              !isScanProcessingStatus(initial.status)
-            ) {
-              throw new Error("Unable to start verification scan.");
+        if (
+          initial.status === "ready_for_scan" ||
+          initial.status === "processing_failed"
+        ) {
+          if (!scanStartRequestedRef.current) {
+            scanStartRequestedRef.current = true;
+            try {
+              await startScan(session);
+              initial = await getScanReport(session);
+              setReport(initial);
+            } catch (startErr) {
+              initial = await getScanReport(session);
+              setReport(initial);
+              if (
+                initial.status !== "completed" &&
+                !isScanPollInProgress(initial.status)
+              ) {
+                throw new Error("Unable to start verification scan.");
+              }
             }
           }
+        } else if (
+          initial.status === "scanning" ||
+          initial.status === "generating_report"
+        ) {
+          // Scan already running. Poll only; do not POST /scan again.
+          setReport(initial);
         } else if (
           initial.status !== "completed" &&
           !isScanProcessingStatus(initial.status)
@@ -66,36 +90,51 @@ export function AnalysisPageClient() {
         if (initial.status !== "completed") {
           initial = await pollScanUntil(
             session,
-            (tick) => isScanProcessingStatus(tick.status),
+            (tick) => isScanPollInProgress(tick.status),
             (tick) => setReport(tick),
+            { maxAttempts: 120 },
           );
         }
 
         setReport(initial);
         if (initial.status === "completed") {
           toast.success("Analysis complete. Your revenue summary is ready.");
+        } else if (initial.scan_error || initial.status === "processing_failed") {
+          setError(
+            initial.scan_error ??
+              "Verification scan could not be completed. Please try again.",
+          );
+          toast.error("Verification scan failed.");
+        } else {
+          setError("Analysis did not complete successfully. Please try again.");
+          toast.error("Verification scan failed.");
         }
         setBackendComplete(true);
-      } catch {
-        setError("Unable to complete verification scan. Please try again.");
+      } catch (err) {
+        const message =
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : "Unable to complete verification scan. Please try again.";
+        setError(message);
         toast.error("Verification scan failed.");
         setBackendComplete(true);
-        setAnimationComplete(true);
       }
     }
 
     void run();
-  }, [router]);
+  }, [router, attempt]);
 
-  const isProcessing = !backendComplete || !animationComplete;
+  const isProcessing = !backendComplete;
 
   if (isProcessing && !error) {
     return (
       <section className="mx-auto flex min-h-[50vh] max-w-processing flex-col items-center justify-center px-6 py-10 md:px-10">
-        <AnimatedScanPipeline
+        <ScanPipeline
+          status={processingStatus(report)}
           rulesCompleted={report?.rules_completed ?? 0}
           rulesTotal={report?.rules_total ?? 0}
-          onCycleComplete={handleAnimationComplete}
         />
       </section>
     );
@@ -106,15 +145,35 @@ export function AnalysisPageClient() {
       <div className="mx-auto max-w-processing px-6 py-10 md:px-10">
         <GlassCard padding="md" className="border-line bg-secondary/40 text-center">
           <p className="text-body text-foreground">{error}</p>
-          <Button className="mt-6" onClick={() => router.replace("/validation")}>
-            Back to Validation
-          </Button>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <Button onClick={retryScan}>Retry Scan</Button>
+            <Button variant="secondary" onClick={() => router.replace("/validation")}>
+              Back to Validation
+            </Button>
+          </div>
         </GlassCard>
       </div>
     );
   }
 
-  if (!report || report.status !== "completed") return null;
+  if (!report || report.status !== "completed") {
+    return (
+      <div className="mx-auto max-w-processing px-6 py-10 md:px-10">
+        <GlassCard padding="md" className="border-line bg-secondary/40 text-center">
+          <p className="text-body text-foreground">
+            {report?.scan_error ??
+              "Analysis did not complete successfully. Please return to validation and try again."}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <Button onClick={retryScan}>Retry Scan</Button>
+            <Button variant="secondary" onClick={() => router.replace("/validation")}>
+              Back to Validation
+            </Button>
+          </div>
+        </GlassCard>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-processing space-y-16 px-6 py-10 md:px-10">

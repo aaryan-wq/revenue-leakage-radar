@@ -1,0 +1,15 @@
+{
+  "fixture_id": "25_duplicate_customer",
+  "name": "Duplicate Customer",
+  "description": "Positive test for duplicate_customer via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "duplicate_customer"
+  ],
+  "seed": 208259284,
+  "rule_ids": [
+    "duplicate_customer"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

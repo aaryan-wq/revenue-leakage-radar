@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_2701",
+    "name": "Synthetic Co 2701",
+    "industry": "EdTech",
+    "arr_target": "436882",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "attio",
+    "currency": "GBP",
+    "locale": "de-DE",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 57627486,
+  "injected_rules": [
+    "permanent_promotional_discount"
+  ],
+  "findings": [
+    {
+      "rule_id": "permanent_promotional_discount",
+      "customer_id": "cust_00009",
+      "subscription_id": "sub_00009",
+      "invoice_id": null,
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

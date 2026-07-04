@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_2959",
+    "name": "Synthetic Co 2959",
+    "industry": "Manufacturing",
+    "arr_target": "3169263",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "pipedrive",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 70794199,
+  "injected_rules": [
+    "manual_price_override"
+  ],
+  "findings": [
+    {
+      "rule_id": "manual_price_override",
+      "customer_id": "cust_00021",
+      "subscription_id": "sub_00021",
+      "invoice_id": "inv_0000389",
+      "expected_monthly_leakage": "110.6875",
+      "expected_annual_leakage": "1328.2500",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

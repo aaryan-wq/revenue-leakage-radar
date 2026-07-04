@@ -1,0 +1,13 @@
+{
+  "fixture_id": "02_expired_discount",
+  "name": "Expired Discount",
+  "description": "$250 MRR / $3,000 ARR \u2014 coupon expired, discount still applied.",
+  "fixture_type": "minimal",
+  "target_rules": [
+    "expired_discount"
+  ],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,15 @@
+{
+  "fixture_id": "12_duplicate_discount",
+  "name": "Duplicate Discount",
+  "description": "Positive test for duplicate_discount via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "duplicate_discount"
+  ],
+  "seed": 37709388,
+  "rule_ids": [
+    "duplicate_discount"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

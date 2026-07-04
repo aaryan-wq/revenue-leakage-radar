@@ -1,41 +1,78 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import { DataTierFilesChecklist } from "@/components/upload/data-tier-files-checklist";
+import { LegalConsent } from "@/components/legal/legal-consent";
 import { UploadZone, type UploadFileItem } from "@/components/upload/upload-zone";
 import { glide, Magnetic } from "@/components/motion";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/api";
 import { toast } from "@/lib/toast";
+import { captureAuditEvent } from "@/lib/analytics/client";
+import { AnalyticsEvents } from "@rlr/shared";
 import {
+  abandonAuditOnExit,
+  captureAuditOriginFromSearch,
   clearAuditSession,
   createAuditSession,
+  deleteUpload,
   getAuditStatus,
   getStoredAuditSession,
   uploadFiles,
 } from "@/lib/audit-session";
-import { isTier0Complete, type DataTier, type FileType } from "@rlr/shared";
+import { hasBillingUpload, type CoverageAnalysis, type AuditStatusResponse, type DataTier, type FileType } from "@rlr/shared";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function mergeFilesFromStatus(
+  prev: UploadFileItem[],
+  status: AuditStatusResponse,
+): UploadFileItem[] {
+  const inFlight = prev.filter(
+    (item) =>
+      item.status === "pending" ||
+      item.status === "uploading" ||
+      item.status === "error",
+  );
+  const inFlightNames = new Set(inFlight.map((item) => item.file.name));
+  const fromServer = status.uploads
+    .filter((upload) => !inFlightNames.has(upload.original_filename))
+    .map((upload) => ({
+      id: upload.id,
+      file: new File([], upload.original_filename, { type: "text/csv" }),
+      progress: 100,
+      status: "uploaded" as const,
+    }));
+  return [...inFlight, ...fromServer];
+}
+
 export function UploadPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [files, setFiles] = useState<UploadFileItem[]>([]);
   const [uploadedTypes, setUploadedTypes] = useState<FileType[]>([]);
   const [missingRecommended, setMissingRecommended] = useState<FileType[]>([]);
   const [dataTier, setDataTier] = useState<DataTier>("insufficient");
+  const [coverage, setCoverage] = useState<CoverageAnalysis | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [removingIds, setRemovingIds] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [auditReady, setAuditReady] = useState(false);
   const initStarted = useRef(false);
+  const uploadChainRef = useRef<Promise<void>>(Promise.resolve());
+  const filesRef = useRef<UploadFileItem[]>([]);
+
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
 
   const syncAuditStatus = useCallback(async () => {
     const session = getStoredAuditSession();
@@ -44,8 +81,14 @@ export function UploadPageClient() {
     setUploadedTypes(status.uploads.map((u) => u.file_type));
     setMissingRecommended(status.missing_recommended_file_types ?? []);
     setDataTier(status.data_tier ?? "insufficient");
+    setCoverage(status.coverage_analysis ?? null);
+    setFiles((prev) => mergeFilesFromStatus(prev, status));
     return status;
   }, []);
+
+  useEffect(() => {
+    captureAuditOriginFromSearch(searchParams);
+  }, [searchParams]);
 
   useEffect(() => {
     if (initStarted.current) return;
@@ -58,9 +101,10 @@ export function UploadPageClient() {
           const existing = await getAuditStatus(session);
           if (
             existing.status === "validation_failed" ||
-            existing.status === "processing_failed"
+            existing.status === "processing_failed" ||
+            existing.status === "completed"
           ) {
-            clearAuditSession();
+            await abandonAuditOnExit();
             session = null;
           }
         }
@@ -82,81 +126,222 @@ export function UploadPageClient() {
     void init();
   }, [router, syncAuditStatus]);
 
-  const handleFilesSelected = useCallback((newFiles: File[]) => {
-    setError(null);
-    setFiles((prev) => {
-      const existingNames = new Set(prev.map((f) => f.file.name));
-      const additions = newFiles
-        .filter((f) => !existingNames.has(f.name))
-        .map((file) => ({
+  const scheduleUpload = useCallback(
+    (items: UploadFileItem[]) => {
+      if (items.length === 0 || !auditReady) return;
+
+      uploadChainRef.current = uploadChainRef.current.then(async () => {
+        const session = getStoredAuditSession();
+        if (!session) return;
+
+        const activeItems = items.filter((item) =>
+          filesRef.current.some(
+            (file) => file.id === item.id && (file.status === "pending" || file.status === "uploading"),
+          ),
+        );
+        if (activeItems.length === 0) return;
+
+        const ids = new Set(activeItems.map((item) => item.id));
+        setIsUploading(true);
+        setError(null);
+        setFiles((prev) =>
+          prev.map((f) =>
+            ids.has(f.id) ? { ...f, status: "uploading" as const, progress: 0, error: undefined } : f,
+          ),
+        );
+
+        try {
+          const responses = await uploadFiles(
+            session,
+            activeItems.map((item) => item.file),
+            (filename, progress) => {
+              setFiles((prev) =>
+                prev.map((f) => (f.file.name === filename ? { ...f, progress } : f)),
+              );
+            },
+          );
+
+          const responseByFilename = new Map(
+            responses.map((response) => [response.original_filename, response]),
+          );
+
+          setFiles((prev) =>
+            prev.map((f) => {
+              if (!ids.has(f.id)) return f;
+              const response = responseByFilename.get(f.file.name);
+              if (!response) {
+                return { ...f, status: "error" as const, error: "Upload response missing." };
+              }
+              return {
+                ...f,
+                id: response.id,
+                status: "uploaded" as const,
+                progress: 100,
+              };
+            }),
+          );
+          await syncAuditStatus();
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Upload failed";
+          setError(message);
+          toast.error(message);
+          const session = getStoredAuditSession();
+          for (const item of activeItems) {
+            captureAuditEvent(AnalyticsEvents.CSV_UPLOAD_FAILED, session?.auditId ?? "unknown", {
+              original_filename: item.file.name,
+              error: message,
+            });
+          }
+          setFiles((prev) =>
+            prev.map((f) =>
+              ids.has(f.id) ? { ...f, status: "error" as const, error: message } : f,
+            ),
+          );
+        } finally {
+          setIsUploading(false);
+        }
+      });
+    },
+    [auditReady, syncAuditStatus],
+  );
+
+  const handleFilesSelected = useCallback(
+    (newFiles: File[]) => {
+      setError(null);
+      const existingNames = new Set(filesRef.current.map((f) => f.file.name));
+      const additions: UploadFileItem[] = [];
+
+      for (const file of newFiles) {
+        if (existingNames.has(file.name)) continue;
+        additions.push({
           id: generateId(),
           file,
           progress: 0,
-          status: "pending" as const,
-        }));
-      return [...prev, ...additions];
-    });
-  }, []);
+          status: "pending",
+        });
+        existingNames.add(file.name);
+      }
 
-  const handleRemoveFile = useCallback((id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  }, []);
+        if (additions.length === 0) return;
 
-  const handleUpload = useCallback(async () => {
-    const session = getStoredAuditSession();
-    if (!session || files.length === 0) return;
+      for (const item of additions) {
+        const session = getStoredAuditSession();
+        captureAuditEvent(AnalyticsEvents.CSV_UPLOAD_STARTED, session?.auditId ?? "unknown", {
+          original_filename: item.file.name,
+          file_size_bytes: item.file.size,
+        });
+      }
 
-    setIsUploading(true);
+      setFiles((prev) => [...prev, ...additions]);
+      scheduleUpload(additions);
+    },
+    [scheduleUpload],
+  );
+
+  const handleRemoveFile = useCallback(
+    async (id: string) => {
+      const item = filesRef.current.find((file) => file.id === id);
+      if (!item || item.status === "uploading") return;
+
+      setRemovingIds((prev) => new Set(prev).add(id));
+      setError(null);
+      setFiles((prev) => prev.filter((file) => file.id !== id));
+
+      if (item.status === "uploaded") {
+        const session = getStoredAuditSession();
+        if (!session) {
+          setRemovingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+          return;
+        }
+
+        try {
+          await deleteUpload(session, id);
+          await syncAuditStatus();
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unable to remove file.";
+          setError(message);
+          toast.error(message);
+          setFiles((prev) => [...prev, item]);
+        } finally {
+          setRemovingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }
+        return;
+      }
+
+      setRemovingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    },
+    [syncAuditStatus],
+  );
+
+  const handleRetryFile = useCallback(
+    (id: string) => {
+      const item = filesRef.current.find((f) => f.id === id);
+      if (!item || item.status !== "error") return;
+      const retryItem: UploadFileItem = {
+        ...item,
+        status: "pending",
+        progress: 0,
+        error: undefined,
+      };
+      setFiles((prev) => prev.map((f) => (f.id === id ? retryItem : f)));
+      scheduleUpload([retryItem]);
+    },
+    [scheduleUpload],
+  );
+
+  const handleContinueToValidation = useCallback(async () => {
     setError(null);
+    await uploadChainRef.current;
 
-    setFiles((prev) =>
-      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 0 })),
-    );
+    const session = getStoredAuditSession();
+    if (!session) {
+      toast.error("Upload session expired. Please refresh and try again.");
+      return;
+    }
 
     try {
-      await uploadFiles(
-        session,
-        files.map((f) => f.file),
-        (filename, progress) => {
-          setFiles((prev) =>
-            prev.map((f) => (f.file.name === filename ? { ...f, progress } : f)),
-          );
-        },
-      );
-
-      setFiles((prev) =>
-        prev.map((f) => ({ ...f, status: "uploaded" as const, progress: 100 })),
-      );
-      toast.success("Upload complete.");
-
-      const status = await syncAuditStatus();
-
-      if (status?.required_files_present) {
-        router.push("/validation");
+      const status = await getAuditStatus(session);
+      if (!(status.has_billing_upload ?? status.required_files_present)) {
+        toast.error("Upload at least one recognized billing CSV before continuing.");
+        return;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Upload failed";
-      setError(message);
-      toast.error(message);
-      setFiles((prev) =>
-        prev.map((f) => ({ ...f, status: "error" as const, error: message })),
-      );
-    } finally {
-      setIsUploading(false);
+    } catch {
+      toast.error("Unable to verify uploads. Please try again.");
+      return;
     }
-  }, [files, router, syncAuditStatus]);
 
-  const tier0Complete = isTier0Complete(uploadedTypes);
-  const pendingCount = files.filter((f) => f.status === "pending" || f.status === "error").length;
+    router.push("/validation");
+  }, [router]);
+
+  const billingUploadReady = hasBillingUpload(uploadedTypes);
+  const uploadingCount = files.filter((f) => f.status === "uploading").length;
+  const pendingCount = files.filter((f) => f.status === "pending").length;
+  const uploadedCount = files.filter((f) => f.status === "uploaded").length;
+  const uploadsInFlight = isUploading || uploadingCount > 0 || pendingCount > 0;
+  const canContinueToValidation = billingUploadReady && !uploadsInFlight;
   const readyLabel =
-    files.length > 0
-      ? `${files.length} file${files.length > 1 ? "s" : ""} selected${
-          files.some((f) => f.status === "uploaded") ? " · some validated" : ""
-        }`
-      : "Awaiting your first file";
+    uploadingCount > 0
+      ? `Uploading ${uploadingCount} file${uploadingCount > 1 ? "s" : ""}…`
+      : uploadedCount > 0
+        ? `${uploadedCount} file${uploadedCount > 1 ? "s" : ""} received${
+            coverage ? ` · ${coverage.rules_available}/${coverage.rules_total} rules available` : ""
+          }`
+        : "Drop a billing CSV to begin";
 
   if (isInitializing) {
-    return <PageLoadingSkeleton message="Preparing upload session…" />;
+    return <PageLoadingSkeleton message="Preparing upload session…" variant="default" />;
   }
 
   return (
@@ -173,8 +358,8 @@ export function UploadPageClient() {
           Hand us the records. We&apos;ll find what&apos;s missing.
         </h1>
         <p className="mt-6 max-w-lg text-pretty leading-relaxed text-muted-foreground">
-          Upload your billing CSV exports to begin a free revenue verification scan. The more
-          systems you reconcile, the more precisely we can isolate leakage.
+          Upload any billing CSV export to start a free revenue verification scan. Add more files
+          anytime to unlock additional checks. We run every rule your data supports.
         </p>
       </motion.div>
 
@@ -188,8 +373,10 @@ export function UploadPageClient() {
           <UploadZone
             files={files}
             onFilesSelected={handleFilesSelected}
-            onRemoveFile={handleRemoveFile}
-            disabled={isUploading || !auditReady}
+            onRemoveFile={(id) => void handleRemoveFile(id)}
+            onRetryFile={handleRetryFile}
+            removingIds={removingIds}
+            disabled={!auditReady}
           />
 
           {error && (
@@ -209,6 +396,7 @@ export function UploadPageClient() {
           uploadedTypes={uploadedTypes}
           dataTier={dataTier}
           missingRecommended={missingRecommended}
+          coverage={coverage}
         />
       </motion.div>
 
@@ -220,44 +408,38 @@ export function UploadPageClient() {
       >
         <div>
           <p className="text-sm text-muted-foreground tnum">{readyLabel}</p>
-          {tier0Complete && (
+          {billingUploadReady && (
             <p className="mt-2 text-sm text-muted-foreground">
-              Tier 0 files uploaded. Validation will begin automatically.
+              Coverage updates as you add files.
               {missingRecommended.length > 0 &&
-                " Add recommended files anytime to unlock more verification rules."}
+                " Add more exports anytime to unlock additional verification rules."}
             </p>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          {tier0Complete && (
-            <button
-              type="button"
-              onClick={() => router.push("/validation")}
-              className="inline-flex items-center gap-2 rounded-full border border-foreground/15 px-6 py-3.5 text-[0.92rem] transition-colors hover:bg-foreground hover:text-background"
-            >
-              Continue to Validation
-            </button>
+          {billingUploadReady && (
+            <Magnetic strength={0.3}>
+              <button
+                type="button"
+                onClick={() => void handleContinueToValidation()}
+                disabled={!canContinueToValidation}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-[0.92rem] font-medium text-primary-foreground transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {uploadsInFlight ? "Waiting for uploads…" : "Continue to Validation →"}
+              </button>
+            </Magnetic>
           )}
-          <Magnetic strength={0.3}>
-            <button
-              type="button"
-              onClick={() => void handleUpload()}
-              disabled={pendingCount === 0 || isUploading || !auditReady}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-[0.92rem] font-medium text-primary-foreground transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading…
-                </>
-              ) : (
-                <>Upload Files →</>
-              )}
-            </button>
-          </Magnetic>
+          {isUploading && (
+            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Analyzing coverage…
+            </span>
+          )}
         </div>
       </motion.div>
+
+      <LegalConsent action="uploading data" className="mt-6" />
     </section>
   );
 }

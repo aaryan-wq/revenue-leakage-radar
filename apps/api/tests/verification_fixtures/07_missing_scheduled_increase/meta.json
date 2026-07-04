@@ -1,0 +1,15 @@
+{
+  "fixture_id": "07_missing_scheduled_increase",
+  "name": "Missing Scheduled Increase",
+  "description": "Positive test for missing_scheduled_increase via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "missing_scheduled_increase"
+  ],
+  "seed": 96414327,
+  "rule_ids": [
+    "missing_scheduled_increase"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

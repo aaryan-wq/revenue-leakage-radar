@@ -1,0 +1,15 @@
+{
+  "fixture_id": "13_permanent_promotional_discount",
+  "name": "Permanent Promotional Discount",
+  "description": "Positive test for permanent_promotional_discount via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "permanent_promotional_discount"
+  ],
+  "seed": 124782253,
+  "rule_ids": [
+    "permanent_promotional_discount"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,3 @@
+customer_id,name,email,company,status,created_at
+cust_001,Acme Corp,finance@acme.com,Acme Corp,active,2024-01-01
+cust_002,Beta Inc,finance@beta.com,Beta Inc,active,2024-02-01

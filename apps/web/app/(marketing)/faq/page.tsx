@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { AnalyticsEvents } from "@rlr/shared";
+
+import { FaqPageTracker } from "@/components/analytics/marketing-page-tracker";
 
 import { Reveal } from "@/components/motion";
 import { SiteFooter } from "@/components/site-footer";
@@ -15,12 +18,12 @@ const FAQ_ITEMS = [
     a: "All uploads are encrypted in transit (HTTPS/TLS). Raw CSV files are processed temporarily and automatically deleted after ingestion. Free audits do not persist raw uploads beyond what is required to produce your summary.",
   },
   {
-    q: "What billing systems work?",
-    a: "Any system that exports CSV. We commonly see Stripe, Chargebee, Maxio, Zuora, HubSpot, and Salesforce exports. Upload invoice line items and a price catalog to begin.",
+    q: "What billing and CRM systems work?",
+    a: "Any system that exports CSV. We commonly see Stripe, Chargebee, Maxio, Zuora, HubSpot, and Salesforce exports. Upload invoice line items and a price catalog to begin; add CRM exports for contract and seat-count validation.",
   },
   {
     q: "How accurate are findings?",
-    a: "Every finding is produced by deterministic verification rules — not AI. Each includes a confidence score based on data coverage and evidence quality. AI assists with narratives only.",
+    a: "Every finding is produced by deterministic verification rules, not AI. Each includes a confidence score based on data coverage and evidence quality. AI assists with narratives only.",
   },
   {
     q: "How long does an audit take?",
@@ -28,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Can I upload multiple exports?",
-    a: "Yes. Add subscriptions, invoices, customers, and coupons to improve coverage and unlock additional verification rules.",
+    a: "Yes. Add subscriptions, invoices, customers, coupons, and CRM exports to improve coverage and unlock additional verification rules.",
   },
   {
     q: "Do you store my data?",
@@ -36,15 +39,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do I need an account for a free audit?",
-    a: "No. Upload and receive a free summary without signing in. An account is only required when purchasing a detailed report or saving results to your workspace.",
+    a: "No. Upload and receive a free audit summary without signing in. An account is required when purchasing a Revenue Verification Report or saving results to your workspace.",
   },
   {
-    q: "What is included in the free summary vs. the detailed report?",
-    a: "The free summary shows estimated recoverable ARR, top categories, coverage, and confidence — with customer names and evidence blurred. The detailed report unlocks full evidence, remediation steps, and exports.",
+    q: "What is included in the free audit vs. the Revenue Verification Report?",
+    a: "The free audit shows estimated recoverable ARR, MRR, top leakage categories, coverage, and confidence, with customer names and evidence blurred. The Revenue Verification Report unlocks full customer-level findings, invoice and subscription evidence, calculation traces, remediation steps, and exports.",
   },
   {
-    q: "What is the ROI on a $999 detailed report?",
-    a: "Most finance teams recover more than the report cost in the first finding. Annual membership delivers the strongest ROI for teams running quarterly audits.",
+    q: "What is the ROI on a Revenue Verification Report?",
+    a: "Most finance teams recover more than the report cost in the first finding. At $1,500 per audit, one verified leakage issue often pays for the entire engagement. Enterprise plans are available for teams running recurring audits.",
   },
 ];
 
@@ -86,6 +89,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 export default function FaqPage() {
   return (
     <>
+      <FaqPageTracker />
       <div className="mx-auto max-w-reading px-6 py-28 md:px-10">
         <Reveal>
           <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">FAQ</p>

@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8414",
+    "name": "Synthetic Co 8414",
+    "industry": "Media",
+    "arr_target": "1910477",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "salesforce",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 116191220,
+  "injected_rules": [
+    "discount_stacking"
+  ],
+  "findings": [
+    {
+      "rule_id": "discount_stacking",
+      "customer_id": "cust_00012",
+      "subscription_id": "sub_00072",
+      "invoice_id": "inv_0000933",
+      "expected_monthly_leakage": "92.4600",
+      "expected_annual_leakage": "1109.5200",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

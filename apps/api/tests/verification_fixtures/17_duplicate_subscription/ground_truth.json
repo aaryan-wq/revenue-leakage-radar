@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_3100",
+    "name": "Synthetic Co 3100",
+    "industry": "Media",
+    "arr_target": "4438154",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "maxio",
+    "crm_platform": "pipedrive",
+    "currency": "EUR",
+    "locale": "fr-FR",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 147345463,
+  "injected_rules": [
+    "duplicate_subscription"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_subscription",
+      "customer_id": "cust_00057",
+      "subscription_id": "sub_dup_cust_00057_1",
+      "invoice_id": null,
+      "expected_monthly_leakage": "79.3500",
+      "expected_annual_leakage": "952.2000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

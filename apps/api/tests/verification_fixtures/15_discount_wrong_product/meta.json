@@ -1,0 +1,15 @@
+{
+  "fixture_id": "15_discount_wrong_product",
+  "name": "Discount Wrong Product",
+  "description": "Positive test for discount_wrong_product via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "discount_wrong_product"
+  ],
+  "seed": 184429710,
+  "rule_ids": [
+    "discount_wrong_product"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_3989",
+    "name": "Synthetic Co 3989",
+    "industry": "Retail",
+    "arr_target": "127704",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "pipedrive",
+    "currency": "GBP",
+    "locale": "en-US",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 247915369,
+  "injected_rules": [
+    "contract_billing_price_divergence"
+  ],
+  "findings": [
+    {
+      "rule_id": "contract_billing_price_divergence",
+      "customer_id": "cust_00034",
+      "subscription_id": "sub_00034",
+      "invoice_id": null,
+      "expected_monthly_leakage": "497.4900",
+      "expected_annual_leakage": "5969.8800",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

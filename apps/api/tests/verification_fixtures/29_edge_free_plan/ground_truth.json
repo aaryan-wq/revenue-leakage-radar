@@ -1,0 +1,19 @@
+{
+  "profile": {
+    "company_id": "co_29",
+    "name": "Free Plan Co",
+    "industry": "SaaS",
+    "arr_target": "120000",
+    "customer_count": 1,
+    "product_count": 1,
+    "billing_platform": "stripe",
+    "crm_platform": "none",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "flat",
+    "seat_based": false
+  },
+  "seed": 0,
+  "injected_rules": [],
+  "findings": []
+}

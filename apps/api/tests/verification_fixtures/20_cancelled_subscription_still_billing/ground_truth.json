@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_4402",
+    "name": "Synthetic Co 4402",
+    "industry": "Fintech",
+    "arr_target": "309503",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "zuora",
+    "crm_platform": "hubspot",
+    "currency": "EUR",
+    "locale": "en-GB",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": true
+  },
+  "seed": 64960877,
+  "injected_rules": [
+    "cancelled_subscription_still_billing"
+  ],
+  "findings": [
+    {
+      "rule_id": "cancelled_subscription_still_billing",
+      "customer_id": "cust_00031",
+      "subscription_id": "sub_00031",
+      "invoice_id": "inv_0000583",
+      "expected_monthly_leakage": "1642.2000",
+      "expected_annual_leakage": "19706.4000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

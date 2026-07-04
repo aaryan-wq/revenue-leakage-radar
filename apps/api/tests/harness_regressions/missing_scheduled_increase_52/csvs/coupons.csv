@@ -1,0 +1,4 @@
+couponId,active,discount_type,discount_value,code,expires_at,AccountNumber,SubscriptionNumber
+cpn_launch20,true,percent,20,LAUNCH20,03/31/2024,,
+cpn_partner15,true,percent,15,PARTNER15,2026/12/31,,
+cpn_refer10,true,percent,10,REFER10,12/31/2026,,

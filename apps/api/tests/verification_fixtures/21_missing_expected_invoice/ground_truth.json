@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_1541",
+    "name": "Synthetic Co 1541",
+    "industry": "Media",
+    "arr_target": "1888638",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "hubspot",
+    "currency": "GBP",
+    "locale": "en-US",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 7906913,
+  "injected_rules": [
+    "missing_expected_invoice"
+  ],
+  "findings": [
+    {
+      "rule_id": "missing_expected_invoice",
+      "customer_id": "cust_00008",
+      "subscription_id": "sub_00008",
+      "invoice_id": "inv_0000176",
+      "expected_monthly_leakage": "3228.0500",
+      "expected_annual_leakage": "38736.6000",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

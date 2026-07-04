@@ -1,0 +1,3 @@
+line_item_id,invoice_id,customer_id,subscription_id,product_id,sku,quantity,unit_price,extended_price,billing_interval,line_item_date,currency,is_manual_override
+li_001,inv_001,cust_001,sub_001,prod_pro_mo,SKU-PRO,1,250.00,250.00,monthly,2024-02-01,USD,false
+li_002,inv_002,cust_001,sub_001,prod_pro_mo,SKU-PRO,1,250.00,250.00,monthly,2024-06-01,USD,false

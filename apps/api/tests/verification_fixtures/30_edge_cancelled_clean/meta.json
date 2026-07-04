@@ -1,0 +1,13 @@
+{
+  "fixture_id": "30_edge_cancelled_clean",
+  "name": "Cancelled Clean",
+  "description": "Cancelled subscription with no post-cancel billing.",
+  "fixture_type": "edge",
+  "target_rules": [
+    "cancelled_subscription_still_billing"
+  ],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": true
+}

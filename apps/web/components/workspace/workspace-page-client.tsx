@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppAuth } from "@/lib/app-auth";
-import { Radar } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 import { CountUp } from "@/components/count-up";
 import { Reveal } from "@/components/motion";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { ApiError } from "@/lib/api";
-import { getStoredAuditSession } from "@/lib/audit-session";
+import { WORKSPACE_UPLOAD_HREF, getStoredAuditSession } from "@/lib/audit-session";
 import { getDashboard, getReport } from "@/lib/report-api";
 import { formatCurrency, type DashboardResponse, type FindingResponse } from "@rlr/shared";
 
@@ -92,7 +92,7 @@ export function WorkspacePageClient() {
   }, [isLoaded, isSignedIn, loadWorkspace, router]);
 
   if (!isLoaded || isLoading) {
-    return <PageLoadingSkeleton message="Loading workspace…" />;
+    return <PageLoadingSkeleton message="Loading workspace…" variant="dashboard" />;
   }
 
   if (error && !dashboard) {
@@ -109,12 +109,12 @@ export function WorkspacePageClient() {
   if (!dashboard || dashboard.audits.length === 0) {
     return (
       <div className="mx-auto max-w-report px-6 py-24 text-center md:px-10">
-        <Radar className="mx-auto h-12 w-12 text-muted-foreground/40" strokeWidth={1.5} />
+        <Logo variant="short" href={null} className="mx-auto h-16 w-16 opacity-40" />
         <h2 className="mt-6 font-heading text-2xl tracking-tight">No audits yet</h2>
         <p className="mt-3 text-muted-foreground">
           Run your first revenue verification scan to explore findings here.
         </p>
-        <Link href="/upload" className="mt-8 inline-block">
+        <Link href={WORKSPACE_UPLOAD_HREF} className="mt-8 inline-block">
           <Button>Run Free Scan</Button>
         </Link>
       </div>
@@ -190,7 +190,7 @@ export function WorkspacePageClient() {
                   Audit history
                 </Button>
               </Link>
-              <Link href="/upload">
+              <Link href={WORKSPACE_UPLOAD_HREF}>
                 <Button size="sm">New audit</Button>
               </Link>
             </div>

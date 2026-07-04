@@ -1,0 +1,2 @@
+product_id,sku,version,effective_date,list_price,currency,billing_interval
+prod_growth_mo,SKU-GRW,v2,2024-07-01,600.00,USD,monthly

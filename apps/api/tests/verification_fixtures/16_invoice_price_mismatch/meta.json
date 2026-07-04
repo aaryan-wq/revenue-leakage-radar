@@ -1,0 +1,15 @@
+{
+  "fixture_id": "16_invoice_price_mismatch",
+  "name": "Invoice Price Mismatch",
+  "description": "Positive test for invoice_price_mismatch via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "invoice_price_mismatch"
+  ],
+  "seed": 179437163,
+  "rule_ids": [
+    "invoice_price_mismatch"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

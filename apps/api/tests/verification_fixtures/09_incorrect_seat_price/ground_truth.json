@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8253",
+    "name": "Synthetic Co 8253",
+    "industry": "Manufacturing",
+    "arr_target": "4071174",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "attio",
+    "currency": "USD",
+    "locale": "fr-FR",
+    "pricing_strategy": "flat",
+    "seat_based": true
+  },
+  "seed": 249606701,
+  "injected_rules": [
+    "incorrect_seat_price"
+  ],
+  "findings": [
+    {
+      "rule_id": "incorrect_seat_price",
+      "customer_id": "cust_00018",
+      "subscription_id": "sub_00018",
+      "invoice_id": null,
+      "expected_monthly_leakage": "1357.0000",
+      "expected_annual_leakage": "16284.0000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

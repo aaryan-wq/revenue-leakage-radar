@@ -1,0 +1,2 @@
+line_item_id,invoice_id,customer_id,subscription_id,product_id,sku,quantity,unit_price,extended_price,billing_interval,line_item_date,currency,is_manual_override
+li_001,inv_001,cust_001,sub_001,prod_starter_mo,SKU-STRT,5,100.00,500.00,monthly,2024-05-01,USD,false

@@ -2,11 +2,12 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from models import Coupon, Customer, Invoice, PriceCatalog, Subscription
+from models import Coupon, Customer, Invoice, InvoiceLineItem, PriceCatalog, Subscription
 from verification.context import AuditContext
-from verification.rules.duplicate_subscriptions import evaluate as eval_duplicate
-from verification.rules.expired_discount import evaluate as eval_expired
-from verification.rules.price_catalog_mismatch import evaluate as eval_catalog
+from verification.findings.generator import FindingGenerator
+from verification.rules.billing.duplicate_subscription import rule as duplicate_rule
+from verification.rules.discounts.expired_discount import rule as expired_rule
+from verification.rules.pricing.price_catalog_mismatch import rule as catalog_rule
 
 
 def _ctx(**kwargs) -> AuditContext:
@@ -16,6 +17,14 @@ def _ctx(**kwargs) -> AuditContext:
     }
     defaults.update(kwargs)
     return AuditContext(**defaults)
+
+
+def _evaluate(module, ctx: AuditContext):
+    results = module.evaluate(ctx)
+    return [
+        FindingGenerator.from_rule_result(module.spec, result, audit_id=ctx.audit_id)
+        for result in results
+    ]
 
 
 def test_expired_discount_detects_leakage():
@@ -64,16 +73,15 @@ def test_expired_discount_detects_leakage():
         coupons=[coupon],
         price_catalog=[catalog],
     )
-    findings = eval_expired(ctx)
+    findings = _evaluate(expired_rule, ctx)
     assert len(findings) == 1
-    assert findings[0].rule_id == "expired_discount_still_applied"
+    assert findings[0].rule_id == "expired_discount"
     assert findings[0].estimated_monthly_loss > 0
 
 
 def test_price_catalog_mismatch_detects_leakage():
     customer_id = uuid.uuid4()
     inv_id = uuid.uuid4()
-    from models import InvoiceLineItem
 
     invoice = Invoice(
         id=inv_id,
@@ -100,7 +108,7 @@ def test_price_catalog_mismatch_detects_leakage():
     )
 
     ctx = _ctx(invoices=[invoice], line_items=[line], price_catalog=[catalog])
-    findings = eval_catalog(ctx)
+    findings = _evaluate(catalog_rule, ctx)
     assert len(findings) == 1
     assert findings[0].rule_id == "price_catalog_mismatch"
 
@@ -114,6 +122,7 @@ def test_duplicate_subscriptions_detects_leakage():
             external_subscription_id="sub_a",
             product_id="prod_pro",
             price=Decimal("199"),
+            billing_interval="monthly",
             status="active",
         ),
         Subscription(
@@ -122,13 +131,14 @@ def test_duplicate_subscriptions_detects_leakage():
             external_subscription_id="sub_b",
             product_id="prod_pro",
             price=Decimal("199"),
+            billing_interval="monthly",
             status="active",
         ),
     ]
     ctx = _ctx(subscriptions=subs)
-    findings = eval_duplicate(ctx)
+    findings = _evaluate(duplicate_rule, ctx)
     assert len(findings) == 1
-    assert findings[0].rule_id == "duplicate_active_subscriptions"
+    assert findings[0].rule_id == "duplicate_subscription"
 
 
 def test_expired_discount_no_finding_when_coupon_valid():
@@ -159,4 +169,4 @@ def test_expired_discount_no_finding_when_coupon_valid():
         discount=Decimal("10"),
     )
     ctx = _ctx(subscriptions=[sub], invoices=[invoice], coupons=[coupon])
-    assert len(eval_expired(ctx)) == 0
+    assert len(_evaluate(expired_rule, ctx)) == 0

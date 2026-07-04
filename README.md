@@ -25,6 +25,33 @@ cp .env.example .env
 # For local dev without Celery worker: CELERY_TASK_ALWAYS_EAGER=true
 ```
 
+#### Clerk authentication (recommended)
+
+Install the Clerk CLI and link this repo to your Clerk application.
+
+**Important:** This is an npm workspaces monorepo. The Next.js app is in `apps/web`, so run
+`clerk init` from that directory (not the repo root):
+
+```bash
+npm install -g clerk
+clerk auth login
+cd apps/web
+clerk init --app app_3FdbXDyolZYLnuPxsuNVlpAtgX2
+clerk doctor
+cd ../..
+```
+
+Or from the repo root:
+
+```bash
+npm run clerk:init
+```
+
+`clerk init` writes keys to `apps/web/.env.local`. The web app also loads the shared root `.env`.
+Restart the dev server after init. Sign In / Sign Up appear in the top nav when keys are present.
+
+Clerk application: `app_3FdbXDyolZYLnuPxsuNVlpAtgX2`
+
 ### 3. Backend
 
 ```bash
@@ -44,7 +71,7 @@ uvicorn main:app --reload --port 8000
 
 ### 4. Celery worker (Sprint 2+)
 
-**Important:** Run the worker from `apps/api` using the project virtualenv — not from the repo root and not with global Python.
+**Important:** Run the worker from `apps/api` using the project virtualenv, not from the repo root and not with global Python.
 
 In a separate terminal:
 
@@ -82,10 +109,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Sprint 2 Flow
 
-1. Upload all 5 required billing CSVs at `/upload`
-2. Validation auto-starts when the last file is uploaded
-3. Review platform detection, column mapping, and validation results at `/validation`
-4. Data is normalized into the canonical PostgreSQL schema on success
+1. Upload Tier 0 files (`invoice_line_items.csv` + `prices.csv` or `price_catalog.csv`) at `/upload`
+2. Validation auto-starts when Tier 0 is complete
+3. Optionally add Tier 1 files (subscriptions, invoices, customers) for broader rule coverage
+4. Review platform detection, column mapping, and validation results at `/validation`
+5. Data is normalized into the canonical PostgreSQL schema on success
 
 ## Sprint 3 Flow
 
@@ -94,7 +122,58 @@ Open [http://localhost:3000](http://localhost:3000).
 3. Engine runs 20 leakage rules against canonical data (Celery or eager mode)
 4. Findings and recoverable ARR are persisted; scan completion summary is shown
 
-## API Endpoints (Sprint 2–3)
+## Sprint 4 Flow
+
+1. After scan completes, view the free Revenue Verification Summary at `/summary`
+2. Signed-in users can access purchased reports at `/report/{id}`
+3. Dashboard at `/dashboard` shows audit history for authenticated users
+4. Export PDF and CSV from purchased reports
+
+## Sprint 5 Flow (Payments)
+
+### Stripe setup (test mode)
+
+1. Create a [Stripe test account](https://dashboard.stripe.com/test/apikeys)
+2. Create two Products in Stripe Dashboard:
+   - **Detailed Report**, one-time Price → copy `price_...` to `STRIPE_PRICE_SINGLE_REPORT`
+   - **Annual Membership**, recurring yearly Price → copy to `STRIPE_PRICE_ANNUAL_MEMBERSHIP`
+3. Add keys to `.env`:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...   # from stripe listen (below)
+STRIPE_PRICE_SINGLE_REPORT=price_...
+STRIPE_PRICE_ANNUAL_MEMBERSHIP=price_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_WEB_URL=http://localhost:3000
+```
+
+4. Forward webhooks locally:
+
+```bash
+stripe listen --forward-to localhost:8000/webhooks/stripe
+```
+
+### Manual E2E checklist (MVP complete)
+
+1. `docker compose up -d`, PostgreSQL and Redis
+2. Run API, Celery worker (or `CELERY_TASK_ALWAYS_EAGER=true`), and `npm run dev`
+3. `alembic upgrade head` in `apps/api`
+4. **Anonymous path:** `/upload` with Tier 0 CSVs from `apps/api/tests/fixtures/` → validation → analysis → `/summary`
+5. Confirm **Data Coverage** section, verification checklist, and toast notifications
+6. **Enriched path:** Re-run with subscriptions + invoices + customers → more rules execute
+7. Sign in → **Unlock Report** → Stripe test card `4242 4242 4242 4242`
+8. Webhook fires → `/checkout/success` → full report unlocks at `/report/{id}`
+9. Export **PDF**, **Findings CSV**, and **Evidence CSV** from report page
+10. Open a finding at `/findings/{id}` → verify evidence → **Copy Link**
+11. **Dashboard:** company name, report credits, Open/Delete audit, PDF + CSV download
+12. **Annual membership:** purchase → use **Use 1 Credit** on a second audit summary
+13. Cancel checkout → `/checkout/cancel` → report stays locked
+14. **Security:** after ingestion, confirm raw CSVs are removed from `apps/api/uploads/{audit_id}/`
+15. Review `/account`, `/privacy`, and `/terms` pages
+16. `cd apps/api && pytest`, all tests pass
+
+## API Endpoints (Sprint 2–5)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -102,6 +181,17 @@ Open [http://localhost:3000](http://localhost:3000).
 | GET | `/audit/{id}/validation` | Full validation report |
 | POST | `/audit/{id}/scan` | Start verification scan |
 | GET | `/audit/{id}/scan` | Scan status and results |
+| GET | `/summary/{audit_id}` | Free revenue summary (includes coverage) |
+| GET | `/findings/{id}` | Finding detail (purchased report) |
+| GET | `/exports/csv/{report_id}` | Findings CSV export |
+| GET | `/exports/evidence/{report_id}` | Evidence CSV export |
+| GET | `/exports/pdf/{report_id}` | PDF export |
+| DELETE | `/audit/{audit_id}` | Delete audit (authenticated owner) |
+| GET | `/dashboard` | Authenticated audit history |
+| POST | `/checkout` | Create Stripe Checkout session |
+| POST | `/webhooks/stripe` | Stripe webhook handler |
+| GET | `/billing` | Plan and purchase history |
+| POST | `/reports/{id}/unlock-credit` | Unlock report using membership credit |
 
 ## Tests
 

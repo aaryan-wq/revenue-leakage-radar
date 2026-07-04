@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { AnalyticsEvents } from "@rlr/shared";
 
+import { WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
+import { captureEvent } from "@/lib/analytics/client";
 import { cn } from "@/lib/utils";
 
 interface RunFreeAuditCtaProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   showArrow?: boolean;
+  fromWorkspace?: boolean;
 }
 
 const sizeClasses = {
-  sm: "px-4 py-2 text-[0.8rem]",
+  sm: "h-9 px-4 text-[0.8rem]",
   md: "px-6 py-3.5 text-[0.92rem]",
   lg: "px-7 py-4 text-[0.95rem]",
 };
@@ -21,9 +25,14 @@ export function RunFreeAuditCta({
   size = "md",
   className,
   showArrow = true,
+  fromWorkspace = false,
 }: RunFreeAuditCtaProps) {
   return (
-    <Link href="/upload" className={cn("inline-flex", className)}>
+    <Link
+      href={fromWorkspace ? WORKSPACE_UPLOAD_HREF : "/upload"}
+      className={cn("inline-flex", className)}
+      onClick={() => captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED)}
+    >
       <motion.span
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

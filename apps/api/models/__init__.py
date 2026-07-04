@@ -47,6 +47,46 @@ class Audit(Base):
     ingestion_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     scan_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     scan_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    data_tier: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    uploaded_file_types: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    available_entities: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    audit_type: Mapped[str] = mapped_column(String(32), nullable=False, default="free", index=True)
+    is_anonymous: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    billing_platform_detected: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    crm_platform_detected: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    csv_file_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    billing_file_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    crm_file_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    upload_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verification_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verification_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    verification_duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rules_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rules_executed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rules_skipped: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rules_failed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    findings_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    estimated_monthly_leakage: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    estimated_annual_leakage: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    coverage_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    confidence_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    top_rule_category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    report_unlocked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    checkout_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    checkout_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    enterprise_interest_flag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    billing_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    crm_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    invoice_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    subscription_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    line_item_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    price_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    coupon_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    credit_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -144,18 +184,28 @@ class InvoiceLineItem(Base):
     __tablename__ = "invoice_line_items"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    invoice_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("invoices.id"), nullable=False, index=True
+    invoice_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("invoices.id"), nullable=True, index=True
+    )
+    customer_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("customers.id"), nullable=True, index=True
+    )
+    subscription_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("subscriptions.id"), nullable=True, index=True
     )
     external_line_item_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    referenced_invoice_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     product_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     sku: Mapped[str | None] = mapped_column(String(255), nullable=True)
     quantity: Mapped[int | None] = mapped_column(Integer, nullable=True)
     unit_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     extended_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    billing_interval: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    line_item_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
     is_manual_override: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    invoice: Mapped["Invoice"] = relationship(back_populates="line_items")
+    invoice: Mapped["Invoice | None"] = relationship(back_populates="line_items")
 
 
 class Coupon(Base):
@@ -185,6 +235,7 @@ class PriceCatalog(Base):
     effective_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     list_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    billing_interval: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
 
 class CrmAccount(Base):
@@ -234,15 +285,27 @@ class Finding(Base):
         UUID(as_uuid=True), ForeignKey("audits.id", ondelete="CASCADE"), nullable=False, index=True
     )
     rule_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    rule_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     severity: Mapped[str] = mapped_column(String(50), nullable=False)
     confidence: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="open")
     customer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     invoice_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     subscription_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    product_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    expected_value: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    actual_value: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
+    difference: Mapped[Decimal | None] = mapped_column(Numeric(18, 4), nullable=True)
     estimated_monthly_loss: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False, default=0)
     estimated_arr_loss: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False, default=0)
     recommendation: Mapped[str | None] = mapped_column(Text, nullable=True)
     evidence: Mapped[str | None] = mapped_column(Text, nullable=True)
+    calculation_trace: Mapped[str | None] = mapped_column(Text, nullable=True)
+    leak_family: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    attribution: Mapped[str] = mapped_column(String(16), nullable=False, default="primary")
+    primary_finding_ref: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    finding_ref: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    rule_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     audit: Mapped["Audit"] = relationship(back_populates="findings")
 
@@ -261,3 +324,50 @@ class Report(Base):
     generated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     audit: Mapped["Audit"] = relationship(back_populates="report")
+    purchases: Mapped[list["ReportPurchase"]] = relationship(back_populates="report")
+
+
+class Membership(Base):
+    __tablename__ = "memberships"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    clerk_user_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    plan: Mapped[str] = mapped_column(String(50), nullable=False, default="none")
+    reports_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class PaymentEvent(Base):
+    __tablename__ = "payment_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    stripe_event_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    event_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ReportPurchase(Base):
+    __tablename__ = "report_purchases"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    report_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("reports.id"), nullable=True, index=True
+    )
+    clerk_user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    plan: Mapped[str] = mapped_column(String(50), nullable=False)
+    stripe_checkout_session_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    stripe_payment_intent_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    amount_cents: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="completed")
+    receipt_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    report: Mapped["Report | None"] = relationship(back_populates="purchases")

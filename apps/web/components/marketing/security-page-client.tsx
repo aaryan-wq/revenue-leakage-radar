@@ -5,11 +5,12 @@ import { Check, FileText, Lock, Mail, Server, Shield, Trash2 } from "lucide-reac
 import type { LucideIcon } from "lucide-react";
 
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { SecurityPageTracker } from "@/components/analytics/marketing-page-tracker";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 import { HairlineCard } from "@/components/ui/hairline-card";
 
 const SUPPORT_EMAIL =
-  process.env.SUPPORT_EMAIL ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@revenueleakageradar.com";
+  process.env.SUPPORT_EMAIL ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@paevo.co";
 
 const SECTIONS: { icon: LucideIcon; title: string; body: string }[] = [
   {
@@ -30,7 +31,7 @@ const SECTIONS: { icon: LucideIcon; title: string; body: string }[] = [
   {
     icon: Shield,
     title: "Customer retains ownership",
-    body: "Your billing data belongs to you. We process it solely to deliver audit results. Purchased reports store normalized findings — never original CSV filenames as business logic inputs.",
+    body: "Your billing and CRM data belongs to you. We process it solely to deliver audit results. Purchased reports store normalized findings, never original CSV filenames as business logic inputs.",
   },
   {
     icon: FileText,
@@ -42,15 +43,16 @@ const SECTIONS: { icon: LucideIcon; title: string; body: string }[] = [
 export function SecurityPageClient() {
   return (
     <>
+      <SecurityPageTracker />
       <div className="mx-auto max-w-reading px-6 py-28 md:px-10">
         <Reveal>
           <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Security</p>
           <h1 className="mt-4 font-heading text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.02] tracking-tight text-balance">
-            Built for sensitive billing data.
+            Built for sensitive billing and CRM data.
           </h1>
           <p className="mt-4 leading-relaxed text-muted-foreground">
-            Finance teams trust us with invoice exports, subscription records, and pricing catalogs.
-            Security is not a feature — it is the foundation.
+            Finance teams trust us with invoice exports, subscription records, pricing catalogs, and CRM contracts.
+            Security is not a feature. It is the foundation.
           </p>
         </Reveal>
 

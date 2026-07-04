@@ -1,0 +1,15 @@
+{
+  "fixture_id": "21_cancelled_subscription_still_billing",
+  "name": "Cancelled Subscription Still Billing",
+  "description": "Positive test for cancelled_subscription_still_billing via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "cancelled_subscription_still_billing"
+  ],
+  "seed": 16634365,
+  "rule_ids": [
+    "cancelled_subscription_still_billing"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

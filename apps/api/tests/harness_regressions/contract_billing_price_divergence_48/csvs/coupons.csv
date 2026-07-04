@@ -1,0 +1,4 @@
+code,active,discount_value,expires_at,discount_type,couponId,passthrough,paddle_subscription_id
+LAUNCH20,true,20,03/31/2024,percent,cpn_launch20,,
+PARTNER15,true,15,12/31/2026,percent,cpn_partner15,,
+REFER10,true,10,2026/12/31,percent,cpn_refer10,,

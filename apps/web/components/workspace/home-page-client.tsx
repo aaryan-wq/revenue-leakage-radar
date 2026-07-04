@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Radar } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Logo } from "@/components/brand/logo";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { CountUp } from "@/components/count-up";
@@ -11,47 +12,26 @@ import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 import { AuditsTable } from "@/components/workspace/audits-table";
 import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { Button } from "@/components/ui/button";
-import { PageLoadingSkeleton } from "@/components/ui/skeleton";
-import { getStoredAuditSession } from "@/lib/audit-session";
-import {
-  sortAuditsByValue,
-  totalRecoverableArr,
-  useWorkspaceDashboard,
-} from "@/lib/hooks/use-workspace-dashboard";
-import { getReport } from "@/lib/report-api";
-import { useAppAuth } from "@/lib/app-auth";
-import { formatCurrency, type FindingResponse } from "@rlr/shared";
+import { PageShell } from "@/components/ui/page-loading";
+import { sortAuditsByDate } from "@/lib/audit-sort";
+import { getStoredAuditSession, WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
+import { PRODUCT_NAMES } from "@/lib/pricing-content";
+import { useReportQuery } from "@/lib/hooks/use-report-query";
+import { totalRecoverableArr, useWorkspaceDashboard } from "@/lib/hooks/use-workspace-dashboard";
+import { formatCurrency, type DashboardResponse, type FindingResponse } from "@rlr/shared";
 import { toast } from "@/lib/toast";
 
 export function HomePageClient() {
   const searchParams = useSearchParams();
-  const { getToken } = useAppAuth();
   const { dashboard, isLoading, error, reload } = useWorkspaceDashboard();
-  const [findings, setFindings] = useState<FindingResponse[]>([]);
-  const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
-  const loadTopFindings = useCallback(async () => {
-    if (!dashboard || dashboard.audits.length === 0) return;
-    const topAudit = sortAuditsByValue(dashboard.audits)[0];
-    if (!topAudit) return;
-
-    setActiveReportId(topAudit.report_id);
-    const token = await getToken();
-    const session = getStoredAuditSession();
-    try {
-      const report = await getReport(topAudit.report_id, {
-        auditSession: session?.sessionToken,
-        authToken: token,
-      });
-      setFindings(report.findings.slice(0, 5));
-    } catch {
-      setFindings([]);
-    }
-  }, [dashboard, getToken]);
-
-  useEffect(() => {
-    void loadTopFindings();
-  }, [loadTopFindings]);
+  const latestAudit = useMemo(
+    () => (dashboard ? sortAuditsByDate(dashboard.audits)[0] ?? null : null),
+    [dashboard],
+  );
+  const reportQuery = useReportQuery(latestAudit?.report_id);
+  const findings = useMemo(() => reportQuery.data?.findings ?? [], [reportQuery.data]);
+  const activeReportId = latestAudit?.report_id ?? null;
 
   useEffect(() => {
     if (searchParams.get("checkout") === "success") {
@@ -60,11 +40,7 @@ export function HomePageClient() {
     }
   }, [reload, searchParams]);
 
-  if (isLoading) {
-    return <PageLoadingSkeleton message="Loading workspace…" />;
-  }
-
-  if (error && !dashboard) {
+  if (!isLoading && error && !dashboard) {
     return (
       <div className="px-6 py-20 text-center">
         <p className="text-lg text-muted-foreground">{error}</p>
@@ -75,23 +51,45 @@ export function HomePageClient() {
     );
   }
 
-  if (!dashboard || dashboard.audits.length === 0) {
+  if (!isLoading && (!dashboard || dashboard.audits.length === 0)) {
     return (
       <div className="mx-auto max-w-report px-6 py-24 text-center md:px-10">
-        <Radar className="mx-auto h-12 w-12 text-muted-foreground/40" strokeWidth={1.5} />
+        <Logo variant="short" href={null} className="mx-auto h-16 w-16 opacity-40" />
         <h2 className="mt-6 font-heading text-2xl tracking-tight">No audits yet</h2>
         <p className="mt-3 text-muted-foreground">
           Run your first free audit to see recoverable revenue here.
         </p>
         <div className="mt-8 flex justify-center">
-          <RunFreeAuditCta size="md" />
+          <RunFreeAuditCta size="md" fromWorkspace />
         </div>
       </div>
     );
   }
 
+  return (
+    <PageShell isLoading={isLoading} message="Loading workspace…" variant="dashboard">
+      {dashboard && dashboard.audits.length > 0 && (
+        <HomeDashboardContent
+          dashboard={dashboard}
+          findings={findings}
+          activeReportId={activeReportId}
+        />
+      )}
+    </PageShell>
+  );
+}
+
+function HomeDashboardContent({
+  dashboard,
+  findings,
+  activeReportId,
+}: {
+  dashboard: DashboardResponse;
+  findings: FindingResponse[];
+  activeReportId: string | null;
+}) {
   const recoverable = totalRecoverableArr(dashboard.audits);
-  const recentAudits = sortAuditsByValue(dashboard.audits).slice(0, 3);
+  const recentAudits = sortAuditsByDate(dashboard.audits).slice(0, 3);
   const nextUnpurchased = dashboard.audits.find((audit) => !audit.purchased);
   const totalFindings = dashboard.audits.reduce((sum, a) => sum + a.finding_count, 0);
 
@@ -127,12 +125,12 @@ export function HomePageClient() {
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       Estimated {formatCurrency(nextUnpurchased.recoverable_arr)} recoverable ARR
-                      waiting in your free summary.
+                      waiting in your free audit.
                     </p>
                   </div>
                   <Link href={`/report/${nextUnpurchased.report_id}`}>
                     <Button>
-                      Unlock Detailed Report
+                      Unlock {PRODUCT_NAMES.verificationReport}
                       <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.75} />
                     </Button>
                   </Link>
@@ -140,7 +138,7 @@ export function HomePageClient() {
               ) : (
                 <>
                   <p className="text-muted-foreground">Run a new audit to find additional leakage.</p>
-                  <Link href="/upload">
+                  <Link href={WORKSPACE_UPLOAD_HREF}>
                     <Button>Start New Audit</Button>
                   </Link>
                 </>

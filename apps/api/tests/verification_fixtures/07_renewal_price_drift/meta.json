@@ -1,0 +1,15 @@
+{
+  "fixture_id": "07_renewal_price_drift",
+  "name": "Renewal Price Drift",
+  "description": "Positive test for renewal_price_drift via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "renewal_price_drift"
+  ],
+  "seed": 233534567,
+  "rule_ids": [
+    "renewal_price_drift"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

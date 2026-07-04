@@ -1,0 +1,15 @@
+{
+  "fixture_id": "23_credit_leakage",
+  "name": "Credit Leakage",
+  "description": "Positive test for credit_leakage via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "credit_leakage"
+  ],
+  "seed": 205829840,
+  "rule_ids": [
+    "credit_leakage"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,13 @@
+{
+  "fixture_id": "03_legacy_pricing",
+  "name": "Legacy Pricing",
+  "description": "$600 MRR / $7,200 ARR \u2014 subscription below post-increase catalog.",
+  "fixture_type": "minimal",
+  "target_rules": [
+    "legacy_pricing"
+  ],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

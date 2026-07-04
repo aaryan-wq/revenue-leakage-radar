@@ -1,0 +1,15 @@
+{
+  "fixture_id": "18_duplicate_subscription",
+  "name": "Duplicate Subscription",
+  "description": "Positive test for duplicate_subscription via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "duplicate_subscription"
+  ],
+  "seed": 90847618,
+  "rule_ids": [
+    "duplicate_subscription"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

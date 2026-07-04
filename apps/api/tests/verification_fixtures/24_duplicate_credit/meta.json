@@ -1,0 +1,15 @@
+{
+  "fixture_id": "24_duplicate_credit",
+  "name": "Duplicate Credit",
+  "description": "Positive test for duplicate_credit via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "duplicate_credit"
+  ],
+  "seed": 22915478,
+  "rule_ids": [
+    "duplicate_credit"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

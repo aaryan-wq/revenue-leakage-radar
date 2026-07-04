@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_6500",
+    "name": "Synthetic Co 6500",
+    "industry": "Retail",
+    "arr_target": "3399546",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "none",
+    "currency": "USD",
+    "locale": "fr-FR",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 134326139,
+  "injected_rules": [
+    "currency_mismatch"
+  ],
+  "findings": [
+    {
+      "rule_id": "currency_mismatch",
+      "customer_id": "cust_00030",
+      "subscription_id": "sub_00030",
+      "invoice_id": "inv_0000541",
+      "expected_monthly_leakage": "0",
+      "expected_annual_leakage": "0",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

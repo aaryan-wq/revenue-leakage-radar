@@ -1,7 +1,14 @@
-from collections.abc import Callable
-from dataclasses import dataclass
+"""Backward-compatible registry shim for coverage and legacy imports."""
 
-from verification.context import AuditContext
+from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass, field
+
+from core.canonical_entities import CanonicalEntity
+from verification.context import CanonicalContext
+from verification.eligibility.schema import FieldRequirement, RuleSpec
+from verification.engine.registry import ALL_RULE_MODULES, get_all_rules as get_all_rule_modules
 from verification.types import RuleFinding
 
 
@@ -10,147 +17,106 @@ class RuleDefinition:
     rule_id: str
     name: str
     category: str
-    requires_crm: bool = False
+    required_entities: frozenset[CanonicalEntity] = field(default_factory=frozenset)
+    optimal_entities: frozenset[CanonicalEntity] = field(default_factory=frozenset)
     requires_credit_data: bool = False
     requires_manual_override: bool = False
-    evaluate: Callable[[AuditContext], list[RuleFinding]] | None = None
+    evaluate: Callable[[CanonicalContext], list[RuleFinding]] | None = None
 
 
-def _import_evaluate(module_path: str, func_name: str = "evaluate"):
-    import importlib
+FIELD_ENTITY_MAP: dict[CanonicalEntity, set[str]] = {
+    CanonicalEntity.CUSTOMER: {"customer_id", "name"},
+    CanonicalEntity.SUBSCRIPTION: {
+        "subscription_id",
+        "customer_id",
+        "product_id",
+        "price",
+        "quantity",
+        "billing_interval",
+        "status",
+        "coupon_id",
+        "currency",
+        "start_date",
+        "renewal_date",
+    },
+    CanonicalEntity.INVOICE: {
+        "invoice_id",
+        "customer_id",
+        "subscription_id",
+        "invoice_date",
+        "discount",
+        "total",
+        "currency",
+        "credit_amount",
+        "period_start",
+        "period_end",
+    },
+    CanonicalEntity.INVOICE_LINE_ITEM: {
+        "line_item_id",
+        "invoice_id",
+        "subscription_id",
+        "product_id",
+        "unit_price",
+        "quantity",
+        "billing_interval",
+        "is_manual_override",
+        "sku",
+    },
+    CanonicalEntity.PRICE: {
+        "product_id",
+        "list_price",
+        "effective_date",
+        "billing_interval",
+        "currency",
+        "sku",
+    },
+    CanonicalEntity.COUPON: {"coupon_id", "code", "expires_at", "discount_type", "discount_value", "active"},
+    CanonicalEntity.CONTRACT: {
+        "contract_id",
+        "customer_id",
+        "contract_price",
+        "price_increase_date",
+        "expected_renewal_price",
+        "end_date",
+    },
+    CanonicalEntity.ACCOUNT: {"account_id", "customer_id", "seat_count"},
+}
 
-    mod = importlib.import_module(module_path)
-    return getattr(mod, func_name)
+
+def _entities_from_fields(fields: list[FieldRequirement]) -> frozenset[CanonicalEntity]:
+    return frozenset(field.entity for field in fields)
 
 
-RULES: list[RuleDefinition] = [
-    RuleDefinition(
-        "expired_discount_still_applied",
-        "Expired Discount Still Applied",
-        "discounts",
-        evaluate=_import_evaluate("verification.rules.expired_discount"),
-    ),
-    RuleDefinition(
-        "legacy_pricing_pre_catalog",
-        "Legacy Pricing (Pre-Catalog Price)",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.legacy_pricing"),
-    ),
-    RuleDefinition(
-        "renewal_price_drift",
-        "Renewal Price Drift",
-        "renewals",
-        evaluate=_import_evaluate("verification.rules.renewal_drift"),
-    ),
-    RuleDefinition(
-        "duplicate_discount_stacking",
-        "Duplicate Discount Stacking",
-        "discounts",
-        evaluate=_import_evaluate("verification.rules.duplicate_discount"),
-    ),
-    RuleDefinition(
-        "price_catalog_mismatch",
-        "Price Catalog Mismatch",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.price_catalog_mismatch"),
-    ),
-    RuleDefinition(
-        "grandfathered_without_contract",
-        "Grandfathered Pricing Without Contract Exception",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.grandfathered_pricing"),
-    ),
-    RuleDefinition(
-        "missing_scheduled_increase",
-        "Missing Scheduled Price Increase",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.missing_scheduled_increase"),
-    ),
-    RuleDefinition(
-        "invoice_subscription_price_mismatch",
-        "Invoice vs Subscription Price Mismatch",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.invoice_pricing_mismatch"),
-    ),
-    RuleDefinition(
-        "duplicate_active_subscriptions",
-        "Duplicate Active Subscriptions",
-        "subscriptions",
-        evaluate=_import_evaluate("verification.rules.duplicate_subscriptions"),
-    ),
-    RuleDefinition(
-        "billing_frequency_mismatch",
-        "Billing Frequency Mismatch",
-        "billing",
-        evaluate=_import_evaluate("verification.rules.billing_frequency_mismatch"),
-    ),
-    RuleDefinition(
-        "currency_inconsistency",
-        "Currency Inconsistency Leakage",
-        "billing",
-        evaluate=_import_evaluate("verification.rules.currency_mismatch"),
-    ),
-    RuleDefinition(
-        "credit_adjustment_leakage",
-        "Credit / Adjustment Leakage",
-        "credits",
-        requires_credit_data=True,
-        evaluate=_import_evaluate("verification.rules.credit_leakage"),
-    ),
-    RuleDefinition(
-        "manual_override_pricing",
-        "Manual Override Pricing",
-        "overrides",
-        requires_manual_override=True,
-        evaluate=_import_evaluate("verification.rules.manual_overrides"),
-    ),
-    RuleDefinition(
-        "discount_past_contract_end",
-        "Discount Persistence Beyond Contract Terms",
-        "discounts",
-        evaluate=_import_evaluate("verification.rules.discount_persistence"),
-    ),
-    RuleDefinition(
-        "seat_quantity_underbilling",
-        "Seat / Quantity Underbilling",
-        "usage",
-        requires_crm=True,
-        evaluate=_import_evaluate("verification.rules.seat_count_variance"),
-    ),
-    RuleDefinition(
-        "contract_billing_price_divergence",
-        "Contract vs Billing Price Divergence",
-        "contracts",
-        requires_crm=True,
-        evaluate=_import_evaluate("verification.rules.contract_vs_billing"),
-    ),
-    RuleDefinition(
-        "underpriced_renewal_vs_contract",
-        "Underpriced Renewals vs Contract Terms",
-        "renewals",
-        requires_crm=True,
-        evaluate=_import_evaluate("verification.rules.underpriced_renewals"),
-    ),
-    RuleDefinition(
-        "free_plan_never_converted",
-        "Free Plan Never Converted",
-        "monetization",
-        evaluate=_import_evaluate("verification.rules.free_plan_leakage"),
-    ),
-    RuleDefinition(
-        "discount_abuse_frequency",
-        "Discount Abuse Frequency Pattern",
-        "discounts",
-        evaluate=_import_evaluate("verification.rules.discount_abuse"),
-    ),
-    RuleDefinition(
-        "legacy_sku_pricing_drift",
-        "Legacy SKU Pricing Drift",
-        "pricing",
-        evaluate=_import_evaluate("verification.rules.legacy_sku_drift"),
-    ),
-]
+def _rule_definition_from_spec(module) -> RuleDefinition:
+    spec: RuleSpec = module.spec
+    required_entities = _entities_from_fields(spec.required_fields)
+    optimal_entities = _entities_from_fields(spec.optional_fields)
+    requires_credit = spec.rule_id in {"credit_leakage", "duplicate_credit"}
+    requires_manual = spec.rule_id == "manual_price_override"
+
+    def evaluate(ctx: CanonicalContext) -> list[RuleFinding]:
+        from verification.findings.generator import FindingGenerator
+
+        results = module.evaluate(ctx)
+        return [
+            FindingGenerator.from_rule_result(spec, result, audit_id=ctx.audit_id)
+            for result in results
+        ]
+
+    return RuleDefinition(
+        rule_id=spec.rule_id,
+        name=spec.name,
+        category=spec.category,
+        required_entities=required_entities,
+        optimal_entities=optimal_entities,
+        requires_credit_data=requires_credit,
+        requires_manual_override=requires_manual,
+        evaluate=evaluate,
+    )
+
+
+RULES: list[RuleDefinition] = [_rule_definition_from_spec(module) for module in ALL_RULE_MODULES]
 
 
 def get_all_rules() -> list[RuleDefinition]:
-    return RULES
+    return list(RULES)

@@ -1,0 +1,2 @@
+contract_id,account_id,customer_id,contract_price,price_increase_date,expected_renewal_price,start_date,end_date,seat_count
+ctr_sub_00034,acct_00034,cust_00034,142.14,,142.14,2024-01-01,2026-01-01,21

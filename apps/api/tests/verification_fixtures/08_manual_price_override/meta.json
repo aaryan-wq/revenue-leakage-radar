@@ -1,0 +1,15 @@
+{
+  "fixture_id": "08_manual_price_override",
+  "name": "Manual Price Override",
+  "description": "Positive test for manual_price_override via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "manual_price_override"
+  ],
+  "seed": 70794199,
+  "rule_ids": [
+    "manual_price_override"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

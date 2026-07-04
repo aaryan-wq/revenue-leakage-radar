@@ -1,0 +1,7 @@
+{
+  "case_id": "missing_scheduled_increase_45",
+  "rule_id": "missing_scheduled_increase",
+  "seed": 45,
+  "created_at": "2026-06-27T03:16:37.194321+00:00",
+  "mismatch": "No finding for customer=cust_00012 sub=sub_00042 inv=None"
+}

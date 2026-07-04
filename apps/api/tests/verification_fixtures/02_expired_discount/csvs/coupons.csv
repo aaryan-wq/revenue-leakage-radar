@@ -1,0 +1,2 @@
+coupon_id,code,discount_type,discount_value,expires_at,active
+cpn_launch50,LAUNCH50,percent,50,2024-03-31,true

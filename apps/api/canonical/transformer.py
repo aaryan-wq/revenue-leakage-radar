@@ -56,6 +56,10 @@ def clear_canonical_data(db: Session, company_id: uuid.UUID) -> None:
             db.query(InvoiceLineItem).filter(InvoiceLineItem.invoice_id.in_(invoice_ids)).delete(
                 synchronize_session=False
             )
+        db.query(InvoiceLineItem).filter(InvoiceLineItem.customer_id.in_(customer_ids)).delete(
+            synchronize_session=False
+        )
+        if invoice_ids:
             db.query(Invoice).filter(Invoice.id.in_(invoice_ids)).delete(synchronize_session=False)
 
         db.query(Subscription).filter(Subscription.customer_id.in_(customer_ids)).delete(synchronize_session=False)
@@ -68,6 +72,29 @@ def clear_canonical_data(db: Session, company_id: uuid.UUID) -> None:
     db.commit()
 
 
+def _ensure_customer(
+    db: Session,
+    company_id: uuid.UUID,
+    customer_map: dict[str, uuid.UUID],
+    external_id: str,
+    name: str | None = None,
+    crm_id: str | None = None,
+) -> uuid.UUID:
+    if external_id in customer_map:
+        return customer_map[external_id]
+
+    customer = Customer(
+        company_id=company_id,
+        external_customer_id=external_id,
+        name=name or external_id,
+        crm_id=crm_id,
+    )
+    db.add(customer)
+    db.flush()
+    customer_map[external_id] = customer.id
+    return customer.id
+
+
 def transform_customers(
     db: Session,
     company_id: uuid.UUID,
@@ -75,29 +102,46 @@ def transform_customers(
     result: TransformResult,
 ) -> dict[str, uuid.UUID]:
     customer_map: dict[str, uuid.UUID] = {}
-    subs_df = ctx.frames.get(FileType.SUBSCRIPTIONS)
-    if subs_df is None or "customer_id" not in subs_df.columns:
-        return customer_map
 
-    for idx, row in enumerate(subs_df.iter_rows(named=True)):
-        external_id = safe_str(row.get("customer_id"))
-        if not external_id:
-            result.row_errors.append(
-                RowError(FileType.SUBSCRIPTIONS.value, idx, "Missing customer_id")
+    customers_df = ctx.frames.get(FileType.CUSTOMERS)
+    if customers_df is not None:
+        for idx, row in enumerate(customers_df.iter_rows(named=True)):
+            external_id = safe_str(row.get("customer_id"))
+            if not external_id:
+                result.row_errors.append(RowError(FileType.CUSTOMERS.value, idx, "Missing customer_id"))
+                continue
+            _ensure_customer(
+                db,
+                company_id,
+                customer_map,
+                external_id,
+                name=safe_str(row.get("name")),
+                crm_id=safe_str(row.get("crm_id")),
             )
-            continue
 
-        if external_id in customer_map:
-            continue
+    subs_df = ctx.frames.get(FileType.SUBSCRIPTIONS)
+    if subs_df is not None and "customer_id" in subs_df.columns:
+        for idx, row in enumerate(subs_df.iter_rows(named=True)):
+            external_id = safe_str(row.get("customer_id"))
+            if not external_id:
+                result.row_errors.append(
+                    RowError(FileType.SUBSCRIPTIONS.value, idx, "Missing customer_id")
+                )
+                continue
+            _ensure_customer(
+                db,
+                company_id,
+                customer_map,
+                external_id,
+            )
 
-        customer = Customer(
-            company_id=company_id,
-            external_customer_id=external_id,
-            name=safe_str(row.get("customer_name")) or external_id,
-        )
-        db.add(customer)
-        db.flush()
-        customer_map[external_id] = customer.id
+    li_df = ctx.frames.get(FileType.INVOICE_LINE_ITEMS)
+    if li_df is not None and "customer_id" in li_df.columns:
+        for idx, row in enumerate(li_df.iter_rows(named=True)):
+            external_id = safe_str(row.get("customer_id"))
+            if not external_id:
+                continue
+            _ensure_customer(db, company_id, customer_map, external_id)
 
     result.counts["customers"] = len(customer_map)
     return customer_map
@@ -207,9 +251,62 @@ def transform_invoices(
     return invoice_map
 
 
+def ensure_stub_invoices(
+    db: Session,
+    company_id: uuid.UUID,
+    customer_map: dict[str, uuid.UUID],
+    invoice_map: dict[str, uuid.UUID],
+    ctx: IngestionContext,
+    result: TransformResult,
+) -> dict[str, uuid.UUID]:
+    """Create minimal invoice stubs from line items when invoices.csv is absent."""
+    if FileType.INVOICES in ctx.uploaded_file_types:
+        return invoice_map
+
+    li_df = ctx.frames.get(FileType.INVOICE_LINE_ITEMS)
+    if li_df is None:
+        return invoice_map
+
+    stub_customer_ext = "__tier0_stub_customer__"
+    stub_customer_id = _ensure_customer(db, company_id, customer_map, stub_customer_ext, name="Unknown Customer")
+
+    stubs_before = len(invoice_map)
+
+    for idx, row in enumerate(li_df.iter_rows(named=True)):
+        invoice_ext = safe_str(row.get("invoice_id"))
+        if not invoice_ext or invoice_ext in invoice_map:
+            continue
+
+        customer_ext = safe_str(row.get("customer_id"))
+        customer_id = customer_map.get(customer_ext) if customer_ext else stub_customer_id
+        if customer_ext and customer_ext not in customer_map:
+            customer_id = _ensure_customer(db, company_id, customer_map, customer_ext)
+
+        invoice = Invoice(
+            customer_id=customer_id,
+            subscription_id=None,
+            external_invoice_id=invoice_ext,
+            invoice_number=invoice_ext,
+            invoice_date=parse_date(row.get("line_item_date")),
+            currency=safe_str(row.get("currency")),
+        )
+        db.add(invoice)
+        db.flush()
+        invoice_map[invoice_ext] = invoice.id
+
+    stubs_created = len(invoice_map) - stubs_before
+    if stubs_created:
+        result.counts["stub_invoices"] = stubs_created
+
+    return invoice_map
+
+
 def transform_line_items(
     db: Session,
     invoice_map: dict[str, uuid.UUID],
+    customer_map: dict[str, uuid.UUID],
+    sub_map: dict[str, uuid.UUID],
+    company_id: uuid.UUID,
     ctx: IngestionContext,
     result: TransformResult,
 ) -> None:
@@ -220,25 +317,41 @@ def transform_line_items(
     count = 0
     for idx, row in enumerate(li_df.iter_rows(named=True)):
         invoice_ext = safe_str(row.get("invoice_id"))
-        if not invoice_ext:
-            result.row_errors.append(RowError(FileType.INVOICE_LINE_ITEMS.value, idx, "Missing invoice_id"))
-            continue
+        invoice_id = invoice_map.get(invoice_ext) if invoice_ext else None
+        referenced_invoice_id = invoice_ext if invoice_ext and invoice_id is None else None
 
-        invoice_id = invoice_map.get(invoice_ext)
-        if not invoice_id:
+        customer_ext = safe_str(row.get("customer_id"))
+        customer_id = customer_map.get(customer_ext) if customer_ext else None
+        if customer_ext and not customer_id:
+            customer_id = _ensure_customer(db, company_id, customer_map, customer_ext)
+
+        sub_ext = safe_str(row.get("subscription_id"))
+        subscription_id = sub_map.get(sub_ext) if sub_ext else None
+
+        if not invoice_id and not customer_id:
             result.row_errors.append(
-                RowError(FileType.INVOICE_LINE_ITEMS.value, idx, f"Unknown invoice_id: {invoice_ext}")
+                RowError(
+                    FileType.INVOICE_LINE_ITEMS.value,
+                    idx,
+                    "Line item requires invoice_id or customer_id",
+                )
             )
             continue
 
         line_item = InvoiceLineItem(
             invoice_id=invoice_id,
+            referenced_invoice_id=referenced_invoice_id,
+            customer_id=customer_id,
+            subscription_id=subscription_id,
             external_line_item_id=safe_str(row.get("line_item_id")),
             product_id=safe_str(row.get("product_id")),
             sku=safe_str(row.get("sku")),
             quantity=parse_int(row.get("quantity")),
             unit_price=parse_decimal(row.get("unit_price")),
             extended_price=parse_decimal(row.get("extended_price")),
+            billing_interval=safe_str(row.get("billing_interval")),
+            line_item_date=parse_date(row.get("line_item_date")),
+            currency=safe_str(row.get("currency")),
             is_manual_override=parse_bool(row.get("is_manual_override")) or False,
         )
         db.add(line_item)
@@ -297,6 +410,7 @@ def transform_price_catalog(
             effective_date=parse_date(row.get("effective_date")),
             list_price=parse_decimal(row.get("list_price")),
             currency=safe_str(row.get("currency")),
+            billing_interval=safe_str(row.get("billing_interval")),
         )
         db.add(entry)
         count += 1
@@ -395,7 +509,8 @@ def run_canonical_transform(db: Session, audit: Audit, ctx: IngestionContext) ->
     customer_map = transform_customers(db, company.id, ctx, result)
     sub_map = transform_subscriptions(db, customer_map, ctx, result)
     invoice_map = transform_invoices(db, customer_map, sub_map, ctx, result)
-    transform_line_items(db, invoice_map, ctx, result)
+    invoice_map = ensure_stub_invoices(db, company.id, customer_map, invoice_map, ctx, result)
+    transform_line_items(db, invoice_map, customer_map, sub_map, company.id, ctx, result)
     transform_coupons(db, company.id, ctx, result)
     transform_price_catalog(db, company.id, ctx, result)
     account_map = transform_crm_accounts(db, company.id, customer_map, ctx, result)
@@ -406,55 +521,7 @@ def run_canonical_transform(db: Session, audit: Audit, ctx: IngestionContext) ->
 
 
 def run_ingestion_pipeline(db: Session, audit: Audit) -> None:
-    from audit.service import transition_audit_status
-    from ai.mapping import detect_and_map_uploads
-    from validation.parser import load_uploaded_frames
-    from validation.service import run_validation
+    """Backward-compatible entrypoint, orchestration lives in ingestion.pipeline."""
+    from ingestion.pipeline import run_ingestion_pipeline as _run
 
-    uploads = [u for u in audit.uploads if u.status == "uploaded"]
-
-    try:
-        transition_audit_status(db, audit, AuditStatus.MAPPING)
-        platform, mappings = detect_and_map_uploads(uploads)
-        audit.platform = platform.value
-        audit.column_mappings = mappings
-        db.commit()
-
-        transition_audit_status(db, audit, AuditStatus.VALIDATING)
-        frames = load_uploaded_frames(uploads, mappings)
-        validation_report = run_validation(frames)
-        audit.validation_report = validation_report.to_dict()
-        audit.validation_result = validation_report.result().value
-        db.commit()
-
-        if validation_report.has_blocking:
-            transition_audit_status(db, audit, AuditStatus.VALIDATION_FAILED)
-            audit.ingestion_error = "Validation failed with blocking errors."
-            db.commit()
-            return
-
-        transition_audit_status(db, audit, AuditStatus.NORMALIZING)
-        ctx = IngestionContext(
-            audit_id=str(audit.id),
-            platform=platform,
-            column_mappings=mappings,
-            frames=frames,
-            validation_report=validation_report,
-        )
-        transform_result = run_canonical_transform(db, audit, ctx)
-
-        if audit.validation_report:
-            audit.validation_report["row_errors"] = transform_result.to_dict()["row_errors"]
-            audit.validation_report["canonical_counts"] = transform_result.counts
-
-        transition_audit_status(db, audit, AuditStatus.READY_FOR_SCAN)
-        audit.ingestion_error = None
-        db.commit()
-        logger.info("Ingestion complete for audit %s", audit.id)
-
-    except Exception as exc:
-        logger.exception("Ingestion failed for audit %s", audit.id)
-        audit.ingestion_error = "Processing failed. Please try again."
-        transition_audit_status(db, audit, AuditStatus.PROCESSING_FAILED)
-        db.commit()
-        raise exc
+    _run(db, audit)

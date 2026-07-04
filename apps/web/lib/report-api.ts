@@ -115,15 +115,15 @@ export async function unlockWithCredit(
 }
 
 export async function downloadPdf(reportId: string, options: ReportApiOptions): Promise<Blob> {
-  return apiDownload(`/exports/pdf/${reportId}`, options);
+  return apiDownload(`/exports/pdf/${reportId}`, { ...options, timeoutMs: 120_000 });
 }
 
 export async function downloadCsv(reportId: string, options: ReportApiOptions): Promise<Blob> {
-  return apiDownload(`/exports/csv/${reportId}`, options);
+  return apiDownload(`/exports/csv/${reportId}`, { ...options, timeoutMs: 60_000 });
 }
 
 export async function downloadEvidenceCsv(reportId: string, options: ReportApiOptions): Promise<Blob> {
-  return apiDownload(`/exports/evidence/${reportId}`, options);
+  return apiDownload(`/exports/evidence/${reportId}`, { ...options, timeoutMs: 60_000 });
 }
 
 export function triggerBlobDownload(blob: Blob, filename: string): void {

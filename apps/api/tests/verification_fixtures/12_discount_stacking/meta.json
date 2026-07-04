@@ -1,0 +1,15 @@
+{
+  "fixture_id": "12_discount_stacking",
+  "name": "Discount Stacking",
+  "description": "Positive test for discount_stacking via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "discount_stacking"
+  ],
+  "seed": 131361687,
+  "rule_ids": [
+    "discount_stacking"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-fraunces), 'Georgia', serif;
+  --font-sans: var(--font-geist-sans), 'Geist Fallback';
+  --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-leak: var(--leak);
+  --color-leak-foreground: var(--leak-foreground);
+  --color-line: var(--line);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: light;
+  /* Warm paper / ink neutrals */
+  --background: oklch(0.985 0.005 95);
+  --foreground: oklch(0.235 0.012 75);
+  --card: oklch(0.997 0.003 95);
+  --card-foreground: oklch(0.235 0.012 75);
+  --popover: oklch(0.997 0.003 95);
+  --popover-foreground: oklch(0.235 0.012 75);
+  /* Deep emerald signature */
+  --primary: oklch(0.455 0.078 165);
+  --primary-foreground: oklch(0.985 0.01 110);
+  --secondary: oklch(0.955 0.008 95);
+  --secondary-foreground: oklch(0.3 0.015 75);
+  --muted: oklch(0.955 0.006 95);
+  --muted-foreground: oklch(0.53 0.012 80);
+  --accent: oklch(0.95 0.01 95);
+  --accent-foreground: oklch(0.3 0.015 75);
+  --destructive: oklch(0.55 0.18 28);
+  /* Amber/terracotta: used to signal revenue leakage */
+  --leak: oklch(0.68 0.135 55);
+  --leak-foreground: oklch(0.985 0.01 95);
+  --border: oklch(0.905 0.006 90);
+  --line: oklch(0.88 0.007 90);
+  --input: oklch(0.9 0.006 90);
+  --ring: oklch(0.455 0.078 165);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+  /* Editorial fine rule */
+  .hairline {
+    border-color: var(--line);
+  }
+}

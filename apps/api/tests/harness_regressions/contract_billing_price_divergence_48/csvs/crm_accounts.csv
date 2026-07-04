@@ -1,0 +1,5 @@
+name,customer_id,Seat Count,Account ID,passthrough,paddle_subscription_id
+Account cust_00013,cust_00013,21,acct_cust_00013,,
+Account cust_00003,cust_00003,10,acct_cust_00003,,
+Account cust_00009,cust_00009,50,acct_cust_00009,,
+Account cust_00002,cust_00002,10,acct_cust_00002,,

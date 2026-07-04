@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8276",
+    "name": "Synthetic Co 8276",
+    "industry": "Retail",
+    "arr_target": "1175937",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "none",
+    "currency": "EUR",
+    "locale": "en-US",
+    "pricing_strategy": "usage_hybrid",
+    "seat_based": false
+  },
+  "seed": 90847618,
+  "injected_rules": [
+    "duplicate_subscription"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_subscription",
+      "customer_id": "cust_00001",
+      "subscription_id": "sub_dup_cust_00001_1",
+      "invoice_id": null,
+      "expected_monthly_leakage": "70.1500",
+      "expected_annual_leakage": "841.8000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

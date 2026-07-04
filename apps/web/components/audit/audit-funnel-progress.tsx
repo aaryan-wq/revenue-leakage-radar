@@ -1,8 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+
+import { Logo, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
+import {
+  abandonAuditOnExit,
+  getAuditExitHref,
+  getAuditExitHrefFromSearch,
+} from "@/lib/audit-session";
+import { cn } from "@/lib/utils";
 
 const STEPS = [
   { href: "/upload", label: "Upload" },
@@ -20,25 +29,43 @@ function stepIndex(pathname: string): number {
 }
 
 export function AuditFunnelProgress() {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const exitHrefFromUrl = getAuditExitHrefFromSearch(searchParams);
+  const [exitHref, setExitHref] = useState(exitHrefFromUrl);
   const current = stepIndex(pathname);
   const progressPercent = ((current + 1) / STEPS.length) * 100;
+
+  useEffect(() => {
+    setExitHref(getAuditExitHref());
+  }, [exitHrefFromUrl]);
+
+  const handleExit = async () => {
+    await abandonAuditOnExit();
+    router.push(exitHref);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/60">
       <div className="absolute inset-0 -z-10 bg-background/85 backdrop-blur-xl" />
       <div className="mx-auto max-w-marketing px-6 md:px-10">
-        <div className="flex h-14 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            <span className="font-heading text-[0.95rem] tracking-tight">Radar</span>
-          </Link>
-          <Link
-            href="/"
-            className="text-[0.78rem] text-muted-foreground transition-colors hover:text-foreground"
+        <div className={cn("justify-between gap-4", NAV_ROW_CLASS)}>
+          <button
+            type="button"
+            onClick={() => void handleExit()}
+            className="inline-flex items-center border-0 bg-transparent p-0"
+            aria-label="Exit audit"
+          >
+            <Logo variant="short" className={NAV_LOGO_CLASS.short} />
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleExit()}
+            className="inline-flex h-9 items-center text-[0.78rem] text-muted-foreground transition-colors hover:text-foreground"
           >
             Exit audit
-          </Link>
+          </button>
         </div>
 
         <div className="pb-4">

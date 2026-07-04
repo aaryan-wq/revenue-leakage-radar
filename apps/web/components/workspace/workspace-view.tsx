@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -10,7 +10,8 @@ import {
   getSeverityLabel,
 } from "@/components/findings/severity-utils";
 import { glide } from "@/components/motion";
-import { formatCurrency, type FindingResponse } from "@rlr/shared";
+import { WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
+import { formatCurrency, formatDecimal, type FindingResponse } from "@rlr/shared";
 
 function formatCompactCurrency(value: string | number): string {
   const amount = typeof value === "string" ? parseFloat(value) : value;
@@ -32,7 +33,11 @@ function evidencePairs(
 ): { label: string; value: string }[] {
   return finding.evidence_records.slice(0, 3).map((record) => ({
     label: record.field,
-    value: [record.expected, record.actual].filter(Boolean).join(" → ") || "—",
+    value:
+      [record.expected, record.actual]
+        .filter(Boolean)
+        .map((part) => formatDecimal(part))
+        .join(" → ") || "-",
   }));
 }
 
@@ -41,18 +46,76 @@ interface WorkspaceViewProps {
   reportId?: string | null;
 }
 
-export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
-  const sorted = [...findings].sort(
-    (a, b) => parseFloat(b.estimated_arr_loss) - parseFloat(a.estimated_arr_loss),
+const SidebarFindingButton = memo(function SidebarFindingButton({
+  finding,
+  selected,
+  onSelect,
+}: {
+  finding: FindingResponse;
+  selected: boolean;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(finding.id)}
+      className="relative block w-full px-6 py-4 text-left md:px-8"
+    >
+      {selected && (
+        <span className="absolute inset-y-1 left-0 w-[2px] bg-primary" />
+      )}
+      <div className="flex items-start gap-3">
+        <span
+          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${getSeverityDotClass(finding.severity)}`}
+        />
+        <div className="min-w-0 flex-1">
+          <p
+            className={`truncate text-[0.9rem] transition-colors ${
+              selected ? "text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            {finding.title}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground tnum">
+            {findingDisplayId(finding)} ·{" "}
+            {formatCompactCurrency(finding.estimated_arr_loss)}
+          </p>
+        </div>
+      </div>
+    </button>
   );
+});
+
+export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
+  const sorted = useMemo(
+    () =>
+      [...findings].sort(
+        (a, b) =>
+          parseFloat(b.estimated_arr_loss) - parseFloat(a.estimated_arr_loss),
+      ),
+    [findings],
+  );
+
   const [activeId, setActiveId] = useState(sorted[0]?.id ?? "");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return sorted;
+    return sorted.filter(
+      (finding) =>
+        finding.title.toLowerCase().includes(query) ||
+        finding.category_label.toLowerCase().includes(query) ||
+        findingDisplayId(finding).toLowerCase().includes(query),
+    );
+  }, [sorted, searchQuery]);
 
   if (sorted.length === 0) {
     return (
       <div className="px-6 py-16 text-center md:px-8">
         <p className="text-lg text-muted-foreground">No findings available yet.</p>
         <Link
-          href="/upload"
+          href={WORKSPACE_UPLOAD_HREF}
           className="mt-6 inline-flex rounded-full bg-primary px-5 py-2.5 text-[0.85rem] font-medium text-primary-foreground"
         >
           Run an audit
@@ -61,7 +124,12 @@ export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
     );
   }
 
-  const active = sorted.find((finding) => finding.id === activeId) ?? sorted[0];
+  const active =
+    sorted.find((finding) => finding.id === activeId) ??
+    filtered.find((finding) => finding.id === activeId) ??
+    sorted[0];
+  const activeEvidence = evidencePairs(active);
+  const showSearch = sorted.length > 30;
 
   return (
     <div className="grid gap-0 lg:grid-cols-[20rem_1fr]">
@@ -70,45 +138,32 @@ export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
           <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
             Findings · {sorted.length}
           </p>
+          {showSearch && (
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Filter findings…"
+              aria-label="Filter findings"
+              className="mt-4 w-full rounded-lg border border-line bg-secondary/30 px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/40"
+            />
+          )}
         </div>
-        <nav className="pb-4">
-          {sorted.map((finding) => {
-            const selected = finding.id === active.id;
-            return (
-              <button
+        <nav className="max-h-[min(70vh,40rem)] overflow-y-auto pb-4">
+          {filtered.length === 0 ? (
+            <p className="px-6 text-sm text-muted-foreground md:px-8">
+              No findings match your search.
+            </p>
+          ) : (
+            filtered.map((finding) => (
+              <SidebarFindingButton
                 key={finding.id}
-                type="button"
-                onClick={() => setActiveId(finding.id)}
-                className="relative block w-full px-6 py-4 text-left md:px-8"
-              >
-                {selected && (
-                  <motion.span
-                    layoutId="ws-active"
-                    className="absolute inset-y-1 left-0 w-[2px] bg-primary"
-                    transition={{ type: "spring", stiffness: 320, damping: 30 }}
-                  />
-                )}
-                <div className="flex items-start gap-3">
-                  <span
-                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${getSeverityDotClass(finding.severity)}`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={`truncate text-[0.9rem] transition-colors ${
-                        selected ? "text-foreground" : "text-muted-foreground"
-                      }`}
-                    >
-                      {finding.title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground tnum">
-                      {findingDisplayId(finding)} ·{" "}
-                      {formatCompactCurrency(finding.estimated_arr_loss)}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+                finding={finding}
+                selected={finding.id === active.id}
+                onSelect={setActiveId}
+              />
+            ))
+          )}
         </nav>
       </aside>
 
@@ -116,10 +171,10 @@ export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
         <AnimatePresence mode="wait">
           <motion.div
             key={active.id}
-            initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
-            transition={{ duration: 0.6, ease: glide }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: glide }}
           >
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-mono text-xs text-muted-foreground">
@@ -174,13 +229,13 @@ export function WorkspaceView({ findings, reportId }: WorkspaceViewProps) {
               </div>
             </div>
 
-            {evidencePairs(active).length > 0 && (
+            {activeEvidence.length > 0 && (
               <div className="mt-10">
                 <p className="mb-5 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
                   Evidence
                 </p>
                 <div className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
-                  {evidencePairs(active).map((item) => (
+                  {activeEvidence.map((item) => (
                     <div key={item.label} className="bg-card px-5 py-6">
                       <p className="text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
                         {item.label}

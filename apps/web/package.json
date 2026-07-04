@@ -11,15 +11,21 @@
   "dependencies": {
     "@clerk/nextjs": "^6.12.0",
     "@rlr/shared": "*",
+    "@tanstack/react-query": "^5.62.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.42.0",
     "lucide-react": "^0.469.0",
     "next": "^15.1.3",
+    "posthog-js": "^1.396.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.1.7",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",

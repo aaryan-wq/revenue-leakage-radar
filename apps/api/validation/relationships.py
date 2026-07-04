@@ -4,7 +4,12 @@ from core.enums import FileType
 from ingestion.types import ValidationIssue, ValidationReport
 
 
-def validate_relationships(frames: dict[FileType, pl.DataFrame], report: ValidationReport) -> None:
+def validate_relationships(
+    frames: dict[FileType, pl.DataFrame],
+    report: ValidationReport,
+    uploaded: set[FileType] | None = None,
+) -> None:
+    uploaded_types = uploaded if uploaded is not None else set(frames.keys())
     subscriptions = frames.get(FileType.SUBSCRIPTIONS)
     invoices = frames.get(FileType.INVOICES)
     line_items = frames.get(FileType.INVOICE_LINE_ITEMS)
@@ -29,34 +34,44 @@ def validate_relationships(frames: dict[FileType, pl.DataFrame], report: Validat
                     )
                 )
 
-    if invoices is not None and line_items is not None:
-        if "invoice_id" in invoices.columns and "invoice_id" in line_items.columns:
-            invoice_ids = set(invoices["invoice_id"].drop_nulls().cast(pl.Utf8).to_list())
-            line_invoice_ids = set(line_items["invoice_id"].drop_nulls().cast(pl.Utf8).to_list())
-            orphans = line_invoice_ids - invoice_ids
-            if orphans:
-                sample = list(orphans)[:5]
-                report.issues.append(
-                    ValidationIssue(
-                        severity="blocking",
-                        code="orphan_line_item_invoice",
-                        message=f"Line items reference unknown invoices: {sample}",
-                        file_type=FileType.INVOICE_LINE_ITEMS.value,
-                    )
+    if (
+        FileType.INVOICES in uploaded_types
+        and invoices is not None
+        and line_items is not None
+        and "invoice_id" in invoices.columns
+        and "invoice_id" in line_items.columns
+    ):
+        invoice_ids = set(invoices["invoice_id"].drop_nulls().cast(pl.Utf8).to_list())
+        line_invoice_ids = set(line_items["invoice_id"].drop_nulls().cast(pl.Utf8).to_list())
+        orphans = line_invoice_ids - invoice_ids
+        if orphans:
+            sample = list(orphans)[:5]
+            report.issues.append(
+                ValidationIssue(
+                    severity="warning",
+                    code="orphan_line_item_invoice",
+                    message=f"Line items reference unknown invoices: {sample}",
+                    file_type=FileType.INVOICE_LINE_ITEMS.value,
                 )
+            )
 
-    if subscriptions is not None and invoices is not None:
-        if "subscription_id" in subscriptions.columns and "subscription_id" in invoices.columns:
-            sub_ids = set(subscriptions["subscription_id"].drop_nulls().cast(pl.Utf8).to_list())
-            inv_sub_ids = set(invoices["subscription_id"].drop_nulls().cast(pl.Utf8).to_list()) - {""}
-            orphans = inv_sub_ids - sub_ids
-            if orphans:
-                sample = list(orphans)[:5]
-                report.issues.append(
-                    ValidationIssue(
-                        severity="warning",
-                        code="orphan_invoice_subscription",
-                        message=f"Invoices reference unknown subscriptions: {sample}",
-                        file_type=FileType.INVOICES.value,
-                    )
+    if (
+        FileType.SUBSCRIPTIONS in uploaded_types
+        and subscriptions is not None
+        and invoices is not None
+        and "subscription_id" in subscriptions.columns
+        and "subscription_id" in invoices.columns
+    ):
+        sub_ids = set(subscriptions["subscription_id"].drop_nulls().cast(pl.Utf8).to_list())
+        inv_sub_ids = set(invoices["subscription_id"].drop_nulls().cast(pl.Utf8).to_list()) - {""}
+        orphans = inv_sub_ids - sub_ids
+        if orphans:
+            sample = list(orphans)[:5]
+            report.issues.append(
+                ValidationIssue(
+                    severity="warning",
+                    code="orphan_invoice_subscription",
+                    message=f"Invoices reference unknown subscriptions: {sample}",
+                    file_type=FileType.INVOICES.value,
                 )
+            )

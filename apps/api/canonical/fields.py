@@ -1,6 +1,11 @@
 from core.enums import FileType
 
 CANONICAL_FIELDS: dict[FileType, list[str]] = {
+    FileType.CUSTOMERS: [
+        "customer_id",
+        "name",
+        "crm_id",
+    ],
     FileType.SUBSCRIPTIONS: [
         "subscription_id",
         "customer_id",
@@ -32,11 +37,16 @@ CANONICAL_FIELDS: dict[FileType, list[str]] = {
     FileType.INVOICE_LINE_ITEMS: [
         "line_item_id",
         "invoice_id",
+        "customer_id",
+        "subscription_id",
         "product_id",
         "sku",
         "quantity",
         "unit_price",
         "extended_price",
+        "billing_interval",
+        "line_item_date",
+        "currency",
         "is_manual_override",
     ],
     FileType.COUPONS: [
@@ -54,6 +64,7 @@ CANONICAL_FIELDS: dict[FileType, list[str]] = {
         "effective_date",
         "list_price",
         "currency",
+        "billing_interval",
     ],
     FileType.CRM_ACCOUNTS: [
         "account_id",
@@ -80,6 +91,9 @@ CANONICAL_FIELDS: dict[FileType, list[str]] = {
 }
 
 REQUIRED_CANONICAL_FIELDS: dict[FileType, list[str]] = {
+    FileType.CUSTOMERS: [
+        "customer_id",
+    ],
     FileType.SUBSCRIPTIONS: [
         "subscription_id",
         "customer_id",
@@ -94,7 +108,7 @@ REQUIRED_CANONICAL_FIELDS: dict[FileType, list[str]] = {
     ],
     FileType.INVOICE_LINE_ITEMS: [
         "line_item_id",
-        "invoice_id",
+        "product_id",
         "quantity",
         "unit_price",
     ],
@@ -110,10 +124,20 @@ REQUIRED_CANONICAL_FIELDS: dict[FileType, list[str]] = {
     ],
 }
 
-PRIMARY_KEY_FIELDS: dict[FileType, str] = {
+PRIMARY_KEY_FIELDS: dict[FileType, str | list[str]] = {
+    FileType.CUSTOMERS: "customer_id",
     FileType.SUBSCRIPTIONS: "subscription_id",
     FileType.INVOICES: "invoice_id",
     FileType.INVOICE_LINE_ITEMS: "line_item_id",
     FileType.COUPONS: "coupon_id",
-    FileType.PRICE_CATALOG: "product_id",
+    FileType.PRICE_CATALOG: ["product_id", "version"],
 }
+
+
+def primary_key_columns(file_type: FileType) -> list[str]:
+    pk = PRIMARY_KEY_FIELDS.get(file_type)
+    if pk is None:
+        return []
+    if isinstance(pk, str):
+        return [pk]
+    return list(pk)

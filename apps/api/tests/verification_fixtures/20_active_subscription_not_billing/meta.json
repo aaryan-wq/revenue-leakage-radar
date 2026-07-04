@@ -1,0 +1,15 @@
+{
+  "fixture_id": "20_active_subscription_not_billing",
+  "name": "Active Subscription Not Billing",
+  "description": "Positive test for active_subscription_not_billing via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "active_subscription_not_billing"
+  ],
+  "seed": 97285149,
+  "rule_ids": [
+    "active_subscription_not_billing"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

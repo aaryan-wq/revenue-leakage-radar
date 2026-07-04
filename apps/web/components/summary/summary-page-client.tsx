@@ -12,10 +12,13 @@ import { UnlockCta } from "@/components/summary/unlock-cta";
 import { VerificationChecklist } from "@/components/summary/verification-checklist";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
-import { PageLoadingSkeleton } from "@/components/ui/skeleton";
+import { PageShell } from "@/components/ui/page-loading";
 import { getStoredAuditSession } from "@/lib/audit-session";
+import { captureAuditEvent } from "@/lib/analytics/client";
 import { getSummary } from "@/lib/report-api";
+import { useTrackOnce } from "@/lib/analytics/hooks";
 import type { FreeSummaryResponse } from "@rlr/shared";
+import { AnalyticsEvents } from "@rlr/shared";
 
 export function SummaryPageClient() {
   const router = useRouter();
@@ -44,23 +47,47 @@ export function SummaryPageClient() {
     void loadSummary();
   }, [loadSummary]);
 
-  if (isLoading) {
-    return <PageLoadingSkeleton message="Loading revenue summary…" />;
-  }
+  useTrackOnce(
+    AnalyticsEvents.FREE_SUMMARY_VIEWED,
+    summary
+      ? {
+          audit_id: summary.audit_id,
+          estimated_annual_leakage: summary.recoverable_arr,
+          findings_total: summary.finding_count,
+          confidence_score: summary.confidence ?? undefined,
+          rules_executed: summary.rules_completed,
+          crm_present: summary.coverage.crm_present,
+        }
+      : undefined,
+    Boolean(summary),
+  );
 
-  if (error || !summary) {
+  if (!isLoading && (error || !summary)) {
     return (
-      <GlassCard padding="md" className="border-error/20 bg-error-bg text-center">
-        <p className="text-body text-gray-700">{error ?? "Summary unavailable."}</p>
-        <Button className="mt-6" onClick={() => void loadSummary()}>
-          Retry
-        </Button>
-      </GlassCard>
+      <div className="mx-auto max-w-report">
+        <GlassCard padding="md" className="border-line bg-secondary/40 text-center">
+          <p className="text-body text-foreground">{error ?? "Summary unavailable."}</p>
+          <Button
+            className="mt-6"
+            onClick={() => {
+              const session = getStoredAuditSession();
+              if (session) {
+                captureAuditEvent(AnalyticsEvents.FREE_SUMMARY_REFRESHED, session.auditId);
+              }
+              void loadSummary();
+            }}
+          >
+            Retry
+          </Button>
+        </GlassCard>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-16">
+    <PageShell isLoading={isLoading} message="Loading free audit…" variant="report">
+      {summary && (
+    <div className="mx-auto max-w-report space-y-0">
       <SummaryHero summary={summary} />
       <OpportunityBreakdown items={summary.opportunity_breakdown} />
       <VerificationChecklist checks={summary.verification_checks} />
@@ -71,14 +98,16 @@ export function SummaryPageClient() {
         purchased={summary.purchased}
         onUnlocked={() => void loadSummary()}
       />
-      <div>
+      <div className="border-t border-line pt-10">
         <Link
           href="/analysis"
-          className="text-small text-gray-500 hover:text-gray-900 transition-colors"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          ← Back to Analysis
+          ← Back to analysis
         </Link>
       </div>
     </div>
+      )}
+    </PageShell>
   );
 }

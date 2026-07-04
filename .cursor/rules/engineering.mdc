@@ -1,0 +1,625 @@
+---
+description: Engineering standards and implementation rules
+alwaysApply: true
+---
+
+# Engineering Standards
+
+## Core Principle
+
+Write code that another senior engineer could understand in five minutes.
+
+Prefer readability over cleverness.
+
+Optimize for maintainability.
+
+Never optimize prematurely.
+
+---
+
+# General Rules
+
+Always:
+
+- Use explicit types.
+- Use descriptive names.
+- Write small functions.
+- Keep files focused.
+- Prefer composition over inheritance.
+- Remove dead code immediately.
+- Refactor duplication.
+
+Never:
+
+- Use magic numbers.
+- Use global mutable state.
+- Create circular dependencies.
+- Leave commented-out code.
+- Leave TODO or FIXME comments.
+- Ignore compiler or lint errors.
+
+---
+
+# File Size
+
+Soft Limits
+
+Component: <250 lines
+
+Page: <300 lines
+
+Backend Module: <300 lines
+
+Utility: <150 lines
+
+Hard Limit
+
+500 lines
+
+If exceeded:
+
+Refactor.
+
+---
+
+# Function Rules
+
+One responsibility.
+
+Prefer:
+
+20–40 lines
+
+Maximum:
+
+75 lines
+
+Maximum nesting:
+
+3 levels
+
+Prefer early returns.
+
+Avoid else after return.
+
+Example:
+
+GOOD
+
+if (!invoice) return null
+
+processInvoice(invoice)
+
+BAD
+
+if (invoice) {
+    ...
+} else {
+    ...
+}
+
+---
+
+# Naming
+
+Variables
+
+camelCase
+
+Functions
+
+camelCase
+
+Components
+
+PascalCase
+
+Classes
+
+PascalCase
+
+Constants
+
+UPPER_SNAKE_CASE
+
+Files
+
+kebab-case
+
+Database Tables
+
+snake_case
+
+---
+
+# Folder Organization
+
+Organize by business domain.
+
+GOOD
+
+verification/
+
+reports/
+
+audit/
+
+payments/
+
+upload/
+
+BAD
+
+helpers/
+
+misc/
+
+utils2/
+
+commonStuff/
+
+---
+
+# Imports
+
+Order
+
+1 Standard library
+
+2 Third-party
+
+3 Internal packages
+
+4 Relative imports
+
+One blank line between groups.
+
+Never use wildcard imports.
+
+---
+
+# Components
+
+Components should:
+
+Receive props.
+
+Render UI.
+
+Delegate business logic.
+
+Never perform heavy calculations.
+
+Never fetch unrelated data.
+
+---
+
+# React
+
+Prefer:
+
+Server Components
+
+Use Client Components only when needed.
+
+Use hooks only for:
+
+UI state
+
+Effects
+
+Browser APIs
+
+Do not use useEffect unnecessarily.
+
+Avoid derived state.
+
+---
+
+# State Management
+
+Priority
+
+1 URL
+
+2 Server
+
+3 Local Component
+
+4 Global
+
+Avoid global state unless truly shared.
+
+---
+
+# API Design
+
+REST only.
+
+Predictable naming.
+
+Examples
+
+GET /reports
+
+POST /upload
+
+GET /findings/{id}
+
+DELETE /audit/{id}
+
+Never create RPC-style endpoints.
+
+---
+
+# Backend
+
+Business logic
+
+↓
+
+Services
+
+Database
+
+↓
+
+Repositories
+
+Never put business logic inside routes.
+
+Routes should remain thin.
+
+---
+
+# Database
+
+Use migrations.
+
+Foreign keys required.
+
+Indexes for:
+
+customer_id
+
+subscription_id
+
+invoice_id
+
+created_at
+
+Avoid duplicated data.
+
+Normalize where reasonable.
+
+---
+
+# Error Handling
+
+Never swallow exceptions.
+
+Return useful errors.
+
+Log unexpected failures.
+
+User-facing messages should be simple.
+
+Internal logs should be detailed.
+
+---
+
+# Logging
+
+Log
+
+Uploads
+
+Validation
+
+Verification
+
+Payments
+
+Errors
+
+Never log
+
+Passwords
+
+Tokens
+
+Secrets
+
+Full payment data
+
+---
+
+# Validation
+
+Validate
+
+Input
+
+Output
+
+Database writes
+
+API requests
+
+Environment variables
+
+Never trust user input.
+
+---
+
+# Environment Variables
+
+Never hardcode:
+
+Keys
+
+URLs
+
+Secrets
+
+Passwords
+
+Tokens
+
+Always validate required env variables on startup.
+
+---
+
+# Async
+
+Use async only when beneficial.
+
+Await everything.
+
+Never create orphan tasks.
+
+Handle timeouts.
+
+Retry transient failures.
+
+---
+
+# Performance
+
+Avoid N+1 queries.
+
+Batch operations.
+
+Paginate tables.
+
+Stream large CSV files when practical.
+
+Cache only after measuring.
+
+---
+
+# Security
+
+Escape user input.
+
+Validate uploads.
+
+Limit upload size.
+
+Delete temporary files.
+
+Never expose stack traces.
+
+Never expose secrets.
+
+---
+
+# CSV Rules
+
+Treat CSV as untrusted input.
+
+Validate:
+
+Encoding
+
+Headers
+
+Duplicates
+
+Relationships
+
+Date formats
+
+Currency
+
+Never process malformed rows directly.
+
+---
+
+# Verification Engine
+
+Every rule must be:
+
+Pure
+
+Deterministic
+
+Testable
+
+Independent
+
+Never allow one rule to modify another.
+
+Every rule returns:
+
+Rule ID
+
+Finding
+
+Evidence
+
+Confidence
+
+Monthly Leakage
+
+Annual Leakage
+
+Recommendation
+
+Execution Time
+
+---
+
+# AI
+
+AI assists.
+
+AI never decides.
+
+Allowed
+
+Header mapping
+
+Entity matching
+
+Narratives
+
+Recommendations
+
+Forbidden
+
+Leakage calculations
+
+ARR calculations
+
+Financial math
+
+Evidence generation
+
+Confidence scoring
+
+---
+
+# Testing
+
+Every feature requires
+
+Unit tests
+
+Edge cases
+
+Error cases
+
+Happy path
+
+Regression tests for verification rules.
+
+---
+
+# Comments
+
+Write comments explaining WHY.
+
+Never explain WHAT obvious code does.
+
+GOOD
+
+// Price catalog versions overlap; newest effective date wins.
+
+BAD
+
+// Increment i
+
+---
+
+# Git
+
+One feature per commit.
+
+Small pull requests.
+
+Never mix refactoring with feature work.
+
+Commit examples
+
+feat: csv upload
+
+feat: verification engine
+
+feat: report generation
+
+fix: duplicate coupon detection
+
+refactor: report service
+
+---
+
+# Documentation
+
+Whenever architecture changes:
+
+Update docs.
+
+Documentation is part of the implementation.
+
+Never let docs drift.
+
+---
+
+# Definition of Quality
+
+Before considering code complete:
+
+✓ Types pass
+
+✓ Lint passes
+
+✓ Tests pass
+
+✓ Responsive
+
+✓ Accessible
+
+✓ Loading state
+
+✓ Empty state
+
+✓ Error state
+
+✓ Documentation updated
+
+✓ No dead code
+
+✓ No duplicated logic
+
+✓ No console logging
+
+---
+
+# Decision Framework
+
+When multiple implementations exist:
+
+Choose the solution that is:
+
+1 Most deterministic
+
+2 Simplest
+
+3 Most maintainable
+
+4 Most testable
+
+5 Most extensible
+
+Never choose clever over clear.
+
+---
+
+# Engineering Goal
+
+Every line of code should contribute toward one outcome:
+
+Transform raw customer billing data into trustworthy, evidence-backed revenue leakage findings that a CFO can immediately understand and act on.
+
+If code does not directly improve that outcome, question whether it belongs in the MVP.

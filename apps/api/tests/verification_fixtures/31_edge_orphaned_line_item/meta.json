@@ -1,0 +1,13 @@
+{
+  "fixture_id": "31_edge_orphaned_line_item",
+  "name": "Orphaned Line Item",
+  "description": "Line item referencing missing invoice parent.",
+  "fixture_type": "edge",
+  "target_rules": [
+    "orphaned_records"
+  ],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

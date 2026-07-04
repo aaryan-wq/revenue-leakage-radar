@@ -1,0 +1,15 @@
+{
+  "fixture_id": "09_incorrect_seat_price",
+  "name": "Incorrect Seat Price",
+  "description": "Positive test for incorrect_seat_price via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "incorrect_seat_price"
+  ],
+  "seed": 249606701,
+  "rule_ids": [
+    "incorrect_seat_price"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

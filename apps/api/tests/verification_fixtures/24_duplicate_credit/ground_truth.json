@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_8582",
+    "name": "Synthetic Co 8582",
+    "industry": "Media",
+    "arr_target": "538575",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "pipedrive",
+    "currency": "EUR",
+    "locale": "en-US",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 22915478,
+  "injected_rules": [
+    "duplicate_credit"
+  ],
+  "findings": [
+    {
+      "rule_id": "duplicate_credit",
+      "customer_id": "cust_00051",
+      "subscription_id": null,
+      "invoice_id": "inv_dup_credit_cust_00051_1",
+      "expected_monthly_leakage": "50.0000",
+      "expected_annual_leakage": "600.0000",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

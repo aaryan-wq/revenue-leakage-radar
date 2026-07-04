@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9717",
+    "name": "Synthetic Co 9717",
+    "industry": "EdTech",
+    "arr_target": "1637834",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "recurly",
+    "crm_platform": "pipedrive",
+    "currency": "USD",
+    "locale": "en-US",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 28151253,
+  "injected_rules": [
+    "discount_wrong_product"
+  ],
+  "findings": [
+    {
+      "rule_id": "discount_wrong_product",
+      "customer_id": "cust_00011",
+      "subscription_id": "sub_00011",
+      "invoice_id": "inv_0000211",
+      "expected_monthly_leakage": "122.4700",
+      "expected_annual_leakage": "1469.6400",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

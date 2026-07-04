@@ -1,0 +1,19 @@
+{
+  "fixture_id": "32_combined_discount_billing",
+  "name": "Combined Discount + Billing",
+  "description": "Multiple rules injected together for integration coverage.",
+  "fixture_type": "combined",
+  "target_rules": [
+    "discount_stacking",
+    "duplicate_subscription",
+    "invoice_price_mismatch"
+  ],
+  "seed": 9999,
+  "rule_ids": [
+    "discount_stacking",
+    "duplicate_subscription",
+    "invoice_price_mismatch"
+  ],
+  "customer_count": 80,
+  "allow_extra_findings": true
+}

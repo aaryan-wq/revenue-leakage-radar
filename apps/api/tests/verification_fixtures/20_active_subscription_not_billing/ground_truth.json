@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9282",
+    "name": "Synthetic Co 9282",
+    "industry": "Healthcare",
+    "arr_target": "1033905",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "salesforce",
+    "currency": "GBP",
+    "locale": "fr-FR",
+    "pricing_strategy": "seat_based",
+    "seat_based": true
+  },
+  "seed": 97285149,
+  "injected_rules": [
+    "active_subscription_not_billing"
+  ],
+  "findings": [
+    {
+      "rule_id": "active_subscription_not_billing",
+      "customer_id": "cust_00030",
+      "subscription_id": "sub_free_cust_00030",
+      "invoice_id": null,
+      "expected_monthly_leakage": "74.75",
+      "expected_annual_leakage": "897.00",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

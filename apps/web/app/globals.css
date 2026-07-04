@@ -3,17 +3,89 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+    --background: oklch(0.985 0.005 95);
+    --foreground: oklch(0.235 0.012 75);
+    --card: oklch(0.997 0.003 95);
+    --card-foreground: oklch(0.235 0.012 75);
+    --popover: oklch(0.997 0.003 95);
+    --popover-foreground: oklch(0.235 0.012 75);
+    --primary: oklch(0.455 0.078 165);
+    --primary-foreground: oklch(0.985 0.01 110);
+    --secondary: oklch(0.955 0.008 95);
+    --secondary-foreground: oklch(0.3 0.015 75);
+    --muted: oklch(0.955 0.006 95);
+    --muted-foreground: oklch(0.53 0.012 80);
+    --accent: oklch(0.95 0.01 95);
+    --accent-foreground: oklch(0.3 0.015 75);
+    --destructive: oklch(0.55 0.18 28);
+    --destructive-foreground: oklch(0.985 0.01 95);
+    --leak: oklch(0.68 0.135 55);
+    --leak-foreground: oklch(0.985 0.01 95);
+    --border: oklch(0.905 0.006 90);
+    --line: oklch(0.88 0.007 90);
+    --input: oklch(0.9 0.006 90);
+    --ring: oklch(0.455 0.078 165);
+    --radius: 0.5rem;
+    --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * {
+    @apply border-border;
+  }
+
   html {
-    @apply antialiased;
+    @apply font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 font-sans text-body;
+    @apply bg-background text-foreground;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 
 @layer utilities {
+  .font-heading {
+    font-family: var(--font-fraunces), Georgia, serif;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .hairline {
+    border-color: var(--line);
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 35%,
+      oklch(0.99 0.004 95 / 0.85) 50%,
+      transparent 65%,
+      transparent 100%
+    );
+    background-size: 250% 100%;
+    animation: shimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer {
+      animation: none;
+      opacity: 0;
+    }
   }
 }

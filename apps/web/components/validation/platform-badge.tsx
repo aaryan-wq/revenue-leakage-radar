@@ -5,15 +5,15 @@ interface PlatformBadgeProps {
 }
 
 export function PlatformBadge({ platform }: PlatformBadgeProps) {
-  if (!platform) return null;
-
   const label =
-    platform in PLATFORM_LABELS
+    platform && platform in PLATFORM_LABELS
       ? PLATFORM_LABELS[platform as Platform]
-      : platform;
+      : platform
+        ? String(platform)
+        : "Generic CSV";
 
   return (
-    <span className="inline-flex h-7 items-center rounded-full bg-gray-100 px-3 text-caption font-medium text-gray-700">
+    <span className="inline-flex h-7 items-center rounded-full bg-secondary px-3 text-[0.72rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">
       {label}
     </span>
   );

@@ -1,0 +1,11 @@
+{
+  "fixture_id": "01_normal_company",
+  "name": "Normal Company",
+  "description": "Consistent billing \u2014 zero expected findings.",
+  "fixture_type": "minimal",
+  "target_rules": [],
+  "seed": null,
+  "rule_ids": null,
+  "customer_count": 50,
+  "allow_extra_findings": false
+}

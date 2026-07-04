@@ -5,30 +5,30 @@ import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 
+import { Logo, NAV_GREETING_CLASS, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 import { formatGreeting } from "@/lib/greeting";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { isClerkConfigured } from "@/lib/clerk";
+import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/dashboard", label: "Home" },
-  { href: "/audits", label: "Audits" },
-  { href: "/reports", label: "Reports" },
-  { href: "/uploads", label: "Uploads" },
-  { href: "/billing", label: "Billing" },
-  { href: "/integrations", label: "Integrations" },
-  { href: "/team", label: "Team" },
-  { href: "/account", label: "Settings" },
-  { href: "/help", label: "Help" },
-];
+  { href: "/dashboard", label: "Home", prefetch: true },
+  { href: "/audits", label: "Audits", prefetch: true },
+  { href: "/billing", label: "Billing", prefetch: false },
+  { href: "/integrations", label: "Integrations", prefetch: false },
+  { href: "/team", label: "Team", prefetch: false },
+  { href: "/account", label: "Settings", prefetch: false },
+  { href: "/help", label: "Help", prefetch: false },
+] as const;
 
 function isLinkActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
     return pathname === "/dashboard" || pathname === "/workspace";
   }
-  if (href === "/reports") {
+  if (href === "/audits") {
     return (
-      pathname.startsWith("/reports") ||
+      pathname.startsWith("/audits") ||
       pathname.startsWith("/report/") ||
       pathname.startsWith("/findings/")
     );
@@ -40,15 +40,11 @@ function WorkspaceGreeting() {
   const { user, isLoaded } = useUser();
 
   if (!isLoaded) {
-    return <div className="h-5 w-36 animate-pulse rounded bg-secondary" aria-hidden="true" />;
+    return <div className="hidden h-9 w-48 animate-pulse rounded bg-secondary lg:block" aria-hidden="true" />;
   }
 
   const name = user?.firstName || user?.fullName || "there";
-  return (
-    <p className="hidden shrink-0 font-heading text-[0.9rem] tracking-tight text-foreground lg:block">
-      {formatGreeting(name)}
-    </p>
-  );
+  return <p className={NAV_GREETING_CLASS}>{formatGreeting(name)}</p>;
 }
 
 export function WorkspaceNav() {
@@ -59,21 +55,28 @@ export function WorkspaceNav() {
     <header className="sticky top-0 z-50 border-b border-line/60">
       <div className="absolute inset-0 -z-10 bg-background/85 backdrop-blur-xl" />
       <nav className="mx-auto max-w-marketing px-6 md:px-10">
-        <div className="flex h-[72px] items-center justify-between gap-4">
-          {clerkReady ? <WorkspaceGreeting /> : (
-            <p className="hidden shrink-0 font-heading text-[0.9rem] tracking-tight lg:block">
-              {formatGreeting("there")}
-            </p>
-          )}
+        <div className={cn("justify-between gap-4", NAV_ROW_CLASS)}>
+          <div className="flex min-w-0 items-start gap-4">
+            <Logo variant="short" href="/dashboard" className={NAV_LOGO_CLASS.short} />
+            {clerkReady ? (
+              <WorkspaceGreeting />
+            ) : (
+              <p className={NAV_GREETING_CLASS}>{formatGreeting("there")}</p>
+            )}
+          </div>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <RunFreeAuditCta size="sm" className="hidden md:inline-flex" />
+          <div className="flex shrink-0 items-start gap-2 sm:gap-3">
+            <RunFreeAuditCta
+              size="sm"
+              fromWorkspace
+              className="hidden h-9 items-center md:inline-flex"
+            />
             {clerkReady ? (
               <UserButton appearance={clerkAppearance} />
             ) : (
               <Link
                 href="/sign-in"
-                className="rounded-full bg-primary px-4 py-2 text-[0.8rem] font-medium text-primary-foreground"
+                className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-[0.8rem] font-medium text-primary-foreground"
               >
                 Sign In
               </Link>
@@ -88,6 +91,7 @@ export function WorkspaceNav() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={link.prefetch}
                 className="relative shrink-0 px-3 py-2 text-[0.78rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
               >
                 {active && (

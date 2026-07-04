@@ -7,9 +7,9 @@ import { glide } from "@/components/motion";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 
 const STAGES = [
-  { label: "Upload", detail: "Receiving billing exports" },
+  { label: "Upload", detail: "Receiving billing and CRM exports" },
   { label: "Parse", detail: "Reading CSV structure and encoding" },
-  { label: "Normalize", detail: "Converting to canonical billing model" },
+  { label: "Normalize", detail: "Converting to canonical data model" },
   { label: "Validation", detail: "Checking schema, relationships, and duplicates" },
   { label: "Verification Checks", detail: "Running deterministic leakage rules" },
   { label: "Revenue Estimation", detail: "Quantifying recoverable annual revenue" },

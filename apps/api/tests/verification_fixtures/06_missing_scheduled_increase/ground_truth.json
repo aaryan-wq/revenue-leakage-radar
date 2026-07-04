@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_5589",
+    "name": "Synthetic Co 5589",
+    "industry": "Media",
+    "arr_target": "2778890",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "stripe",
+    "crm_platform": "hubspot",
+    "currency": "GBP",
+    "locale": "en-GB",
+    "pricing_strategy": "tiered",
+    "seat_based": true
+  },
+  "seed": 85710200,
+  "injected_rules": [
+    "missing_scheduled_increase"
+  ],
+  "findings": [
+    {
+      "rule_id": "missing_scheduled_increase",
+      "customer_id": "cust_00038",
+      "subscription_id": "sub_00038",
+      "invoice_id": null,
+      "expected_monthly_leakage": "139.3200",
+      "expected_annual_leakage": "1671.8400",
+      "expected_severity": "high",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}

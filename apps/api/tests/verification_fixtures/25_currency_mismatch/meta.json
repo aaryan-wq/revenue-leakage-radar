@@ -1,0 +1,15 @@
+{
+  "fixture_id": "25_currency_mismatch",
+  "name": "Currency Mismatch",
+  "description": "Positive test for currency_mismatch via deterministic injection.",
+  "fixture_type": "generated",
+  "target_rules": [
+    "currency_mismatch"
+  ],
+  "seed": 134326139,
+  "rule_ids": [
+    "currency_mismatch"
+  ],
+  "customer_count": 60,
+  "allow_extra_findings": false
+}

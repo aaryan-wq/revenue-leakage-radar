@@ -1,0 +1,4 @@
+Coupon ID,expires_at,discount_value,code,active,discount_type,allocation,component_id
+cpn_launch20,31/03/2024,20,LAUNCH20,true,percent,,
+cpn_partner15,12/31/2026,15,PARTNER15,true,percent,,
+cpn_refer10,31/12/2026,10,REFER10,true,percent,,

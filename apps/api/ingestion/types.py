@@ -3,6 +3,7 @@ from typing import Any
 
 import polars as pl
 
+from core.canonical_entities import CanonicalEntity
 from core.enums import FileType, Platform, ValidationResult
 
 
@@ -69,6 +70,8 @@ class IngestionContext:
     column_mappings: dict[str, dict[str, str]] = field(default_factory=dict)
     frames: dict[FileType, pl.DataFrame] = field(default_factory=dict)
     validation_report: ValidationReport = field(default_factory=ValidationReport)
+    uploaded_file_types: set[FileType] = field(default_factory=set)
+    available_entities: set[CanonicalEntity] = field(default_factory=set)
 
     def get_mapping(self, file_type: FileType) -> dict[str, str]:
         return self.column_mappings.get(file_type.value, {})

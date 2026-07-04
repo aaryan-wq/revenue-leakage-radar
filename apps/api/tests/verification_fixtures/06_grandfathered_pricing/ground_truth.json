@@ -1,0 +1,33 @@
+{
+  "profile": {
+    "company_id": "co_9906",
+    "name": "Synthetic Co 9906",
+    "industry": "Manufacturing",
+    "arr_target": "304353",
+    "customer_count": 60,
+    "product_count": 4,
+    "billing_platform": "chargebee",
+    "crm_platform": "pipedrive",
+    "currency": "USD",
+    "locale": "de-DE",
+    "pricing_strategy": "tiered",
+    "seat_based": false
+  },
+  "seed": 184820486,
+  "injected_rules": [
+    "grandfathered_pricing"
+  ],
+  "findings": [
+    {
+      "rule_id": "grandfathered_pricing",
+      "customer_id": "cust_00005",
+      "subscription_id": "sub_00065",
+      "invoice_id": null,
+      "expected_monthly_leakage": "43.8417",
+      "expected_annual_leakage": "526.1004",
+      "expected_severity": "medium",
+      "expected_evidence": {},
+      "is_negative": false
+    }
+  ]
+}
