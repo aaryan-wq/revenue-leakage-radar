@@ -121,10 +121,13 @@ def export_csv(
         track_report_exported(audit, export_format="csv", user_id=clerk_user_id)
     content = build_findings_csv(db, report)
     filename = f"revenue-findings-{report.id}.csv"
-    return Response(
-        content=content,
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    from reports.export_cache import serve_cached_export
+
+    return serve_cached_export(
+        str(report.id),
+        filename,
+        "text/csv",
+        content,
     )
 
 
@@ -141,10 +144,13 @@ def export_evidence_csv(
         track_report_exported(audit, export_format="evidence", user_id=clerk_user_id)
     content = build_evidence_csv(db, report)
     filename = f"revenue-evidence-{report.id}.csv"
-    return Response(
-        content=content,
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    from reports.export_cache import serve_cached_export
+
+    return serve_cached_export(
+        str(report.id),
+        filename,
+        "text/csv",
+        content,
     )
 
 
@@ -170,10 +176,13 @@ def export_pdf(
             detail="PDF export failed.",
         ) from exc
     filename = f"revenue-report-{report.id}.pdf"
-    return Response(
-        content=content,
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    from reports.export_cache import serve_cached_export
+
+    return serve_cached_export(
+        str(report.id),
+        filename,
+        "application/pdf",
+        content,
     )
 
 

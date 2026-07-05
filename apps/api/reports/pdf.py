@@ -29,6 +29,7 @@ from verification.recoverable import recoverable_amount_from_payload
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _LOGO_CANDIDATES = (
+    _REPO_ROOT / "apps" / "api" / "assets" / "logo-full.png",
     _REPO_ROOT / "apps" / "web" / "public" / "brand" / "logo-full.png",
     _REPO_ROOT / "assets" / "logofull.png",
 )

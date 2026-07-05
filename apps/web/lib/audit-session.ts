@@ -11,6 +11,7 @@ import type {
 import { PROCESSING_STATUSES, SCAN_PROCESSING_STATUSES } from "@rlr/shared";
 
 import { apiFetch, ApiError } from "./api";
+import { API_URL } from "./api-url";
 
 const SESSION_KEY = "rlr_audit_session";
 const AUDIT_ID_KEY = "rlr_audit_id";
@@ -295,7 +296,7 @@ export async function uploadFiles(
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/audit/${session.auditId}/upload`);
+    xhr.open("POST", `${API_URL}/audit/${session.auditId}/upload`);
     xhr.setRequestHeader("X-Audit-Session", session.sessionToken);
 
     xhr.upload.addEventListener("progress", (event) => {

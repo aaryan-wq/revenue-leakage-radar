@@ -11,6 +11,8 @@ from core.enums import AuditStatus, DataTier, FileType, Platform, UploadStatus, 
 class HealthResponse(BaseModel):
     status: str = "ok"
     version: str = "0.2.0"
+    database: bool | None = None
+    redis: bool | None = None
 
 
 class AuditCreateResponse(BaseModel):

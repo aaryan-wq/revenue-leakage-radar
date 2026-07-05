@@ -1,40 +1,32 @@
 import logging
-import shutil
 import uuid
-from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from core.config import settings
 from core.enums import UploadStatus
 from models import Audit, Upload
+from storage.factory import get_storage
+from storage.reader import storage_exists
 
 logger = logging.getLogger(__name__)
 
 
 def purge_audit_upload_files(db: Session, audit_id: uuid.UUID) -> int:
-    """Delete raw CSV files from disk and mark upload rows as purged."""
+    """Delete raw CSV files from storage and mark upload rows as purged."""
     uploads = db.query(Upload).filter(Upload.audit_id == audit_id).all()
     purged_count = 0
+    storage = get_storage()
 
     for upload in uploads:
         if upload.status == UploadStatus.PURGED.value:
             continue
-        path = Path(upload.storage_path)
-        if path.exists():
+        if storage_exists(upload.storage_path):
             try:
-                path.unlink()
+                storage.delete(upload.storage_path, bucket="uploads")
                 purged_count += 1
-            except OSError:
-                logger.exception("Failed to delete upload file %s", path)
+            except Exception:
+                logger.exception("Failed to delete upload file %s", upload.storage_path)
         upload.status = UploadStatus.PURGED.value
-
-    audit_dir = Path(settings.upload_dir) / str(audit_id)
-    if audit_dir.exists():
-        try:
-            shutil.rmtree(audit_dir, ignore_errors=True)
-        except OSError:
-            logger.exception("Failed to remove audit upload directory %s", audit_dir)
 
     if uploads:
         db.commit()

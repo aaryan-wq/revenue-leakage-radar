@@ -10,7 +10,7 @@ _WINDOW_SECONDS = 60
 _ROUTE_LIMITS: list[tuple[re.Pattern[str], int]] = [
     (re.compile(r"^POST /audit$"), 20),
     (re.compile(r"^POST /audit/[^/]+/upload$"), 40),
-    (re.compile(r"^POST /payments/webhook$"), 120),
+    (re.compile(r"^POST /webhooks/stripe$"), 120),
     (re.compile(r"^POST /audit/[^/]+/scan$"), 30),
     (re.compile(r"^POST /audit/[^/]+/validate$"), 30),
 ]

@@ -1,22 +1,25 @@
-from pathlib import Path
-
 import polars as pl
 
 from core.enums import FileType
+from storage.reader import read_csv_from_storage, storage_exists
 
 
 class CSVParseError(Exception):
     pass
 
 
-def read_csv_file(path: Path) -> pl.DataFrame:
-    if not path.exists():
-        raise CSVParseError(f"File not found: {path}")
+def read_csv_file(storage_path: str) -> pl.DataFrame:
+    if not storage_exists(storage_path):
+        raise CSVParseError(f"File not found: {storage_path}")
 
     try:
-        return pl.read_csv(path, infer_schema_length=1000, try_parse_dates=True)
+        return read_csv_from_storage(
+            storage_path,
+            infer_schema_length=1000,
+            try_parse_dates=True,
+        )
     except Exception as exc:
-        raise CSVParseError(f"Unable to parse CSV: {path.name}") from exc
+        raise CSVParseError(f"Unable to parse CSV: {storage_path}") from exc
 
 
 def apply_column_mapping(df: pl.DataFrame, mapping: dict[str, str]) -> pl.DataFrame:
@@ -41,8 +44,7 @@ def load_uploaded_frames(
         if file_type == FileType.UNKNOWN:
             continue
 
-        path = Path(upload.storage_path)
-        df = read_csv_file(path)
+        df = read_csv_file(upload.storage_path)
         mapping = column_mappings.get(file_type.value, {})
         frames[file_type] = apply_column_mapping(df, mapping)
 

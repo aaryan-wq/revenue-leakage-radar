@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from pydantic import model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _API_ROOT = Path(__file__).resolve().parent.parent
@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         ),
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
     database_url: str = "postgresql://rlr:rlr_dev_password@localhost:5432/revenue_leakage_radar"
@@ -31,18 +32,38 @@ class Settings(BaseSettings):
     clerk_jwt_audience: str = ""
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
-    environment: str = "development"
+    environment: str = Field(
+        default="development",
+        validation_alias=AliasChoices("ENVIRONMENT", "APP_ENV"),
+    )
     dev_unlock_enabled: bool = False
     celery_task_always_eager: bool = False
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
-    stripe_price_single_report: str = ""
+    stripe_price_single_report: str = Field(
+        default="",
+        validation_alias=AliasChoices("STRIPE_PRICE_SINGLE_REPORT", "STRIPE_PAID_AUDIT_PRICE_ID"),
+    )
     stripe_price_annual_membership: str = ""
     annual_membership_report_credits: int = 12
-    web_url: str = "http://localhost:3000"
+    web_url: str = Field(
+        default="http://localhost:3000",
+        validation_alias=AliasChoices("WEB_URL", "FRONTEND_URL", "APP_BASE_URL"),
+    )
     support_email: str = "contact@paevo.co"
+    from_email: str = Field(default="hello@paevo.co", validation_alias="FROM_EMAIL")
     posthog_api_key: str = ""
     posthog_host: str = "https://us.i.posthog.com"
+    sentry_dsn: str = Field(default="", validation_alias="SENTRY_DSN")
+    resend_api_key: str = Field(default="", validation_alias="RESEND_API_KEY")
+    storage_backend: str = Field(default="local", validation_alias="STORAGE_BACKEND")
+    r2_account_id: str = Field(default="", validation_alias="R2_ACCOUNT_ID")
+    r2_access_key_id: str = Field(default="", validation_alias="R2_ACCESS_KEY_ID")
+    r2_secret_access_key: str = Field(default="", validation_alias="R2_SECRET_ACCESS_KEY")
+    r2_endpoint: str = Field(default="", validation_alias="R2_ENDPOINT")
+    r2_bucket_uploads: str = Field(default="paevo-prod-uploads", validation_alias="R2_BUCKET_UPLOADS")
+    r2_bucket_reports: str = Field(default="paevo-prod-reports", validation_alias="R2_BUCKET_REPORTS")
+    allowed_hosts: str = Field(default="*", validation_alias="ALLOWED_HOSTS")
 
     @model_validator(mode="after")
     def warn_invalid_posthog_key(self) -> "Settings":
@@ -59,9 +80,21 @@ class Settings(BaseSettings):
     def resolve_web_url(self) -> "Settings":
         if self.web_url == "http://localhost:3000":
             public_web_url = os.environ.get("NEXT_PUBLIC_WEB_URL", "").strip()
+            if not public_web_url:
+                public_web_url = os.environ.get("NEXT_PUBLIC_APP_URL", "").strip()
             if public_web_url:
                 self.web_url = public_web_url
         return self
+
+    @model_validator(mode="after")
+    def resolve_r2_endpoint(self) -> "Settings":
+        if self.storage_backend == "r2" and not self.r2_endpoint and self.r2_account_id:
+            self.r2_endpoint = f"https://{self.r2_account_id}.r2.cloudflarestorage.com"
+        return self
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
     @property
     def clerk_auth_configured(self) -> bool:
@@ -71,11 +104,11 @@ class Settings(BaseSettings):
 
     @property
     def stripe_configured(self) -> bool:
-        return bool(
-            self.stripe_secret_key
-            and self.stripe_price_single_report
-            and self.stripe_price_annual_membership
-        )
+        return bool(self.stripe_secret_key and self.stripe_price_single_report)
+
+    @property
+    def annual_membership_configured(self) -> bool:
+        return bool(self.stripe_price_annual_membership)
 
     @property
     def clerk_jwt_audience_value(self) -> str | None:
@@ -88,6 +121,11 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def allowed_host_list(self) -> list[str]:
+        hosts = [host.strip() for host in self.allowed_hosts.split(",") if host.strip()]
+        return hosts or ["*"]
 
     @property
     def max_upload_size_bytes(self) -> int:

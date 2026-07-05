@@ -1,6 +1,5 @@
 import logging
 import uuid
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +13,8 @@ from core.config import settings
 from core.data_tiers import get_audit_data_tier_from_uploads
 from core.enums import AuditStatus, FileType, UploadStatus
 from models import Audit, Upload
+from storage.factory import get_storage, upload_key
+from storage.reader import storage_exists
 
 
 _generic_adapter = GenericAdapter()
@@ -80,12 +81,10 @@ async def save_upload(
             ),
         )
 
-    upload_dir = Path(settings.upload_dir) / str(audit.id)
-    upload_dir.mkdir(parents=True, exist_ok=True)
-
+    storage = get_storage()
     storage_filename = f"{file_type.value}_{uuid.uuid4().hex}.csv"
-    storage_path = upload_dir / storage_filename
-    storage_path.write_bytes(content)
+    object_key = upload_key(str(audit.id), storage_filename)
+    storage.put(object_key, content, bucket="uploads")
 
     replaced = False
     existing = (
@@ -95,11 +94,13 @@ async def save_upload(
     )
     if existing:
         replaced = True
-        old_path = Path(existing.storage_path)
-        if old_path.exists():
-            old_path.unlink()
+        if storage_exists(existing.storage_path):
+            try:
+                storage.delete(existing.storage_path, bucket="uploads")
+            except Exception:
+                logger.exception("Failed to delete replaced upload %s", existing.storage_path)
         existing.original_filename = file.filename
-        existing.storage_path = str(storage_path)
+        existing.storage_path = object_key
         existing.file_size = file_size
         existing.status = UploadStatus.UPLOADED.value
         _reset_ingestion_state(db, audit)
@@ -123,7 +124,7 @@ async def save_upload(
         audit_id=audit.id,
         file_type=file_type.value,
         original_filename=file.filename,
-        storage_path=str(storage_path),
+        storage_path=object_key,
         file_size=file_size,
         status=UploadStatus.UPLOADED.value,
     )
@@ -207,12 +208,12 @@ def delete_upload(db: Session, audit: Audit, upload_id: uuid.UUID) -> None:
     original_filename = upload.original_filename
     file_id = str(upload.id)
 
-    path = Path(upload.storage_path)
-    if path.exists():
+    storage = get_storage()
+    if storage_exists(upload.storage_path):
         try:
-            path.unlink()
-        except OSError:
-            logger.exception("Failed to delete upload file %s", path)
+            storage.delete(upload.storage_path, bucket="uploads")
+        except Exception:
+            logger.exception("Failed to delete upload file %s", upload.storage_path)
 
     db.delete(upload)
     db.flush()

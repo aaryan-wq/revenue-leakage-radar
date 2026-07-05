@@ -25,6 +25,10 @@ logger = logging.getLogger(__name__)
 _PAID_STATUSES = frozenset({"paid", "no_payment_required"})
 
 
+class FulfillmentError(Exception):
+    """Raised when Stripe checkout fulfillment cannot complete."""
+
+
 def _configure_stripe() -> None:
     stripe.api_key = settings.stripe_secret_key
 
@@ -32,7 +36,7 @@ def _configure_stripe() -> None:
 def ensure_stripe_configured() -> None:
     if not settings.stripe_configured:
         raise ValueError(
-            "Stripe is not configured. Set STRIPE_SECRET_KEY and price IDs."
+            "Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_SINGLE_REPORT."
         )
 
 
@@ -74,6 +78,19 @@ def _resolve_receipt_url(payment_intent: Any) -> str | None:
         return None
 
 
+def _send_purchase_confirmation(clerk_user_id: str, report_id: uuid.UUID | None) -> None:
+    if report_id is None:
+        return
+    from notifications.clerk import fetch_clerk_user_email
+    from notifications.templates import purchase_confirmation_email
+
+    email = fetch_clerk_user_email(clerk_user_id)
+    if not email:
+        return
+    report_url = f"{settings.web_url}/report/{report_id}"
+    purchase_confirmation_email(to=email, report_url=report_url)
+
+
 def create_checkout_session(
     db: Session,
     clerk_user_id: str,
@@ -83,6 +100,9 @@ def create_checkout_session(
 ) -> dict[str, str]:
     ensure_stripe_configured()
     _configure_stripe()
+
+    if plan == CheckoutPlan.ANNUAL_MEMBERSHIP and not settings.annual_membership_configured:
+        raise ValueError("Annual membership is not configured.")
 
     metadata: dict[str, str] = {
         "clerk_user_id": clerk_user_id,
@@ -196,7 +216,10 @@ def get_checkout_status(
     fulfilled = _is_session_fulfilled(db, session_id)
 
     if payment_status in _PAID_STATUSES and not fulfilled:
-        fulfill_checkout_session(db, _session_to_dict(session))
+        try:
+            fulfill_checkout_session(db, _session_to_dict(session))
+        except FulfillmentError:
+            logger.exception("Checkout fulfillment failed during status poll for %s", session_id)
         fulfilled = _is_session_fulfilled(db, session_id)
 
     return {
@@ -291,8 +314,7 @@ def fulfill_checkout_session(db: Session, session: dict[str, Any]) -> None:
     plan_str = metadata.get("plan")
 
     if not clerk_user_id or not plan_str:
-        logger.error("Checkout session missing metadata: %s", session.get("id"))
-        return
+        raise FulfillmentError(f"Checkout session missing metadata: {session.get('id')}")
 
     plan = CheckoutPlan(plan_str)
     purchase_plan = (
@@ -308,19 +330,14 @@ def fulfill_checkout_session(db: Session, session: dict[str, Any]) -> None:
         report_id = uuid.UUID(report_id_str)
         report = get_report_by_id(db, report_id)
         if not report:
-            logger.error("Report %s not found for checkout fulfillment", report_id)
-            return
+            raise FulfillmentError(f"Report {report_id} not found for checkout fulfillment")
 
         audit = get_audit_by_id(db, report.audit_id)
-        if audit:
-            if audit.clerk_user_id and audit.clerk_user_id != clerk_user_id:
-                logger.error(
-                    "Checkout fulfillment denied: audit %s owned by %s, session for %s",
-                    audit.id,
-                    audit.clerk_user_id,
-                    clerk_user_id,
-                )
-                return
+        if audit and audit.clerk_user_id and audit.clerk_user_id != clerk_user_id:
+            raise FulfillmentError(
+                f"Checkout fulfillment denied: audit {audit.id} owned by {audit.clerk_user_id}, "
+                f"session for {clerk_user_id}"
+            )
 
     customer_id = session.get("customer")
     subscription_id = session.get("subscription")
@@ -383,6 +400,7 @@ def fulfill_checkout_session(db: Session, session: dict[str, Any]) -> None:
         plan_str,
         report_id_str or "none",
     )
+    _send_purchase_confirmation(clerk_user_id, report_id)
 
 
 def handle_stripe_webhook(db: Session, payload: bytes, signature: str) -> None:

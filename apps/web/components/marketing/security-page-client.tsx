@@ -9,8 +9,7 @@ import { SecurityPageTracker } from "@/components/analytics/marketing-page-track
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 import { HairlineCard } from "@/components/ui/hairline-card";
 
-const SUPPORT_EMAIL =
-  process.env.SUPPORT_EMAIL ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@paevo.co";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@paevo.co";
 
 const SECTIONS: { icon: LucideIcon; title: string; body: string }[] = [
   {

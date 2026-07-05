@@ -28,12 +28,11 @@ def map_uploads(uploads: list[Upload]) -> AdapterOutput:
         file_type = FileType(upload.file_type)
         if file_type == FileType.UNKNOWN:
             continue
-        path = Path(upload.storage_path)
-        if not path.exists():
-            continue
-        import polars as pl
+        from storage.reader import read_csv_from_storage, storage_exists
 
-        df = pl.read_csv(path, n_rows=0, infer_schema_length=0)
+        if not storage_exists(upload.storage_path):
+            continue
+        df = read_csv_from_storage(upload.storage_path, n_rows=0, infer_schema_length=0)
         file_headers[file_type] = df.columns
 
     uploaded_types = set(file_headers.keys())

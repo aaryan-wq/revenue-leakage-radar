@@ -9,6 +9,11 @@ import { isClerkConfigured } from "@/lib/clerk";
 
 export function ClerkProviderWrapper({ children }: { children: ReactNode }) {
   if (!isClerkConfigured()) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be set in production.",
+      );
+    }
     return <AppAuthProvider>{children}</AppAuthProvider>;
   }
 

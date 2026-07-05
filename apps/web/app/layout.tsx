@@ -23,6 +23,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_WEB_URL ?? "https://paevo.co"),
   title: "Paevo",
   description: "Detect recoverable recurring revenue from billing and CRM data.",
   icons: {

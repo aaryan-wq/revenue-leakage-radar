@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { API_URL } from "@/lib/api-url";
 
 export class ApiError extends Error {
   constructor(
@@ -76,7 +76,7 @@ async function fetchWithTimeout(
       );
     }
     throw new ApiError(
-      `Cannot connect to the API at ${API_URL}. Confirm the backend is running, then open the app at http://localhost:3000 (not an IP address) if the browser blocks the request.`,
+      `Cannot connect to the API at ${API_URL}. Confirm the backend is running and NEXT_PUBLIC_API_URL is configured correctly.`,
       0,
     );
   } finally {

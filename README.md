@@ -219,3 +219,76 @@ docs/           Product, technical, and design specs
 - [Technical Spec](docs/technical-spec.md)
 - [Design System](docs/design-system.md)
 - [Build Plan](docs/build-plan.md)
+
+## Production Deploy
+
+### Service topology
+
+| Service | Platform | Root / command |
+|---------|----------|----------------|
+| Frontend | Vercel | `apps/web` (see `apps/web/vercel.json`) |
+| API | Railway | `apps/api` → `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Celery worker | Railway | `apps/api/Dockerfile` |
+| Postgres | Railway | Plugin |
+| Redis | Railway | Plugin (required for Celery) |
+| Object storage | Cloudflare R2 | Uploads + report exports |
+
+### Domains
+
+- `paevo.co` → Vercel (frontend)
+- `api.paevo.co` → Railway (API)
+- Stripe webhook → `https://api.paevo.co/webhooks/stripe`
+
+### Railway environment (API + worker)
+
+```
+ENVIRONMENT=production
+CELERY_TASK_ALWAYS_EAGER=false
+DATABASE_URL=<railway postgres>
+REDIS_URL=<railway redis>
+WEB_URL=https://paevo.co
+CORS_ORIGINS=https://paevo.co,https://www.paevo.co
+ALLOWED_HOSTS=api.paevo.co
+STORAGE_BACKEND=r2
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com
+R2_BUCKET_UPLOADS=paevo-prod-uploads
+R2_BUCKET_REPORTS=paevo-prod-reports
+CLERK_SECRET_KEY=...
+CLERK_JWT_ISSUER=...
+CLERK_JWT_AUDIENCE=https://paevo.co
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+STRIPE_PRICE_SINGLE_REPORT=...
+POSTHOG_API_KEY=...
+SENTRY_DSN=...
+RESEND_API_KEY=...
+FROM_EMAIL=hello@paevo.co
+SUPPORT_EMAIL=aaryan@paevo.co
+```
+
+Migrations run automatically via `apps/api/railway.toml` pre-deploy (`alembic upgrade head`).
+
+### Vercel environment
+
+```
+NEXT_PUBLIC_APP_URL=https://paevo.co
+NEXT_PUBLIC_API_URL=https://api.paevo.co
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_POSTHOG_KEY=...
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+NEXT_PUBLIC_SENTRY_DSN=...
+NEXT_PUBLIC_SUPPORT_EMAIL=aaryan@paevo.co
+```
+
+### Post-deploy smoke test
+
+1. `GET https://api.paevo.co/health` — database and redis healthy
+2. Anonymous upload → validation → scan (R2 + Celery + Redis)
+3. Free summary at `/summary/{audit_id}`
+4. Sign in → Stripe checkout → webhook unlocks report
+5. Export PDF/CSV (cached in R2 on repeat download)
+6. Confirm purchase confirmation email via Resend

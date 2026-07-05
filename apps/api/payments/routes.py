@@ -11,6 +11,7 @@ from core.enums import CheckoutPlan
 from database.session import get_db
 from payments.entitlements import can_unlock_with_credit, consume_credit_and_unlock
 from payments.service import (
+    FulfillmentError,
     build_billing_summary,
     create_checkout_session,
     ensure_stripe_configured,
@@ -121,12 +122,18 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)) -> dic
     signature = request.headers.get("stripe-signature", "")
     try:
         handle_stripe_webhook(db, payload, signature)
+    except FulfillmentError as exc:
+        logger.exception("Stripe webhook fulfillment failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("Stripe webhook processing failed")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Webhook processing failed.",
         ) from exc
     return {"status": "ok"}

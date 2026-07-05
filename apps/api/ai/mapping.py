@@ -1,6 +1,5 @@
 import json
 import logging
-from pathlib import Path
 
 import polars as pl
 
@@ -10,14 +9,15 @@ from ai.provider import AIProviderError, call_openai_json
 from canonical.fields import CANONICAL_FIELDS
 from core.enums import FileType, Platform
 from models import Upload
+from storage.reader import read_csv_from_storage, storage_exists
 
 logger = logging.getLogger(__name__)
 
 SAMPLE_ROWS = 5
 
 
-def _read_csv_sample(path: Path) -> tuple[list[str], list[dict[str, str]]]:
-    df = pl.read_csv(path, n_rows=SAMPLE_ROWS, infer_schema_length=0)
+def _read_csv_sample(storage_path: str) -> tuple[list[str], list[dict[str, str]]]:
+    df = read_csv_from_storage(storage_path, n_rows=SAMPLE_ROWS, infer_schema_length=0)
     headers = df.columns
     rows = df.to_dicts()
     return headers, [{k: str(v) if v is not None else "" for k, v in row.items()} for row in rows]
@@ -44,10 +44,9 @@ def detect_and_map_uploads(uploads: list[Upload]) -> tuple[Platform, dict[str, d
         file_type = FileType(upload.file_type)
         if file_type == FileType.UNKNOWN:
             continue
-        path = Path(upload.storage_path)
-        if not path.exists():
+        if not storage_exists(upload.storage_path):
             continue
-        headers, rows = _read_csv_sample(path)
+        headers, rows = _read_csv_sample(upload.storage_path)
         file_headers[file_type] = headers
         file_data[file_type] = {"headers": headers, "rows": rows}
 

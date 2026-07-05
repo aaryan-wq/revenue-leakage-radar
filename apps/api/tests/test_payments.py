@@ -14,6 +14,7 @@ from payments.entitlements import (
     grant_annual_membership,
 )
 from payments.service import (
+    FulfillmentError,
     fulfill_checkout_session,
     get_checkout_status,
     handle_stripe_webhook,
@@ -139,7 +140,8 @@ def test_fulfill_checkout_session_denies_audit_owner_mismatch():
     ), patch("payments.service._is_session_fulfilled", return_value=False), patch(
         "payments.service.unlock_report"
     ) as unlock_mock, patch("payments.service.record_report_purchase") as purchase_mock:
-        fulfill_checkout_session(db, session)
+        with pytest.raises(FulfillmentError):
+            fulfill_checkout_session(db, session)
         unlock_mock.assert_not_called()
         purchase_mock.assert_not_called()
 
@@ -342,6 +344,8 @@ def test_create_checkout_session_allows_annual_on_purchased_report():
 
     with patch("payments.service.ensure_stripe_configured"), patch(
         "payments.service._configure_stripe"
+    ), patch(
+        "payments.service.settings.stripe_price_annual_membership", "price_annual_test"
     ), patch("payments.service.get_report_by_id", return_value=report), patch(
         "payments.service.get_audit_by_id", return_value=audit
     ), patch("payments.service.link_audit_to_user"), patch(

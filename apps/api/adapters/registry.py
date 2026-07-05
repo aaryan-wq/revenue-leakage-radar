@@ -1,8 +1,6 @@
 """Platform adapter registry."""
 
-from pathlib import Path
-
-import polars as pl
+from storage.reader import read_csv_from_storage, storage_exists
 
 from adapters.base import AdapterOutput
 from adapters.generic.adapter import GenericAdapter
@@ -49,10 +47,9 @@ def read_upload_headers(uploads: list[Upload]) -> dict[FileType, list[str]]:
         file_type = FileType(upload.file_type)
         if file_type == FileType.UNKNOWN:
             continue
-        path = Path(upload.storage_path)
-        if not path.exists():
+        if not storage_exists(upload.storage_path):
             continue
-        df = pl.read_csv(path, n_rows=0, infer_schema_length=0)
+        df = read_csv_from_storage(upload.storage_path, n_rows=0, infer_schema_length=0)
         file_headers[file_type] = df.columns
     return file_headers
 

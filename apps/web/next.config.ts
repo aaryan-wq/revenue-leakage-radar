@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { withSentryConfig } from "@sentry/nextjs";
 import { loadEnvConfig } from "@next/env";
 import type { NextConfig } from "next";
 
@@ -11,8 +12,22 @@ const monorepoRoot = path.join(__dirname, "../..");
 loadEnvConfig(monorepoRoot);
 loadEnvConfig(__dirname);
 
+const isProductionBuild = process.env.NODE_ENV === "production";
+
+if (isProductionBuild) {
+  if (!process.env.NEXT_PUBLIC_API_URL) {
+    throw new Error("NEXT_PUBLIC_API_URL must be set for production builds.");
+  }
+  if (
+    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes("your_key_here")
+  ) {
+    throw new Error("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be set for production builds.");
+  }
+}
+
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? "";
-if (!posthogKey && process.env.NODE_ENV !== "test") {
+if (!posthogKey && process.env.NODE_ENV !== "test" && !isProductionBuild) {
   console.warn(
     "[analytics] NEXT_PUBLIC_POSTHOG_KEY is missing. Add it to apps/web/.env.local and restart `npm run dev`.",
   );
@@ -26,7 +41,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion", "@clerk/nextjs"],
+    instrumentationHook: true,
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+  disableLogger: true,
+});
