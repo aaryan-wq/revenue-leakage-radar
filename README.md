@@ -224,14 +224,31 @@ docs/           Product, technical, and design specs
 
 ### Service topology
 
-| Service | Platform | Root / command |
+| Service | Platform | Root / notes |
 |---------|----------|----------------|
 | Frontend | Vercel | `apps/web` (see `apps/web/vercel.json`) |
-| API | Railway | `apps/api` → `uvicorn main:app --host 0.0.0.0 --port $PORT` |
-| Celery worker | Railway | `apps/api/Dockerfile` |
+| API | Railway | `apps/api` — [`start.sh`](apps/api/start.sh) runs uvicorn |
+| Celery worker | Railway | **Same repo root `apps/api`** — [`start.sh`](apps/api/start.sh) runs Celery when service name contains `worker` or `PROCESS_ROLE=worker` |
 | Postgres | Railway | Plugin |
 | Redis | Railway | Plugin (required for Celery) |
 | Object storage | Cloudflare R2 | Uploads + report exports |
+
+### Railway: API + worker from one `railway.toml`
+
+Both services use [`apps/api/railway.toml`](apps/api/railway.toml) (`startCommand = sh start.sh`). The script picks the process:
+
+1. **Worker service** — either:
+   - Name the Railway service with `worker` in the name (e.g. `paevo-worker`), **or**
+   - Set variable `PROCESS_ROLE=worker` on that service only
+2. **API service** — default (no `PROCESS_ROLE`, name without `worker`)
+
+Copy the **same env vars** onto both services (`DATABASE_URL`, `REDIS_URL`, all `R2_*`, etc.).
+
+**Worker-only Railway settings:**
+- **Disable health check** on the worker service (Celery has no `/health` endpoint; `railway.toml` healthcheck is for the API)
+- Do not set a custom start command in the UI — `start.sh` handles it
+
+After deploy, worker logs should show `celery@... ready.` and `Task ... run_ingestion received` when you validate an upload.
 
 ### Domains
 
