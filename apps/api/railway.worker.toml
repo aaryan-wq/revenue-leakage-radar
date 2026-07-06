@@ -1,0 +1,8 @@
+# Celery worker service — point this service at Config File Path: /apps/api/railway.worker.toml
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

@@ -228,25 +228,29 @@ docs/           Product, technical, and design specs
 |---------|----------|----------------|
 | Frontend | Vercel | `apps/web` (see `apps/web/vercel.json`) |
 | API | Railway | `apps/api` — [`start.sh`](apps/api/start.sh) runs uvicorn |
-| Celery worker | Railway | **Same repo root `apps/api`** — [`start.sh`](apps/api/start.sh) runs Celery when service name contains `worker` or `PROCESS_ROLE=worker` |
+| Celery worker | Railway | `apps/api` + [`railway.worker.toml`](apps/api/railway.worker.toml) |
 | Postgres | Railway | Plugin |
 | Redis | Railway | Plugin (required for Celery) |
 | Object storage | Cloudflare R2 | Uploads + report exports |
 
-### Railway: API + worker from one `railway.toml`
+### Railway: separate config files for API and worker
 
-Both services use [`apps/api/railway.toml`](apps/api/railway.toml) (`startCommand = sh start.sh`). The script picks the process:
+Both services use root directory `apps/api`, but **different config-as-code files**:
 
-1. **Worker service** — either:
-   - Name the Railway service with `worker` in the name (e.g. `paevo-worker`), **or**
-   - Set variable `PROCESS_ROLE=worker` on that service only
-2. **API service** — default (no `PROCESS_ROLE`, name without `worker`)
+| Service | Config file path (Railway → Settings) | Start process |
+|---------|----------------------------------------|---------------|
+| API | `/apps/api/railway.toml` | [`start.sh`](apps/api/start.sh) → uvicorn, `/health` check, `alembic upgrade head` on deploy |
+| Worker | `/apps/api/railway.worker.toml` | [`Dockerfile`](apps/api/Dockerfile) → Celery, **no health check**, no migrations |
 
-Copy the **same env vars** onto both services (`DATABASE_URL`, `REDIS_URL`, all `R2_*`, etc.).
+**Worker service setup:**
+1. Root directory: `apps/api`
+2. **Config file path:** `/apps/api/railway.worker.toml` (absolute from repo root; does not follow root directory)
+3. Copy the **same env vars** as the API (`DATABASE_URL`, `REDIS_URL`, all `R2_*`, etc.)
+4. Do not set a custom start command in the UI — Dockerfile `CMD` runs Celery
 
-**Worker-only Railway settings:**
-- **Disable health check** on the worker service (Celery has no `/health` endpoint; `railway.toml` healthcheck is for the API)
-- Do not set a custom start command in the UI — `start.sh` handles it
+**API service setup:**
+1. Root directory: `apps/api`
+2. Config file path: `/apps/api/railway.toml` (default if unset)
 
 After deploy, worker logs should show `celery@... ready.` and `Task ... run_ingestion received` when you validate an upload.
 

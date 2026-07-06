@@ -1,3 +1,4 @@
+# API service — default Config File Path: /apps/api/railway.toml
 [build]
 builder = "NIXPACKS"
 
