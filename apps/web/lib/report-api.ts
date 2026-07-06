@@ -15,6 +15,7 @@ import type {
 
 import { apiDownload, apiFetch } from "./api";
 import type { AuditSession } from "./audit-session";
+import { getAuditAuthToken } from "./audit-session";
 
 export interface ReportApiOptions {
   auditSession?: string;
@@ -33,9 +34,10 @@ export async function getSummary(
   session: AuditSession,
   authToken?: string | null,
 ): Promise<FreeSummaryResponse> {
+  const resolvedToken = authToken ?? (await getAuditAuthToken());
   return apiFetch<FreeSummaryResponse>(`/summary/${auditId}`, {
     auditSession: session.sessionToken,
-    authToken,
+    authToken: resolvedToken,
   });
 }
 

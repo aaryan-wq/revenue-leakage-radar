@@ -13,6 +13,34 @@ import { PROCESSING_STATUSES, SCAN_PROCESSING_STATUSES } from "@rlr/shared";
 import { apiFetch, ApiError } from "./api";
 import { API_URL } from "./api-url";
 
+type AuthTokenProvider = () => Promise<string | null>;
+
+let authTokenProvider: AuthTokenProvider | null = null;
+
+/** Registers Clerk token lookup for audit funnel API calls (required after account link). */
+export function setAuditAuthTokenProvider(provider: AuthTokenProvider | null): void {
+  authTokenProvider = provider;
+}
+
+async function resolveAuthToken(explicit?: string | null): Promise<string | null | undefined> {
+  if (explicit !== undefined) return explicit;
+  if (!authTokenProvider) return undefined;
+  return authTokenProvider();
+}
+
+export async function getAuditAuthToken(): Promise<string | null> {
+  const token = await resolveAuthToken();
+  return token ?? null;
+}
+
+async function auditApiFetch<T>(
+  path: string,
+  options: Parameters<typeof apiFetch>[1] = {},
+): Promise<T> {
+  const authToken = await resolveAuthToken(options.authToken);
+  return apiFetch<T>(path, { ...options, authToken });
+}
+
 const SESSION_KEY = "rlr_audit_session";
 const AUDIT_ID_KEY = "rlr_audit_id";
 const AUDIT_ORIGIN_KEY = "rlr_audit_origin";
@@ -49,12 +77,36 @@ export function clearAuditSession(): void {
 }
 
 /** Discard in-progress server data and clear the browser audit session. */
+export async function linkAuditToAccount(
+  session: AuditSession,
+  authToken: string,
+): Promise<void> {
+  await auditApiFetch<void>(`/audit/${session.auditId}/link`, {
+    method: "POST",
+    auditSession: session.sessionToken,
+    authToken,
+  });
+}
+
+/** Attach the in-progress audit to the signed-in Clerk account so it appears in the workspace. */
+export async function ensureAuditLinked(authToken: string): Promise<boolean> {
+  const session = getStoredAuditSession();
+  if (!session) return false;
+
+  try {
+    await linkAuditToAccount(session, authToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function abandonAuditOnExit(): Promise<void> {
   const session = getStoredAuditSession();
   if (!session) return;
 
   try {
-    await apiFetch<void>(`/audit/${session.auditId}/session`, {
+    await auditApiFetch<void>(`/audit/${session.auditId}/session`, {
       method: "DELETE",
       auditSession: session.sessionToken,
     });
@@ -100,7 +152,7 @@ export function captureAuditOriginFromSearch(search: string | URLSearchParams): 
 }
 
 export async function createAuditSession(): Promise<AuditSession> {
-  const response = await apiFetch<AuditCreateResponse>("/audit", {
+  const response = await auditApiFetch<AuditCreateResponse>("/audit", {
     method: "POST",
   });
 
@@ -114,13 +166,13 @@ export async function createAuditSession(): Promise<AuditSession> {
 }
 
 export async function getAuditStatus(session: AuditSession): Promise<AuditStatusResponse> {
-  return apiFetch<AuditStatusResponse>(`/audit/${session.auditId}`, {
+  return auditApiFetch<AuditStatusResponse>(`/audit/${session.auditId}`, {
     auditSession: session.sessionToken,
   });
 }
 
 export async function startValidation(session: AuditSession): Promise<ValidateResponse> {
-  return apiFetch<ValidateResponse>(`/audit/${session.auditId}/validate`, {
+  return auditApiFetch<ValidateResponse>(`/audit/${session.auditId}/validate`, {
     method: "POST",
     auditSession: session.sessionToken,
   });
@@ -129,7 +181,7 @@ export async function startValidation(session: AuditSession): Promise<ValidateRe
 export async function getValidationReport(
   session: AuditSession,
 ): Promise<ValidationReportResponse> {
-  return apiFetch<ValidationReportResponse>(`/audit/${session.auditId}/validation`, {
+  return auditApiFetch<ValidationReportResponse>(`/audit/${session.auditId}/validation`, {
     auditSession: session.sessionToken,
   });
 }
@@ -148,14 +200,14 @@ export function isScanPollInProgress(status: AuditStatus): boolean {
 }
 
 export async function startScan(session: AuditSession): Promise<ScanResponse> {
-  return apiFetch<ScanResponse>(`/audit/${session.auditId}/scan`, {
+  return auditApiFetch<ScanResponse>(`/audit/${session.auditId}/scan`, {
     method: "POST",
     auditSession: session.sessionToken,
   });
 }
 
 export async function getScanReport(session: AuditSession): Promise<ScanReportResponse> {
-  return apiFetch<ScanReportResponse>(`/audit/${session.auditId}/scan`, {
+  return auditApiFetch<ScanReportResponse>(`/audit/${session.auditId}/scan`, {
     auditSession: session.sessionToken,
   });
 }
@@ -280,7 +332,7 @@ export async function pollValidationUntilSettled(
 }
 
 export async function deleteUpload(session: AuditSession, uploadId: string): Promise<void> {
-  await apiFetch<void>(`/audit/${session.auditId}/upload/${uploadId}`, {
+  await auditApiFetch<void>(`/audit/${session.auditId}/upload/${uploadId}`, {
     method: "DELETE",
     auditSession: session.sessionToken,
   });
@@ -293,11 +345,15 @@ export async function uploadFiles(
 ): Promise<UploadResponse[]> {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
+  const authToken = await resolveAuthToken();
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${API_URL}/audit/${session.auditId}/upload`);
     xhr.setRequestHeader("X-Audit-Session", session.sessionToken);
+    if (authToken) {
+      xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+    }
 
     xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable && onProgress) {

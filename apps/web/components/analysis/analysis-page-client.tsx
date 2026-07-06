@@ -3,12 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { ScanPipeline } from "@/components/analysis/scan-pipeline";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
+import { useAppAuth } from "@/lib/app-auth";
 import {
+  ensureAuditLinked,
   getScanReport,
   getStoredAuditSession,
   isScanPollInProgress,
@@ -17,6 +20,7 @@ import {
   startScan,
 } from "@/lib/audit-session";
 import { ApiError } from "@/lib/api";
+import { queryKeys } from "@/lib/query/keys";
 import { toast } from "@/lib/toast";
 import { formatCurrency, type AuditStatus, type ScanReportResponse } from "@rlr/shared";
 
@@ -26,6 +30,8 @@ function processingStatus(report: ScanReportResponse | null): AuditStatus {
 
 export function AnalysisPageClient() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { getToken, isSignedIn } = useAppAuth();
   const [report, setReport] = useState<ScanReportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [backendComplete, setBackendComplete] = useState(false);
@@ -98,6 +104,13 @@ export function AnalysisPageClient() {
 
         setReport(initial);
         if (initial.status === "completed") {
+          if (isSignedIn) {
+            const token = await getToken();
+            if (token) {
+              await ensureAuditLinked(token);
+              void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+            }
+          }
           toast.success("Analysis complete. Your revenue summary is ready.");
         } else if (initial.scan_error || initial.status === "processing_failed") {
           setError(
@@ -124,7 +137,7 @@ export function AnalysisPageClient() {
     }
 
     void run();
-  }, [router, attempt]);
+  }, [getToken, isSignedIn, queryClient, router, attempt]);
 
   const isProcessing = !backendComplete;
 
