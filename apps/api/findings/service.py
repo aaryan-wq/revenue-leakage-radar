@@ -13,13 +13,9 @@ def clear_findings(db: Session, audit_id: uuid.UUID) -> None:
     db.commit()
 
 
-def persist_findings(
-    db: Session, audit_id: uuid.UUID, findings: list[RuleFinding]
-) -> list[Finding]:
+def persist_findings(db: Session, audit_id: uuid.UUID, findings: list[RuleFinding]) -> int:
     orm_rows = [rule_finding_to_orm(audit_id, f) for f in findings]
-    for row in orm_rows:
-        db.add(row)
+    if orm_rows:
+        db.add_all(orm_rows)
     db.commit()
-    for row in orm_rows:
-        db.refresh(row)
-    return orm_rows
+    return len(orm_rows)

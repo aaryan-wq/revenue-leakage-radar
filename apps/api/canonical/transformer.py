@@ -22,6 +22,8 @@ from models import (
 
 logger = logging.getLogger(__name__)
 
+STUB_CUSTOMER_EXT = "__tier0_stub_customer__"
+
 
 def ensure_company(db: Session, audit: Audit) -> Company:
     if audit.company_id:
@@ -72,36 +74,25 @@ def clear_canonical_data(db: Session, company_id: uuid.UUID) -> None:
     db.commit()
 
 
-def _ensure_customer(
-    db: Session,
-    company_id: uuid.UUID,
-    customer_map: dict[str, uuid.UUID],
+def _register_customer(
+    refs: dict[str, tuple[str | None, str | None]],
     external_id: str,
+    *,
     name: str | None = None,
     crm_id: str | None = None,
-) -> uuid.UUID:
-    if external_id in customer_map:
-        return customer_map[external_id]
-
-    customer = Customer(
-        company_id=company_id,
-        external_customer_id=external_id,
-        name=name or external_id,
-        crm_id=crm_id,
-    )
-    db.add(customer)
-    db.flush()
-    customer_map[external_id] = customer.id
-    return customer.id
+) -> None:
+    if external_id in refs:
+        existing_name, existing_crm = refs[external_id]
+        refs[external_id] = (
+            name or existing_name,
+            crm_id or existing_crm,
+        )
+        return
+    refs[external_id] = (name, crm_id)
 
 
-def transform_customers(
-    db: Session,
-    company_id: uuid.UUID,
-    ctx: IngestionContext,
-    result: TransformResult,
-) -> dict[str, uuid.UUID]:
-    customer_map: dict[str, uuid.UUID] = {}
+def _collect_customer_refs(ctx: IngestionContext, result: TransformResult) -> dict[str, tuple[str | None, str | None]]:
+    refs: dict[str, tuple[str | None, str | None]] = {}
 
     customers_df = ctx.frames.get(FileType.CUSTOMERS)
     if customers_df is not None:
@@ -110,10 +101,8 @@ def transform_customers(
             if not external_id:
                 result.row_errors.append(RowError(FileType.CUSTOMERS.value, idx, "Missing customer_id"))
                 continue
-            _ensure_customer(
-                db,
-                company_id,
-                customer_map,
+            _register_customer(
+                refs,
                 external_id,
                 name=safe_str(row.get("name")),
                 crm_id=safe_str(row.get("crm_id")),
@@ -128,21 +117,57 @@ def transform_customers(
                     RowError(FileType.SUBSCRIPTIONS.value, idx, "Missing customer_id")
                 )
                 continue
-            _ensure_customer(
-                db,
-                company_id,
-                customer_map,
-                external_id,
-            )
+            _register_customer(refs, external_id)
 
     li_df = ctx.frames.get(FileType.INVOICE_LINE_ITEMS)
     if li_df is not None and "customer_id" in li_df.columns:
-        for idx, row in enumerate(li_df.iter_rows(named=True)):
+        for row in li_df.iter_rows(named=True):
             external_id = safe_str(row.get("customer_id"))
-            if not external_id:
-                continue
-            _ensure_customer(db, company_id, customer_map, external_id)
+            if external_id:
+                _register_customer(refs, external_id)
 
+    if FileType.INVOICES not in ctx.uploaded_file_types and li_df is not None:
+        _register_customer(refs, STUB_CUSTOMER_EXT, name="Unknown Customer")
+
+    return refs
+
+
+def _batch_insert_customers(
+    db: Session,
+    company_id: uuid.UUID,
+    refs: dict[str, tuple[str | None, str | None]],
+) -> dict[str, uuid.UUID]:
+    if not refs:
+        return {}
+
+    customer_map: dict[str, uuid.UUID] = {}
+    rows: list[Customer] = []
+    for external_id, (name, crm_id) in refs.items():
+        customer_id = uuid.uuid4()
+        customer_map[external_id] = customer_id
+        rows.append(
+            Customer(
+                id=customer_id,
+                company_id=company_id,
+                external_customer_id=external_id,
+                name=name or external_id,
+                crm_id=crm_id,
+            )
+        )
+
+    db.add_all(rows)
+    db.flush()
+    return customer_map
+
+
+def transform_customers(
+    db: Session,
+    company_id: uuid.UUID,
+    ctx: IngestionContext,
+    result: TransformResult,
+) -> dict[str, uuid.UUID]:
+    refs = _collect_customer_refs(ctx, result)
+    customer_map = _batch_insert_customers(db, company_id, refs)
     result.counts["customers"] = len(customer_map)
     return customer_map
 
@@ -158,6 +183,7 @@ def transform_subscriptions(
     if subs_df is None:
         return sub_map
 
+    subscriptions: list[Subscription] = []
     for idx, row in enumerate(subs_df.iter_rows(named=True)):
         external_sub_id = safe_str(row.get("subscription_id"))
         customer_ext = safe_str(row.get("customer_id"))
@@ -174,23 +200,29 @@ def transform_subscriptions(
             )
             continue
 
-        subscription = Subscription(
-            customer_id=customer_id,
-            external_subscription_id=external_sub_id,
-            product_id=safe_str(row.get("product_id")),
-            plan=safe_str(row.get("plan")),
-            quantity=parse_int(row.get("quantity")),
-            billing_interval=safe_str(row.get("billing_interval")),
-            price=parse_decimal(row.get("price")),
-            currency=safe_str(row.get("currency")),
-            start_date=parse_date(row.get("start_date")),
-            renewal_date=parse_date(row.get("renewal_date")),
-            status=safe_str(row.get("status")),
-            coupon_id=safe_str(row.get("coupon_id")),
+        sub_id = uuid.uuid4()
+        sub_map[external_sub_id] = sub_id
+        subscriptions.append(
+            Subscription(
+                id=sub_id,
+                customer_id=customer_id,
+                external_subscription_id=external_sub_id,
+                product_id=safe_str(row.get("product_id")),
+                plan=safe_str(row.get("plan")),
+                quantity=parse_int(row.get("quantity")),
+                billing_interval=safe_str(row.get("billing_interval")),
+                price=parse_decimal(row.get("price")),
+                currency=safe_str(row.get("currency")),
+                start_date=parse_date(row.get("start_date")),
+                renewal_date=parse_date(row.get("renewal_date")),
+                status=safe_str(row.get("status")),
+                coupon_id=safe_str(row.get("coupon_id")),
+            )
         )
-        db.add(subscription)
+
+    if subscriptions:
+        db.add_all(subscriptions)
         db.flush()
-        sub_map[external_sub_id] = subscription.id
 
     result.counts["subscriptions"] = len(sub_map)
     return sub_map
@@ -208,6 +240,7 @@ def transform_invoices(
     if inv_df is None:
         return invoice_map
 
+    invoices: list[Invoice] = []
     for idx, row in enumerate(inv_df.iter_rows(named=True)):
         invoice_ext = safe_str(row.get("invoice_id"))
         customer_ext = safe_str(row.get("customer_id"))
@@ -229,23 +262,29 @@ def transform_invoices(
         sub_ext = safe_str(row.get("subscription_id"))
         subscription_id = sub_map.get(sub_ext) if sub_ext else None
 
-        invoice = Invoice(
-            customer_id=customer_id,
-            subscription_id=subscription_id,
-            external_invoice_id=invoice_ext,
-            invoice_number=invoice_number,
-            invoice_date=parse_date(row.get("invoice_date")),
-            period_start=parse_date(row.get("period_start")),
-            period_end=parse_date(row.get("period_end")),
-            subtotal=parse_decimal(row.get("subtotal")),
-            discount=parse_decimal(row.get("discount")),
-            total=parse_decimal(row.get("total")),
-            credit_amount=parse_decimal(row.get("credit_amount")),
-            currency=safe_str(row.get("currency")),
+        invoice_id = uuid.uuid4()
+        invoice_map[invoice_ext] = invoice_id
+        invoices.append(
+            Invoice(
+                id=invoice_id,
+                customer_id=customer_id,
+                subscription_id=subscription_id,
+                external_invoice_id=invoice_ext,
+                invoice_number=invoice_number,
+                invoice_date=parse_date(row.get("invoice_date")),
+                period_start=parse_date(row.get("period_start")),
+                period_end=parse_date(row.get("period_end")),
+                subtotal=parse_decimal(row.get("subtotal")),
+                discount=parse_decimal(row.get("discount")),
+                total=parse_decimal(row.get("total")),
+                credit_amount=parse_decimal(row.get("credit_amount")),
+                currency=safe_str(row.get("currency")),
+            )
         )
-        db.add(invoice)
+
+    if invoices:
+        db.add_all(invoices)
         db.flush()
-        invoice_map[invoice_ext] = invoice.id
 
     result.counts["invoices"] = len(invoice_map)
     return invoice_map
@@ -253,7 +292,6 @@ def transform_invoices(
 
 def ensure_stub_invoices(
     db: Session,
-    company_id: uuid.UUID,
     customer_map: dict[str, uuid.UUID],
     invoice_map: dict[str, uuid.UUID],
     ctx: IngestionContext,
@@ -267,10 +305,9 @@ def ensure_stub_invoices(
     if li_df is None:
         return invoice_map
 
-    stub_customer_ext = "__tier0_stub_customer__"
-    stub_customer_id = _ensure_customer(db, company_id, customer_map, stub_customer_ext, name="Unknown Customer")
-
+    stub_customer_id = customer_map.get(STUB_CUSTOMER_EXT)
     stubs_before = len(invoice_map)
+    stub_invoices: list[Invoice] = []
 
     for idx, row in enumerate(li_df.iter_rows(named=True)):
         invoice_ext = safe_str(row.get("invoice_id"))
@@ -280,19 +317,35 @@ def ensure_stub_invoices(
         customer_ext = safe_str(row.get("customer_id"))
         customer_id = customer_map.get(customer_ext) if customer_ext else stub_customer_id
         if customer_ext and customer_ext not in customer_map:
-            customer_id = _ensure_customer(db, company_id, customer_map, customer_ext)
+            result.row_errors.append(
+                RowError(
+                    FileType.INVOICE_LINE_ITEMS.value,
+                    idx,
+                    f"Unknown customer_id for stub invoice: {customer_ext}",
+                )
+            )
+            continue
 
-        invoice = Invoice(
-            customer_id=customer_id,
-            subscription_id=None,
-            external_invoice_id=invoice_ext,
-            invoice_number=invoice_ext,
-            invoice_date=parse_date(row.get("line_item_date")),
-            currency=safe_str(row.get("currency")),
+        if not customer_id:
+            continue
+
+        invoice_id = uuid.uuid4()
+        invoice_map[invoice_ext] = invoice_id
+        stub_invoices.append(
+            Invoice(
+                id=invoice_id,
+                customer_id=customer_id,
+                subscription_id=None,
+                external_invoice_id=invoice_ext,
+                invoice_number=invoice_ext,
+                invoice_date=parse_date(row.get("line_item_date")),
+                currency=safe_str(row.get("currency")),
+            )
         )
-        db.add(invoice)
+
+    if stub_invoices:
+        db.add_all(stub_invoices)
         db.flush()
-        invoice_map[invoice_ext] = invoice.id
 
     stubs_created = len(invoice_map) - stubs_before
     if stubs_created:
@@ -306,7 +359,6 @@ def transform_line_items(
     invoice_map: dict[str, uuid.UUID],
     customer_map: dict[str, uuid.UUID],
     sub_map: dict[str, uuid.UUID],
-    company_id: uuid.UUID,
     ctx: IngestionContext,
     result: TransformResult,
 ) -> None:
@@ -314,7 +366,7 @@ def transform_line_items(
     if li_df is None:
         return
 
-    count = 0
+    line_items: list[InvoiceLineItem] = []
     for idx, row in enumerate(li_df.iter_rows(named=True)):
         invoice_ext = safe_str(row.get("invoice_id"))
         invoice_id = invoice_map.get(invoice_ext) if invoice_ext else None
@@ -323,7 +375,14 @@ def transform_line_items(
         customer_ext = safe_str(row.get("customer_id"))
         customer_id = customer_map.get(customer_ext) if customer_ext else None
         if customer_ext and not customer_id:
-            customer_id = _ensure_customer(db, company_id, customer_map, customer_ext)
+            result.row_errors.append(
+                RowError(
+                    FileType.INVOICE_LINE_ITEMS.value,
+                    idx,
+                    f"Unknown customer_id: {customer_ext}",
+                )
+            )
+            continue
 
         sub_ext = safe_str(row.get("subscription_id"))
         subscription_id = sub_map.get(sub_ext) if sub_ext else None
@@ -338,27 +397,30 @@ def transform_line_items(
             )
             continue
 
-        line_item = InvoiceLineItem(
-            invoice_id=invoice_id,
-            referenced_invoice_id=referenced_invoice_id,
-            customer_id=customer_id,
-            subscription_id=subscription_id,
-            external_line_item_id=safe_str(row.get("line_item_id")),
-            product_id=safe_str(row.get("product_id")),
-            sku=safe_str(row.get("sku")),
-            quantity=parse_int(row.get("quantity")),
-            unit_price=parse_decimal(row.get("unit_price")),
-            extended_price=parse_decimal(row.get("extended_price")),
-            billing_interval=safe_str(row.get("billing_interval")),
-            line_item_date=parse_date(row.get("line_item_date")),
-            currency=safe_str(row.get("currency")),
-            is_manual_override=parse_bool(row.get("is_manual_override")) or False,
+        line_items.append(
+            InvoiceLineItem(
+                invoice_id=invoice_id,
+                referenced_invoice_id=referenced_invoice_id,
+                customer_id=customer_id,
+                subscription_id=subscription_id,
+                external_line_item_id=safe_str(row.get("line_item_id")),
+                product_id=safe_str(row.get("product_id")),
+                sku=safe_str(row.get("sku")),
+                quantity=parse_int(row.get("quantity")),
+                unit_price=parse_decimal(row.get("unit_price")),
+                extended_price=parse_decimal(row.get("extended_price")),
+                billing_interval=safe_str(row.get("billing_interval")),
+                line_item_date=parse_date(row.get("line_item_date")),
+                currency=safe_str(row.get("currency")),
+                is_manual_override=parse_bool(row.get("is_manual_override")) or False,
+            )
         )
-        db.add(line_item)
-        count += 1
 
-    db.flush()
-    result.counts["invoice_line_items"] = count
+    if line_items:
+        db.add_all(line_items)
+        db.flush()
+
+    result.counts["invoice_line_items"] = len(line_items)
 
 
 def transform_coupons(db: Session, company_id: uuid.UUID, ctx: IngestionContext, result: TransformResult) -> None:
@@ -366,26 +428,29 @@ def transform_coupons(db: Session, company_id: uuid.UUID, ctx: IngestionContext,
     if coupons_df is None:
         return
 
-    count = 0
+    coupons: list[Coupon] = []
     for idx, row in enumerate(coupons_df.iter_rows(named=True)):
         code = safe_str(row.get("code"))
         if not code:
             result.row_errors.append(RowError(FileType.COUPONS.value, idx, "Missing coupon code"))
             continue
 
-        coupon = Coupon(
-            company_id=company_id,
-            code=code,
-            discount_type=safe_str(row.get("discount_type")),
-            discount_value=parse_decimal(row.get("discount_value")),
-            expires_at=parse_date(row.get("expires_at")),
-            active=parse_bool(row.get("active")),
+        coupons.append(
+            Coupon(
+                company_id=company_id,
+                code=code,
+                discount_type=safe_str(row.get("discount_type")),
+                discount_value=parse_decimal(row.get("discount_value")),
+                expires_at=parse_date(row.get("expires_at")),
+                active=parse_bool(row.get("active")),
+            )
         )
-        db.add(coupon)
-        count += 1
 
-    db.flush()
-    result.counts["coupons"] = count
+    if coupons:
+        db.add_all(coupons)
+        db.flush()
+
+    result.counts["coupons"] = len(coupons)
 
 
 def transform_price_catalog(
@@ -395,28 +460,31 @@ def transform_price_catalog(
     if catalog_df is None:
         return
 
-    count = 0
+    entries: list[PriceCatalog] = []
     for idx, row in enumerate(catalog_df.iter_rows(named=True)):
         product_id = safe_str(row.get("product_id"))
         if not product_id:
             result.row_errors.append(RowError(FileType.PRICE_CATALOG.value, idx, "Missing product_id"))
             continue
 
-        entry = PriceCatalog(
-            company_id=company_id,
-            product_id=product_id,
-            sku=safe_str(row.get("sku")),
-            version=safe_str(row.get("version")),
-            effective_date=parse_date(row.get("effective_date")),
-            list_price=parse_decimal(row.get("list_price")),
-            currency=safe_str(row.get("currency")),
-            billing_interval=safe_str(row.get("billing_interval")),
+        entries.append(
+            PriceCatalog(
+                company_id=company_id,
+                product_id=product_id,
+                sku=safe_str(row.get("sku")),
+                version=safe_str(row.get("version")),
+                effective_date=parse_date(row.get("effective_date")),
+                list_price=parse_decimal(row.get("list_price")),
+                currency=safe_str(row.get("currency")),
+                billing_interval=safe_str(row.get("billing_interval")),
+            )
         )
-        db.add(entry)
-        count += 1
 
-    db.flush()
-    result.counts["price_catalog"] = count
+    if entries:
+        db.add_all(entries)
+        db.flush()
+
+    result.counts["price_catalog"] = len(entries)
 
 
 def transform_crm_accounts(
@@ -425,12 +493,14 @@ def transform_crm_accounts(
     customer_map: dict[str, uuid.UUID],
     ctx: IngestionContext,
     result: TransformResult,
-) -> dict[str, uuid.UUID]:
+) -> tuple[dict[str, uuid.UUID], dict[str, uuid.UUID | None]]:
     account_map: dict[str, uuid.UUID] = {}
+    account_customer_map: dict[str, uuid.UUID | None] = {}
     df = ctx.frames.get(FileType.CRM_ACCOUNTS)
     if df is None:
-        return account_map
+        return account_map, account_customer_map
 
+    accounts: list[CrmAccount] = []
     for idx, row in enumerate(df.iter_rows(named=True)):
         ext_id = safe_str(row.get("account_id"))
         if not ext_id:
@@ -440,26 +510,33 @@ def transform_crm_accounts(
         customer_ext = safe_str(row.get("customer_id"))
         customer_id = customer_map.get(customer_ext) if customer_ext else None
 
-        account = CrmAccount(
-            company_id=company_id,
-            external_account_id=ext_id,
-            customer_id=customer_id,
-            name=safe_str(row.get("name")),
-            seat_count=parse_int(row.get("seat_count")),
+        account_id = uuid.uuid4()
+        account_map[ext_id] = account_id
+        account_customer_map[ext_id] = customer_id
+        accounts.append(
+            CrmAccount(
+                id=account_id,
+                company_id=company_id,
+                external_account_id=ext_id,
+                customer_id=customer_id,
+                name=safe_str(row.get("name")),
+                seat_count=parse_int(row.get("seat_count")),
+            )
         )
-        db.add(account)
+
+    if accounts:
+        db.add_all(accounts)
         db.flush()
-        account_map[ext_id] = account.id
 
     result.counts["crm_accounts"] = len(account_map)
-    return account_map
+    return account_map, account_customer_map
 
 
 def transform_crm_contracts(
     db: Session,
     company_id: uuid.UUID,
-    customer_map: dict[str, uuid.UUID],
     account_map: dict[str, uuid.UUID],
+    account_customer_map: dict[str, uuid.UUID | None],
     ctx: IngestionContext,
     result: TransformResult,
 ) -> None:
@@ -467,7 +544,7 @@ def transform_crm_contracts(
     if df is None:
         return
 
-    count = 0
+    contracts: list[CrmContract] = []
     for idx, row in enumerate(df.iter_rows(named=True)):
         ext_id = safe_str(row.get("contract_id"))
         if not ext_id:
@@ -476,29 +553,28 @@ def transform_crm_contracts(
 
         account_ext = safe_str(row.get("account_id"))
         account_id = account_map.get(account_ext) if account_ext else None
-        customer_id = None
-        if account_id:
-            account = db.query(CrmAccount).filter(CrmAccount.id == account_id).first()
-            if account:
-                customer_id = account.customer_id
+        customer_id = account_customer_map.get(account_ext) if account_ext else None
 
-        contract = CrmContract(
-            company_id=company_id,
-            external_contract_id=ext_id,
-            account_id=account_id,
-            customer_id=customer_id,
-            contract_price=parse_decimal(row.get("contract_price")),
-            price_increase_date=parse_date(row.get("price_increase_date")),
-            expected_renewal_price=parse_decimal(row.get("expected_renewal_price")),
-            start_date=parse_date(row.get("start_date")),
-            end_date=parse_date(row.get("end_date")),
-            seat_count=parse_int(row.get("seat_count")),
+        contracts.append(
+            CrmContract(
+                company_id=company_id,
+                external_contract_id=ext_id,
+                account_id=account_id,
+                customer_id=customer_id,
+                contract_price=parse_decimal(row.get("contract_price")),
+                price_increase_date=parse_date(row.get("price_increase_date")),
+                expected_renewal_price=parse_decimal(row.get("expected_renewal_price")),
+                start_date=parse_date(row.get("start_date")),
+                end_date=parse_date(row.get("end_date")),
+                seat_count=parse_int(row.get("seat_count")),
+            )
         )
-        db.add(contract)
-        count += 1
 
-    db.flush()
-    result.counts["crm_contracts"] = count
+    if contracts:
+        db.add_all(contracts)
+        db.flush()
+
+    result.counts["crm_contracts"] = len(contracts)
 
 
 def run_canonical_transform(db: Session, audit: Audit, ctx: IngestionContext) -> TransformResult:
@@ -509,12 +585,12 @@ def run_canonical_transform(db: Session, audit: Audit, ctx: IngestionContext) ->
     customer_map = transform_customers(db, company.id, ctx, result)
     sub_map = transform_subscriptions(db, customer_map, ctx, result)
     invoice_map = transform_invoices(db, customer_map, sub_map, ctx, result)
-    invoice_map = ensure_stub_invoices(db, company.id, customer_map, invoice_map, ctx, result)
-    transform_line_items(db, invoice_map, customer_map, sub_map, company.id, ctx, result)
+    invoice_map = ensure_stub_invoices(db, customer_map, invoice_map, ctx, result)
+    transform_line_items(db, invoice_map, customer_map, sub_map, ctx, result)
     transform_coupons(db, company.id, ctx, result)
     transform_price_catalog(db, company.id, ctx, result)
-    account_map = transform_crm_accounts(db, company.id, customer_map, ctx, result)
-    transform_crm_contracts(db, company.id, customer_map, account_map, ctx, result)
+    account_map, account_customer_map = transform_crm_accounts(db, company.id, customer_map, ctx, result)
+    transform_crm_contracts(db, company.id, account_map, account_customer_map, ctx, result)
 
     db.commit()
     return result

@@ -40,13 +40,13 @@ def run_verification_engine(db: Session, audit: Audit) -> ScanReport:
     coverage = analyze_coverage_from_context(ctx)
     coverage_score = coverage.get("estimated_confidence")
 
-    persisted = persist_findings(db, audit.id, attributed)
+    finding_count = persist_findings(db, audit.id, attributed)
     transition_audit_status(db, audit, AuditStatus.GENERATING_REPORT)
-    upsert_report(db, audit.id, recoverable, len(persisted), overall_conf)
+    upsert_report(db, audit.id, recoverable, finding_count, overall_conf)
 
     report = report.model_copy(
         update={
-            "finding_count": len(persisted),
+            "finding_count": finding_count,
             "recoverable_arr": str(recoverable),
             "overall_confidence": str(overall_conf) if overall_conf is not None else None,
         }
@@ -69,7 +69,7 @@ def run_verification_engine(db: Session, audit: Audit) -> ScanReport:
     logger.info(
         "Verification complete for audit %s: %d findings, ARR %s",
         audit.id,
-        len(persisted),
+        finding_count,
         recoverable,
     )
     return report
