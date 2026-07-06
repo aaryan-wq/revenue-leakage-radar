@@ -1,0 +1,3 @@
+item_id,product_id,name,price,currency_code,period,period_unit
+plan_pro,plan_pro,Pro Plan,99.00,USD,month,1
+plan_basic,plan_basic,Basic Plan,49.00,USD,month,1

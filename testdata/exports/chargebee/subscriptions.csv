@@ -1,0 +1,3 @@
+subscription_id,customer_id,plan_id,status,billing_period,billing_period_unit,unit_price
+sub_cb_001,cust_cb_001,plan_pro,active,month,1,99.00
+sub_cb_002,cust_cb_002,plan_basic,active,month,1,49.00

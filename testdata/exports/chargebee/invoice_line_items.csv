@@ -1,0 +1,3 @@
+line_item_id,invoice_id,customer_id,product_id,quantity,unit_price,amount
+li_cb_001,inv_cb_001,cust_cb_001,plan_pro,1,99.00,99.00
+li_cb_002,inv_cb_002,cust_cb_002,plan_basic,1,49.00,49.00

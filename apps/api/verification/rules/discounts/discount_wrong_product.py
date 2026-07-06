@@ -34,45 +34,45 @@ class DiscountWrongProductRule:
 
     def evaluate(self, ctx: CanonicalContext) -> list[RuleResult]:
         findings: list[RuleResult] = []
-        for sub in ctx.subscriptions:
-            if not sub.coupon_id or not is_active_subscription(sub.status) or not sub.product_id:
+        for invoice in ctx.invoices:
+            if not invoice.discount or invoice.discount <= 0 or not invoice.subscription_id:
                 continue
-            for invoice in ctx.invoices_for_subscription(sub.id):
-                if not invoice.discount or invoice.discount <= 0:
+            sub = ctx.subscription_by_id(invoice.subscription_id)
+            if not sub or not sub.coupon_id or not is_active_subscription(sub.status) or not sub.product_id:
+                continue
+            for line_item in ctx.line_items_for_invoice(invoice.id):
+                if not line_item.product_id or line_item.product_id == sub.product_id:
                     continue
-                for line_item in ctx.line_items_for_invoice(invoice.id):
-                    if not line_item.product_id or line_item.product_id == sub.product_id:
-                        continue
-                    if line_item.unit_price is None:
-                        continue
-                    catalog = ctx.catalog_for_product(line_item.product_id, line_item.sku)
-                    if not catalog or catalog.list_price is None:
-                        continue
-                    monthly, annual, trace = FinancialCalculator.compute_recurring_leakage(
-                        catalog.list_price,
-                        line_item.unit_price,
-                        line_item.quantity or 1,
-                        line_item.billing_interval or sub.billing_interval,
+                if line_item.unit_price is None:
+                    continue
+                catalog = ctx.catalog_for_product(line_item.product_id, line_item.sku)
+                if not catalog or catalog.list_price is None:
+                    continue
+                monthly, annual, trace = FinancialCalculator.compute_recurring_leakage(
+                    catalog.list_price,
+                    line_item.unit_price,
+                    line_item.quantity or 1,
+                    line_item.billing_interval or sub.billing_interval,
+                )
+                findings.append(
+                    make_result(
+                        scope=scope_from_subscription(sub, invoice, line_item.product_id),
+                        expected=catalog.list_price,
+                        actual=line_item.unit_price,
+                        difference=catalog.list_price - line_item.unit_price,
+                        calculation=trace,
+                        recommendation=self.spec.recommendation_template,
+                        evidence=[
+                            EvidenceInput(
+                                field="wrong_product_discount",
+                                expected=sub.product_id,
+                                actual=line_item.product_id,
+                                reference_ids={"coupon": sub.coupon_id or ""},
+                            )
+                        ],
                     )
-                    findings.append(
-                        make_result(
-                            scope=scope_from_subscription(sub, invoice, line_item.product_id),
-                            expected=catalog.list_price,
-                            actual=line_item.unit_price,
-                            difference=catalog.list_price - line_item.unit_price,
-                            calculation=trace,
-                            recommendation=self.spec.recommendation_template,
-                            evidence=[
-                                EvidenceInput(
-                                    field="wrong_product_discount",
-                                    expected=sub.product_id,
-                                    actual=line_item.product_id,
-                                    reference_ids={"coupon": sub.coupon_id or ""},
-                                )
-                            ],
-                        )
-                    )
-                    break
+                )
+                break
         return findings
 
 

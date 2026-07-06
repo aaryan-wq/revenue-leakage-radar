@@ -4,7 +4,7 @@ import { clearAuditSession } from "./helpers/audit";
 
 const PUBLIC_PAGES = [
   { path: "/", title: /paevo|detect recoverable/i },
-  { path: "/upload", title: /upload|billing.*crm|csv/i },
+  { path: "/upload", title: /hand us the records|provide your data|upload/i },
   { path: "/pricing", title: /pricing/i },
   { path: "/security", title: /security/i },
   { path: "/faq", title: /faq|frequently/i },
@@ -49,7 +49,7 @@ test.describe("Navigation", () => {
     const links = [
       nav.getByRole("link", { name: "Pricing", exact: true }),
       nav.getByRole("link", { name: "Security", exact: true }),
-      nav.getByRole("link", { name: /run free scan/i }),
+      nav.getByRole("link", { name: "How It Works", exact: true }),
     ];
 
     for (const link of links) {

@@ -163,7 +163,7 @@ def test_build_report_pdf_returns_bytes():
     with patch("reports.pdf.build_report_detail", return_value=detail) as mock_detail:
         pdf_bytes = build_report_pdf(db, report)
 
-    mock_detail.assert_called_once_with(db, report, evidence_record_limit=None)
+    mock_detail.assert_called_once_with(db, report, evidence_record_limit=None, include_findings=True)
 
     assert pdf_bytes.startswith(b"%PDF")
     assert len(pdf_bytes) > 2_000

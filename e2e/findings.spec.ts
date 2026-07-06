@@ -1,6 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-import { devUnlockReport, getFindingDetail, getReportDetail } from "./helpers/api";
+import {
+  devUnlockReport,
+  getClerkAuthToken,
+  getFindingDetail,
+  getReportFindings,
+  getSummaryForAudit,
+  linkAuditToClerkUser,
+} from "./helpers/api";
 import { runFullAnonymousPipeline, clearAuditSession, waitForApiHealthy } from "./helpers/audit";
 import { fixturePath } from "./helpers/fixtures";
 import { isClerkConfigured } from "./helpers/env";
@@ -22,18 +29,16 @@ test.describe("Findings UI", () => {
     expect(auditId).toBeTruthy();
     expect(sessionToken).toBeTruthy();
 
-    const summaryResponse = await request.get(
-      `${process.env.PLAYWRIGHT_API_URL ?? "http://localhost:8000"}/summary/${auditId}`,
-      { headers: { "X-Audit-Session": sessionToken! } },
-    );
-    const summary = await summaryResponse.json();
+    const summary = await getSummaryForAudit(request, auditId!, { sessionToken });
 
     if (!summary.finding_count || summary.finding_count === 0) {
       test.skip(true, "No findings in fixture data for this run");
     }
 
-    const report = await getReportDetail(request, summary.report_id, sessionToken!).catch(() => null);
-    if (report?.findings?.length) {
+    const findingsPage = await getReportFindings(request, summary.report_id!, { sessionToken }).catch(
+      () => null,
+    );
+    if (findingsPage?.items?.length) {
       test.skip(true, "Report unexpectedly accessible before purchase");
     }
 
@@ -41,6 +46,17 @@ test.describe("Findings UI", () => {
     await expect(page.getByText(/unavailable|locked|sign in|purchase|not found|unable/i).first()).toBeVisible({
       timeout: 30_000,
     });
+  });
+});
+
+test.describe("Findings auth", () => {
+  test.skip(!isClerkConfigured(), "Clerk not configured");
+
+  test.use({ storageState: "e2e/.auth/user.json" });
+
+  test.beforeEach(async ({ page, request }) => {
+    await waitForApiHealthy(request);
+    await clearAuditSession(page);
   });
 
   test("unlocked finding shows evidence and consistent leakage math", async ({ page, request }) => {
@@ -53,25 +69,24 @@ test.describe("Findings UI", () => {
     const sessionToken = await page.evaluate(() => localStorage.getItem("rlr_audit_session"));
     expect(auditId).toBeTruthy();
 
-    const summaryResponse = await request.get(
-      `${process.env.PLAYWRIGHT_API_URL ?? "http://localhost:8000"}/summary/${auditId}`,
-      { headers: { "X-Audit-Session": sessionToken! } },
-    );
-    expect(summaryResponse.ok()).toBeTruthy();
-    const summary = await summaryResponse.json();
+    const summary = await getSummaryForAudit(request, auditId!, { sessionToken });
+    expect(summary.report_id).toBeTruthy();
     const reportId = summary.report_id as string;
-    expect(reportId).toBeTruthy();
 
     if (!summary.finding_count || summary.finding_count === 0) {
       test.skip(true, "No findings generated for fixture data");
     }
 
-    await devUnlockReport(request, reportId);
-    const report = await getReportDetail(request, reportId, sessionToken!);
-    expect(report.findings.length).toBeGreaterThan(0);
+    const authToken = await getClerkAuthToken(page);
+    expect(authToken).toBeTruthy();
+    await linkAuditToClerkUser(request, auditId!, authToken!, sessionToken!);
+    await devUnlockReport(request, reportId, authToken!);
 
-    const findingId = report.findings[0].id;
-    const apiFinding = await getFindingDetail(request, findingId, sessionToken!);
+    const findingsPage = await getReportFindings(request, reportId, { authToken });
+    expect(findingsPage.items.length).toBeGreaterThan(0);
+
+    const findingId = findingsPage.items[0].id;
+    const apiFinding = await getFindingDetail(request, findingId, { authToken });
 
     await page.goto(`/findings/${findingId}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 30_000 });
@@ -85,12 +100,6 @@ test.describe("Findings UI", () => {
 
     await expect(page.getByRole("button", { name: /copy link/i })).toBeVisible();
   });
-});
-
-test.describe("Findings auth", () => {
-  test.skip(!isClerkConfigured(), "Clerk not configured");
-
-  test.use({ storageState: "e2e/.auth/user.json" });
 
   test("fake finding ID shows error", async ({ page }) => {
     await page.goto("/findings/00000000-0000-0000-0000-000000000099");

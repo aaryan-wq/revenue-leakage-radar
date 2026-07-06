@@ -69,16 +69,7 @@ def test_engine_runs_and_persists(
         ),
     )
 
-    mock_finding = Finding(
-        id=uuid.uuid4(),
-        audit_id=mock_audit.id,
-        rule_id="test",
-        severity="high",
-        confidence=Decimal("90"),
-        estimated_monthly_loss=Decimal("10"),
-        estimated_arr_loss=Decimal("120"),
-    )
-    mock_persist.return_value = [mock_finding]
+    mock_persist.return_value = 1
 
     db = MagicMock()
     report = run_verification_engine(db, mock_audit)
@@ -123,7 +114,7 @@ def test_engine_skips_when_required_entities_missing(
             rule_logs=[],
         ),
     )
-    mock_persist.return_value = []
+    mock_persist.return_value = 0
 
     db = MagicMock()
     report = run_verification_engine(db, mock_audit)

@@ -49,14 +49,14 @@ export default defineConfig({
               ? "cd apps\\api && .venv\\Scripts\\python.exe -m uvicorn main:app --port 8000"
               : "cd apps/api && .venv/bin/python -m uvicorn main:app --port 8000",
           url: `${apiURL}/health`,
-          reuseExistingServer: true,
+          reuseExistingServer: !process.env.CI,
           timeout: 120_000,
           cwd: path.resolve(__dirname),
         },
         {
           command: "npm run dev",
           url: baseURL,
-          reuseExistingServer: true,
+          reuseExistingServer: !process.env.CI,
           timeout: 120_000,
           cwd: path.resolve(__dirname),
         },

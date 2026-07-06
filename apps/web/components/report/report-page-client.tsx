@@ -326,7 +326,7 @@ function ReportContent({
         </Reveal>
 
         <div className="mt-16">
-          <FindingsTable findings={report.findings} />
+          <FindingsTable reportId={report.id} totalCount={report.findings_total} />
         </div>
 
         <Reveal>

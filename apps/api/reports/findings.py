@@ -38,8 +38,14 @@ CATEGORY_LABELS: dict[str, str] = {
 }
 
 
+_RULE_LOOKUP: dict[str, RuleDefinition] | None = None
+
+
 def rule_lookup() -> dict[str, RuleDefinition]:
-    return {rule.rule_id: rule for rule in RULES}
+    global _RULE_LOOKUP
+    if _RULE_LOOKUP is None:
+        _RULE_LOOKUP = {rule.rule_id: rule for rule in RULES}
+    return _RULE_LOOKUP
 
 
 def category_label(category: str) -> str:

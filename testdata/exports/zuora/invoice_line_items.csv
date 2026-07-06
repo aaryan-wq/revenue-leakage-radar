@@ -1,0 +1,3 @@
+InvoiceItemId,InvoiceNumber,AccountNumber,ProductName,Quantity,ChargeAmount
+II-Z-001,INV-Z-001,ACC-Z-001,Pro Plan,1,120.00
+II-Z-002,INV-Z-002,ACC-Z-002,Basic Plan,1,60.00

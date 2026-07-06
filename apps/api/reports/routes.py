@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -16,14 +16,16 @@ from database.session import get_db
 from models import Audit, Finding, Report
 from reports.exports import build_evidence_csv, build_findings_csv
 from reports.entity_ids import EntityIdResolver
-from reports.findings import build_primary_finding_lookup, serialize_finding
+from reports.findings import serialize_finding
 from reports.generator import build_report_detail
+from reports.pagination import build_primary_lookup_for_finding, query_report_findings
 from reports.service import build_dashboard, get_report_by_id, list_user_reports, unlock_report
 from reports.summary import get_audit_summary
 from schemas import (
     DashboardResponse,
     FindingDetailResponse,
     FreeSummaryResponse,
+    PaginatedFindingsResponse,
     ReportDetailResponse,
     ReportListItem,
     UnlockReportResponse,
@@ -66,8 +68,33 @@ def get_report(
     audit = db.query(Audit).filter(Audit.id == report.audit_id).first()
     if audit is not None:
         track_report_viewed(audit, user_id=clerk_user_id)
-    data = build_report_detail(db, report)
+    data = build_report_detail(db, report, include_findings=False)
     return ReportDetailResponse(**data)
+
+
+@router.get("/reports/{report_id}/findings", response_model=PaginatedFindingsResponse)
+def list_report_findings(
+    report: Report = Depends(verify_report_purchased),
+    db: Session = Depends(get_db),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=25, ge=1, le=100),
+    sort: str = Query(default="arr_desc"),
+    category: str | None = Query(default=None),
+) -> PaginatedFindingsResponse:
+    if sort not in {"arr_desc", "severity", "rule_id"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid sort. Use arr_desc, severity, or rule_id.",
+        )
+    data = query_report_findings(
+        db,
+        report,
+        page=page,
+        page_size=page_size,
+        sort=sort,  # type: ignore[arg-type]
+        category=category,
+    )
+    return PaginatedFindingsResponse(**data)
 
 
 @router.get("/findings/{finding_id}", response_model=FindingDetailResponse)
@@ -81,9 +108,8 @@ def get_finding(
     audit = db.query(Audit).filter(Audit.id == finding.audit_id).first()
     if audit is not None:
         track_finding_viewed(audit, finding_id=str(finding.id), user_id=clerk_user_id)
-    audit_findings = db.query(Finding).filter(Finding.audit_id == finding.audit_id).all()
+    primary_by_ref = build_primary_lookup_for_finding(db, finding)
     entity_resolver = EntityIdResolver.for_findings(db, [finding])
-    primary_by_ref = build_primary_finding_lookup(audit_findings)
     payload = serialize_finding(
         finding,
         entity_resolver=entity_resolver,

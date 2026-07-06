@@ -58,7 +58,9 @@ HEADER_SYNONYMS: dict[str, str] = {
 
 
 def normalize_header(header: str) -> str:
-    cleaned = header.strip().lower()
+    cleaned = header.strip()
+    cleaned = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", cleaned)
+    cleaned = cleaned.lower()
     cleaned = re.sub(r"[^a-z0-9]+", " ", cleaned).strip()
     return cleaned
 

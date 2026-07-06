@@ -13,7 +13,7 @@ import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { ApiError } from "@/lib/api";
 import { WORKSPACE_UPLOAD_HREF, getStoredAuditSession } from "@/lib/audit-session";
-import { getDashboard, getReport } from "@/lib/report-api";
+import { getDashboard, getReportFindings } from "@/lib/report-api";
 import { formatCurrency, type DashboardResponse, type FindingResponse } from "@rlr/shared";
 
 export function WorkspacePageClient() {
@@ -63,11 +63,15 @@ export function WorkspacePageClient() {
 
       const session = getStoredAuditSession();
       try {
-        const report = await getReport(topAudit.report_id, {
-          auditSession: session?.sessionToken,
-          authToken: token,
-        });
-        setFindings(report.findings);
+        const findingsPage = await getReportFindings(
+          topAudit.report_id,
+          {
+            auditSession: session?.sessionToken,
+            authToken: token,
+          },
+          { page: 1, page_size: 25 },
+        );
+        setFindings(findingsPage.items);
       } catch {
         setFindings([]);
       }

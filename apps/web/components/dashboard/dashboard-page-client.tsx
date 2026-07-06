@@ -20,7 +20,7 @@ import {
   downloadReportCsv,
   downloadReportPdf,
   getDashboard,
-  getReport,
+  getReportFindings,
 } from "@/lib/report-api";
 import {
   formatCurrency,
@@ -47,11 +47,15 @@ export function DashboardPageClient() {
     async (reportId: string, authToken: string) => {
       const session = getStoredAuditSession();
       try {
-        const report = await getReport(reportId, {
-          auditSession: session?.sessionToken,
-          authToken,
-        });
-        setFindings(report.findings);
+        const findingsPage = await getReportFindings(
+          reportId,
+          {
+            auditSession: session?.sessionToken,
+            authToken,
+          },
+          { page: 1, page_size: 25 },
+        );
+        setFindings(findingsPage.items);
         setActiveReportId(reportId);
       } catch {
         setFindings([]);

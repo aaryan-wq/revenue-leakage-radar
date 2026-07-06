@@ -76,7 +76,16 @@ def run_ingestion_pipeline(db: Session, audit: Audit) -> None:
         db.commit()
         tracking.track_validation_completed(audit)
         purge_audit_upload_files_by_audit(db, audit)
-        logger.info("Ingestion complete for audit %s", audit.id)
+        logger.info(
+            "audit_milestone audit_id=%s milestone=ingestion_complete "
+            "customers=%s subscriptions=%s invoices=%s line_items=%s row_errors=%s",
+            audit.id,
+            transform_result.counts.get("customers", 0),
+            transform_result.counts.get("subscriptions", 0),
+            transform_result.counts.get("invoices", 0),
+            transform_result.counts.get("invoice_line_items", 0),
+            len(transform_result.row_errors),
+        )
 
     except Exception as exc:
         logger.exception("Ingestion failed for audit %s", audit.id)

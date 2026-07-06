@@ -476,3 +476,57 @@ async def test_stripe_webhook_idempotent():
         handle_stripe_webhook(db, b"{}", "sig")
         fulfill_mock.assert_not_called()
         record_mock.assert_not_called()
+
+
+def test_fulfill_checkout_session_unlocks_report_in_db():
+    import secrets
+    from decimal import Decimal
+
+    from core.enums import AuditStatus, CheckoutPlan
+    from database.session import SessionLocal
+    from models import Audit, Report
+    from payments.service import fulfill_checkout_session
+
+    db = SessionLocal()
+    session_id = f"cs_integration_{uuid.uuid4().hex[:12]}"
+    audit = Audit(
+        session_token=secrets.token_urlsafe(32),
+        status=AuditStatus.COMPLETED.value,
+    )
+    db.add(audit)
+    db.flush()
+    report = Report(
+        audit_id=audit.id,
+        recoverable_arr=Decimal("1200"),
+        finding_count=2,
+        purchased=False,
+    )
+    db.add(report)
+    db.commit()
+
+    try:
+        fulfill_checkout_session(
+            db,
+            {
+                "id": session_id,
+                "metadata": {
+                    "report_id": str(report.id),
+                    "clerk_user_id": "user_integration",
+                    "plan": CheckoutPlan.SINGLE_REPORT.value,
+                },
+                "amount_total": 150000,
+                "currency": "usd",
+            },
+        )
+        db.refresh(report)
+        assert report.purchased is True
+    finally:
+        from models import ReportPurchase
+
+        db.query(ReportPurchase).filter(ReportPurchase.report_id == report.id).delete(
+            synchronize_session=False
+        )
+        db.delete(report)
+        db.delete(audit)
+        db.commit()
+        db.close()

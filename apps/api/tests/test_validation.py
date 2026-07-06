@@ -17,6 +17,8 @@ from ingestion.types import ValidationReport
 def test_map_header_synonym():
     assert map_header_to_canonical("Customer ID", FileType.SUBSCRIPTIONS) == "customer_id"
     assert map_header_to_canonical("subscription_id", FileType.SUBSCRIPTIONS) == "subscription_id"
+    assert map_header_to_canonical("customerId", FileType.SUBSCRIPTIONS) == "customer_id"
+    assert map_header_to_canonical("StartDate", FileType.SUBSCRIPTIONS) == "start_date"
 
 
 def test_fallback_platform_detection():

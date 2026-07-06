@@ -259,7 +259,17 @@ class ReportDetailResponse(BaseModel):
     executive_summary: ExecutiveSummaryResponse
     opportunity_breakdown: list[OpportunityBreakdownItem]
     verification_checks: list[VerificationCheckItem]
-    findings: list[FindingResponse]
+    findings_total: int = 0
+    locked_preview: list[LockedPreviewItem] = Field(default_factory=list)
+    findings: list[FindingResponse] = Field(default_factory=list)
+
+
+class PaginatedFindingsResponse(BaseModel):
+    items: list[FindingResponse]
+    total: int
+    page: int
+    page_size: int
+    has_more: bool
 
 
 class FindingDetailResponse(FindingResponse):

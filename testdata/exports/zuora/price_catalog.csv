@@ -1,0 +1,3 @@
+ProductRatePlanChargeId,ProductName,ListPrice,Currency,BillingPeriod
+PRC-PRO,Pro Plan,120.00,USD,Month
+PRC-BASIC,Basic Plan,60.00,USD,Month

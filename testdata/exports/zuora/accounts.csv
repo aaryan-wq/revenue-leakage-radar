@@ -1,0 +1,3 @@
+AccountNumber,AccountName,BillToContact.WorkEmail
+ACC-Z-001,Zuora Alpha,zuora-alpha@example.com
+ACC-Z-002,Zuora Beta,zuora-beta@example.com
