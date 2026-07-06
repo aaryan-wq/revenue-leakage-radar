@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { devUnlockReport, getFindingDetail, getReportDetail } from "./helpers/api";
+import { devUnlockReport, getClerkAuthToken, getFindingDetail, getReportDetail, linkAuditToClerkUser } from "./helpers/api";
 import { runFullAnonymousPipeline, clearAuditSession, waitForApiHealthy } from "./helpers/audit";
 import { fixturePath } from "./helpers/fixtures";
 import { isClerkConfigured } from "./helpers/env";
@@ -42,6 +42,17 @@ test.describe("Findings UI", () => {
       timeout: 30_000,
     });
   });
+});
+
+test.describe("Findings auth", () => {
+  test.skip(!isClerkConfigured(), "Clerk not configured");
+
+  test.use({ storageState: "e2e/.auth/user.json" });
+
+  test.beforeEach(async ({ page, request }) => {
+    await waitForApiHealthy(request);
+    await clearAuditSession(page);
+  });
 
   test("unlocked finding shows evidence and consistent leakage math", async ({ page, request }) => {
     test.setTimeout(300_000);
@@ -66,7 +77,10 @@ test.describe("Findings UI", () => {
       test.skip(true, "No findings generated for fixture data");
     }
 
-    await devUnlockReport(request, reportId);
+    const authToken = await getClerkAuthToken(page);
+    expect(authToken).toBeTruthy();
+    await linkAuditToClerkUser(request, auditId!, authToken!, sessionToken!);
+    await devUnlockReport(request, reportId, authToken!);
     const report = await getReportDetail(request, reportId, sessionToken!);
     expect(report.findings.length).toBeGreaterThan(0);
 
@@ -85,12 +99,6 @@ test.describe("Findings UI", () => {
 
     await expect(page.getByRole("button", { name: /copy link/i })).toBeVisible();
   });
-});
-
-test.describe("Findings auth", () => {
-  test.skip(!isClerkConfigured(), "Clerk not configured");
-
-  test.use({ storageState: "e2e/.auth/user.json" });
 
   test("fake finding ID shows error", async ({ page }) => {
     await page.goto("/findings/00000000-0000-0000-0000-000000000099");

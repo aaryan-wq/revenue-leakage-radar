@@ -171,12 +171,18 @@ def _build_coverage(audit: Audit) -> dict[str, Any]:
     }
 
 
-def build_free_summary(db: Session, audit: Audit) -> dict[str, Any]:
+def build_free_summary(
+    db: Session,
+    audit: Audit,
+    *,
+    findings: list[Finding] | None = None,
+) -> dict[str, Any]:
     report = db.query(Report).filter(Report.audit_id == audit.id).first()
     if not report:
         raise ValueError("Report not found for audit")
 
-    findings = db.query(Finding).filter(Finding.audit_id == audit.id).all()
+    if findings is None:
+        findings = db.query(Finding).filter(Finding.audit_id == audit.id).all()
     scan_report = audit.scan_report or {}
     counts = _canonical_counts(db, audit)
     recoverable = report.recoverable_arr

@@ -24,13 +24,13 @@ def build_report_detail(
     if not audit:
         raise ValueError("Audit not found")
 
-    summary = build_free_summary(db, audit)
     findings = (
         db.query(Finding)
         .filter(Finding.audit_id == audit.id)
         .order_by(Finding.estimated_arr_loss.desc())
         .all()
     )
+    summary = build_free_summary(db, audit, findings=findings)
     confidence_bands = sum_arr_by_confidence_band(findings)
     narrative = generate_executive_narrative(summary)
     entity_resolver = EntityIdResolver.for_findings(db, findings)

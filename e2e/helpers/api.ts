@@ -1,15 +1,49 @@
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext, Page } from "@playwright/test";
+import { clerk } from "@clerk/testing/playwright";
 
 import { apiBaseUrl } from "./env";
+
+export async function getClerkAuthToken(page: Page): Promise<string | null> {
+  await clerk.loaded({ page });
+  return page.evaluate(async () => {
+    const clerkClient = (window as Window & { Clerk?: { session?: { getToken: () => Promise<string | null> } } })
+      .Clerk;
+    return clerkClient?.session?.getToken() ?? null;
+  });
+}
+
+export async function linkAuditToClerkUser(
+  request: APIRequestContext,
+  auditId: string,
+  authToken: string,
+  sessionToken?: string,
+): Promise<void> {
+  const headers: Record<string, string> = { Authorization: `Bearer ${authToken}` };
+  if (sessionToken) {
+    headers["X-Audit-Session"] = sessionToken;
+  }
+
+  const response = await request.post(`${apiBaseUrl()}/audit/${auditId}/link`, { headers });
+  if (!response.ok() && response.status() !== 204) {
+    const body = await response.text();
+    throw new Error(`Audit link failed (${response.status()}): ${body}`);
+  }
+}
 
 export async function devUnlockReport(
   request: APIRequestContext,
   reportId: string,
+  authToken?: string,
 ): Promise<void> {
-  const response = await request.post(`${apiBaseUrl()}/dev/reports/${reportId}/unlock`);
+  const headers: Record<string, string> = {};
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  const response = await request.post(`${apiBaseUrl()}/dev/reports/${reportId}/unlock`, { headers });
   if (!response.ok()) {
     const body = await response.text();
-    throw new Error(`Dev unlock failed (${response.status}): ${body}`);
+    throw new Error(`Dev unlock failed (${response.status()}): ${body}`);
   }
 }
 

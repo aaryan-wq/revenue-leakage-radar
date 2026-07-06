@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { devUnlockReport } from "./helpers/api";
+import { devUnlockReport, getClerkAuthToken, linkAuditToClerkUser } from "./helpers/api";
 import { clearAuditSession, runFullAnonymousPipeline, waitForApiHealthy } from "./helpers/audit";
 import { fixturePath } from "./helpers/fixtures";
 import { isClerkConfigured, isStripeConfigured } from "./helpers/env";
@@ -56,7 +56,10 @@ test.describe("Payments and entitlements", () => {
     const summary = await summaryResponse.json();
     const reportId = summary.report_id as string;
 
-    await devUnlockReport(request, reportId);
+    const authToken = await getClerkAuthToken(page);
+    expect(authToken).toBeTruthy();
+    await linkAuditToClerkUser(request, auditId!, authToken!, sessionToken!);
+    await devUnlockReport(request, reportId, authToken!);
     await page.goto(`/report/${reportId}`);
     await expect(page.getByText(/report|findings|recoverable|executive/i).first()).toBeVisible({
       timeout: 30_000,
@@ -70,7 +73,7 @@ test.describe("Payments and entitlements", () => {
     const files = ["invoice_line_items.csv", "price_catalog.csv"].map(fixturePath);
     await runFullAnonymousPipeline(page, files);
 
-    const purchaseBtn = page.getByRole("button", { name: /purchase report/i });
+    const purchaseBtn = page.getByRole("button", { name: /purchase revenue verification report/i });
     await purchaseBtn.scrollIntoViewIfNeeded();
     await expect(purchaseBtn).toBeVisible({ timeout: 30_000 });
 

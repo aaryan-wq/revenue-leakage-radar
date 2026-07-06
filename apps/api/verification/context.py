@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from core.canonical_entities import CanonicalEntity, entities_from_uploaded_files
 from core.data_tiers import get_audit_data_tier_from_entities
@@ -116,6 +116,14 @@ class CanonicalContext:
     has_credit_data: bool = False
     has_manual_override_data: bool = False
     anchor_date: datetime = field(default_factory=lambda: datetime(1970, 1, 1, tzinfo=timezone.utc))
+    _customers_by_id: dict[uuid.UUID, Customer] = field(default_factory=dict, init=False, repr=False)
+    _subscriptions_by_id: dict[uuid.UUID, Subscription] = field(default_factory=dict, init=False, repr=False)
+    _invoices_by_id: dict[uuid.UUID, Invoice] = field(default_factory=dict, init=False, repr=False)
+    _coupons_by_code: dict[str, Coupon] = field(default_factory=dict, init=False, repr=False)
+    _contracts_by_customer: dict[uuid.UUID, list[CrmContract]] = field(default_factory=dict, init=False, repr=False)
+    _crm_accounts_by_customer: dict[uuid.UUID, CrmAccount] = field(default_factory=dict, init=False, repr=False)
+    _catalog_by_product: dict[str, list[PriceCatalog]] = field(default_factory=dict, init=False, repr=False)
+    _catalog_by_sku: dict[str, list[PriceCatalog]] = field(default_factory=dict, init=False, repr=False)
     _by_customer: dict[uuid.UUID, list[Subscription]] = field(default_factory=dict, init=False, repr=False)
     _by_subscription_invoices: dict[uuid.UUID, list[Invoice]] = field(default_factory=dict, init=False, repr=False)
     _by_invoice_line_items: dict[uuid.UUID, list[InvoiceLineItem]] = field(default_factory=dict, init=False, repr=False)
@@ -127,6 +135,7 @@ class CanonicalContext:
     )
     _field_availability: set[tuple[str, str]] = field(default_factory=set, init=False, repr=False)
     _product_ids: set[str] = field(default_factory=set, init=False, repr=False)
+    _reference_date: datetime | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self._build_indexes()
@@ -134,6 +143,8 @@ class CanonicalContext:
     @property
     def reference_date(self) -> datetime:
         """Latest invoice or line-item date in the dataset, deterministic audit anchor."""
+        if self._reference_date is not None:
+            return self._reference_date
         candidates: list[datetime] = []
         for invoice in self.invoices:
             if invoice.invoice_date:
@@ -145,21 +156,51 @@ class CanonicalContext:
             ref = self.anchor_date
             if ref.tzinfo is None:
                 ref = ref.replace(tzinfo=timezone.utc)
+            self._reference_date = ref
             return ref
         ref = max(candidates)
         if ref.tzinfo is None:
             ref = ref.replace(tzinfo=timezone.utc)
+        self._reference_date = ref
         return ref
 
     def _build_indexes(self) -> None:
+        for customer in self.customers:
+            self._customers_by_id[customer.id] = customer
+
         for sub in self.subscriptions:
+            self._subscriptions_by_id[sub.id] = sub
             self._by_customer.setdefault(sub.customer_id, []).append(sub)
             if sub.product_id:
                 self._product_ids.add(sub.product_id)
 
         for invoice in self.invoices:
+            self._invoices_by_id[invoice.id] = invoice
             if invoice.subscription_id:
                 self._by_subscription_invoices.setdefault(invoice.subscription_id, []).append(invoice)
+
+        for subscription_id, invoice_list in self._by_subscription_invoices.items():
+            invoice_list.sort(key=lambda inv: (inv.invoice_date or datetime.min.replace(tzinfo=timezone.utc), inv.id))
+
+        for coupon in self.coupons:
+            self._coupons_by_code[coupon.code.lower()] = coupon
+
+        for contract in self.crm_contracts:
+            self._contracts_by_customer.setdefault(contract.customer_id, []).append(contract)
+
+        for account in self.crm_accounts:
+            self._crm_accounts_by_customer[account.customer_id] = account
+
+        for entry in self.price_catalog:
+            if entry.product_id:
+                self._catalog_by_product.setdefault(entry.product_id, []).append(entry)
+            if entry.sku:
+                self._catalog_by_sku.setdefault(entry.sku, []).append(entry)
+
+        for entries in self._catalog_by_product.values():
+            entries.sort(key=lambda entry: entry.effective_date or datetime.min.replace(tzinfo=timezone.utc))
+        for entries in self._catalog_by_sku.values():
+            entries.sort(key=lambda entry: entry.effective_date or datetime.min.replace(tzinfo=timezone.utc))
 
         for line_item in self.line_items:
             if line_item.invoice_id:
@@ -223,15 +264,15 @@ class CanonicalContext:
         return set(self._product_ids)
 
     def customer_by_id(self, customer_id: uuid.UUID) -> Customer | None:
-        return next((customer for customer in self.customers if customer.id == customer_id), None)
+        return self._customers_by_id.get(customer_id)
 
     def subscription_by_id(self, subscription_id: uuid.UUID) -> Subscription | None:
-        return next((sub for sub in self.subscriptions if sub.id == subscription_id), None)
+        return self._subscriptions_by_id.get(subscription_id)
 
     def invoice_by_id(self, invoice_id: uuid.UUID | None) -> Invoice | None:
         if not invoice_id:
             return None
-        return next((invoice for invoice in self.invoices if invoice.id == invoice_id), None)
+        return self._invoices_by_id.get(invoice_id)
 
     def subscriptions_for_customer(self, customer_id: uuid.UUID) -> list[Subscription]:
         return list(self._by_customer.get(customer_id, []))
@@ -253,30 +294,32 @@ class CanonicalContext:
     def coupon_by_code(self, code: str | None) -> Coupon | None:
         if not code:
             return None
-        code_lower = code.lower()
-        return next((coupon for coupon in self.coupons if coupon.code.lower() == code_lower), None)
+        return self._coupons_by_code.get(code.lower())
+
+    def _catalog_entry_at(
+        self, matches: list[PriceCatalog], as_of: datetime | None = None
+    ) -> PriceCatalog | None:
+        if not matches:
+            return None
+        ref = as_of or self.reference_date
+        valid = [entry for entry in matches if entry.effective_date is None or entry.effective_date <= ref]
+        pool = valid or matches
+        return max(pool, key=lambda entry: entry.effective_date or datetime.min.replace(tzinfo=timezone.utc))
 
     def catalog_for_product(
         self, product_id: str | None, sku: str | None = None, as_of: datetime | None = None
     ) -> PriceCatalog | None:
         if not product_id and not sku:
             return None
-        ref = as_of or self.reference_date
         if product_id:
-            matches = [entry for entry in self.price_catalog if entry.product_id == product_id]
-        else:
-            matches = [entry for entry in self.price_catalog if entry.sku == sku]
-        if not matches:
-            return None
-        valid = [entry for entry in matches if entry.effective_date is None or entry.effective_date <= ref]
-        pool = valid or matches
-        return max(pool, key=lambda entry: entry.effective_date or datetime.min.replace(tzinfo=timezone.utc))
+            return self._catalog_entry_at(self._catalog_by_product.get(product_id, []), as_of)
+        return self._catalog_entry_at(self._catalog_by_sku.get(sku or "", []), as_of)
 
     def latest_catalog_version(self, product_id: str | None, sku: str | None = None) -> PriceCatalog | None:
         if product_id:
-            matches = [entry for entry in self.price_catalog if entry.product_id == product_id]
+            matches = self._catalog_by_product.get(product_id, [])
         elif sku:
-            matches = [entry for entry in self.price_catalog if entry.sku == sku]
+            matches = self._catalog_by_sku.get(sku, [])
         else:
             matches = []
         if not matches:
@@ -284,10 +327,10 @@ class CanonicalContext:
         return max(matches, key=lambda entry: entry.effective_date or datetime.min.replace(tzinfo=timezone.utc))
 
     def contracts_for_customer(self, customer_id: uuid.UUID) -> list[CrmContract]:
-        return [contract for contract in self.crm_contracts if contract.customer_id == customer_id]
+        return list(self._contracts_by_customer.get(customer_id, []))
 
     def crm_account_for_customer(self, customer_id: uuid.UUID) -> CrmAccount | None:
-        return next((account for account in self.crm_accounts if account.customer_id == customer_id), None)
+        return self._crm_accounts_by_customer.get(customer_id)
 
     def has_multiple_invoices_for_any_subscription(self) -> bool:
         return any(len(invoices) >= 2 for invoices in self._by_subscription_invoices.values())
@@ -343,12 +386,7 @@ def load_audit_context(db: Session, audit_id: uuid.UUID, company_id: uuid.UUID) 
 
     if customer_ids:
         subscriptions = db.query(Subscription).filter(Subscription.customer_id.in_(customer_ids)).all()
-        invoices = (
-            db.query(Invoice)
-            .options(joinedload(Invoice.line_items))
-            .filter(Invoice.customer_id.in_(customer_ids))
-            .all()
-        )
+        invoices = db.query(Invoice).filter(Invoice.customer_id.in_(customer_ids)).all()
         invoice_ids = [invoice.id for invoice in invoices]
         if invoice_ids or customer_ids:
             filters = []

@@ -19,9 +19,22 @@ def to_decimal(value: str | Decimal | float | int | None) -> Decimal | None:
 def parse_date(value: str | None) -> datetime | None:
     if not value:
         return None
-    if "T" in value:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    return datetime.fromisoformat(value).replace(tzinfo=timezone.utc)
+    cleaned = str(value).strip()
+    if not cleaned:
+        return None
+    if "T" in cleaned:
+        return datetime.fromisoformat(cleaned.replace("Z", "+00:00"))
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(cleaned[:10] if len(cleaned) > 10 else cleaned, fmt).replace(
+                tzinfo=timezone.utc
+            )
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(cleaned).replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
 
 
 def add_months(d: date, months: int = 1) -> date:

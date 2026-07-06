@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { clearAuditSession, runFullAnonymousPipeline, waitForApiHealthy } from "./helpers/audit";
+import { clearAuditSession, runFullAnonymousPipeline, uploadCsvFiles, waitForApiHealthy } from "./helpers/audit";
 import { fixturePath } from "./helpers/fixtures";
 
 test.describe("Analysis Workflow", () => {
@@ -23,12 +23,8 @@ test.describe("Analysis Workflow", () => {
 
   test("shows loading states during validation", async ({ page }) => {
     const files = ["invoice_line_items.csv", "price_catalog.csv"].map(fixturePath);
-    await page.goto("/upload");
-    const fileInput = page.locator('input[type="file"][accept=".csv"]');
-    await fileInput.setInputFiles(files);
-    await page.getByRole("button", { name: "Upload Files" }).click();
+    await uploadCsvFiles(page, files);
 
-    await page.waitForURL(/\/validation/, { timeout: 90_000 });
     const loadingOrContent = page.getByText(/validat|mapping|processing|ready/i).first();
     await expect(loadingOrContent).toBeVisible({ timeout: 120_000 });
   });
@@ -47,11 +43,7 @@ test.describe("Analysis Workflow", () => {
     test.setTimeout(300_000);
 
     const files = ["invoice_line_items.csv", "price_catalog.csv"].map(fixturePath);
-    await page.goto("/upload");
-    const fileInput = page.locator('input[type="file"][accept=".csv"]');
-    await fileInput.setInputFiles(files);
-    await page.getByRole("button", { name: "Upload Files" }).click();
-    await page.waitForURL(/\/validation/, { timeout: 90_000 });
+    await uploadCsvFiles(page, files);
 
     await page.goto("/analysis");
     await page.reload();

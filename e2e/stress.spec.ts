@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { clearAuditSession } from "./helpers/audit";
+import { clearAuditSession, UPLOAD_ZONE_HEADING } from "./helpers/audit";
 
 test.describe("Browser Stress", () => {
   test.beforeEach(async ({ page }) => {
@@ -21,13 +21,13 @@ test.describe("Browser Stress", () => {
     for (let i = 0; i < 5; i++) {
       await page.reload();
     }
-    await expect(page.getByText("Drop your billing and CRM CSVs here")).toBeVisible();
+    await expect(page.getByRole("heading", { name: UPLOAD_ZONE_HEADING })).toBeVisible();
   });
 
   test("navigate away during upload init", async ({ page }) => {
     await page.goto("/upload");
     await page.goto("/pricing");
     await page.goto("/upload");
-    await expect(page.getByText("Drop your billing and CRM CSVs here")).toBeVisible();
+    await expect(page.getByRole("heading", { name: UPLOAD_ZONE_HEADING })).toBeVisible();
   });
 });
