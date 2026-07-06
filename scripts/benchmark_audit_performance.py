@@ -50,12 +50,20 @@ def main() -> None:
         help="Customer counts to benchmark",
     )
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--max-engine-ms",
+        type=int,
+        default=0,
+        help="Fail if engine time at largest size exceeds threshold (0 = no gate)",
+    )
     args = parser.parse_args()
 
     print(f"{'Customers':>10} {'Findings':>10} {'Generate':>12} {'Context':>12} {'Engine':>12} {'Total':>12}")
     print("-" * 72)
+    largest_engine = 0.0
     for size in args.sizes:
         row = benchmark(size, args.seed + size)
+        largest_engine = max(largest_engine, row["engine_ms"])
         print(
             f"{int(row['customers']):>10} "
             f"{int(row['findings']):>10} "
@@ -66,6 +74,13 @@ def main() -> None:
         )
         if row["errors"] > 0:
             print(f"  WARNING: {int(row['errors'])} engine errors")
+
+    if args.max_engine_ms > 0 and largest_engine > args.max_engine_ms:
+        print(
+            f"\nFAIL: largest engine time {largest_engine:.0f}ms exceeds "
+            f"threshold {args.max_engine_ms}ms"
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":

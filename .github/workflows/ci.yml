@@ -101,7 +101,7 @@ jobs:
       - name: Run migrations
         run: cd apps/api && .venv/bin/alembic upgrade head
       - name: Engine benchmark gate
-        run: apps/api/.venv/bin/python scripts/benchmark_audit_performance.py --sizes 1000 --seed 42
+        run: apps/api/.venv/bin/python scripts/benchmark_audit_performance.py --sizes 1000 2000 --max-engine-ms 500
       - name: Ingestion benchmark gate
         run: apps/api/.venv/bin/python scripts/benchmark_ingestion.py --sizes 500 1000 --max-ingest-ms 15000
 
