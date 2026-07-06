@@ -39,9 +39,13 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_POSTHOG_KEY: posthogKey,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
   },
+  // Monorepo + ESLint 9 flat config breaks @rushstack/eslint-patch during `next build` on Vercel.
+  // Run `npm run lint` locally / in CI instead.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion", "@clerk/nextjs"],
-    instrumentationHook: true,
   },
 };
 
