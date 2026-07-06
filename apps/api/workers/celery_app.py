@@ -20,4 +20,7 @@ celery_app.conf.update(
     task_soft_time_limit=3300,
     task_always_eager=settings.celery_task_always_eager,
     task_eager_propagates=True,
+    worker_concurrency=settings.celery_worker_concurrency,
+    worker_prefetch_multiplier=1,
+    worker_max_tasks_per_child=10,
 )

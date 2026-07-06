@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     )
     dev_unlock_enabled: bool = False
     celery_task_always_eager: bool = False
+    celery_worker_concurrency: int = Field(default=2, validation_alias="CELERY_WORKER_CONCURRENCY")
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
     stripe_price_single_report: str = Field(

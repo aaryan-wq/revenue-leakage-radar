@@ -265,6 +265,7 @@ After deploy, worker logs should show `celery@... ready.` and `Task ... run_inge
 ```
 ENVIRONMENT=production
 CELERY_TASK_ALWAYS_EAGER=false
+CELERY_WORKER_CONCURRENCY=2
 DATABASE_URL=<railway postgres>
 REDIS_URL=<railway redis>
 WEB_URL=https://paevo.co
