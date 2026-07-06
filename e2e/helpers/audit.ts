@@ -1,6 +1,8 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+import { goldenUploadFiles } from "./fixtures";
+
 export const UPLOAD_ZONE_HEADING = "Place your data here";
 
 export async function clearAuditSession(page: Page): Promise<void> {
@@ -103,4 +105,8 @@ export async function runFullAnonymousPipeline(
       await page.waitForURL(/\/summary/, { timeout: 30_000 });
     }
   }
+}
+
+export async function runGoldenPipeline(page: Page): Promise<void> {
+  await runFullAnonymousPipeline(page, goldenUploadFiles());
 }
