@@ -1,6 +1,9 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+export const UPLOAD_ZONE_HEADING = /place your data here/i;
+export const CONTINUE_TO_VALIDATION = /continue to validation/i;
+
 export async function clearAuditSession(page: Page): Promise<void> {
   await page.goto("/");
   await page.evaluate(() => {
@@ -17,11 +20,31 @@ export async function waitForApiHealthy(request: { get: (url: string) => Promise
   }
 }
 
+export async function waitForUploadPageReady(page: Page): Promise<void> {
+  await page.goto("/upload");
+  await page.getByText(UPLOAD_ZONE_HEADING).waitFor({ state: "visible", timeout: 60_000 });
+  await page.getByText(/preparing upload session/i).waitFor({ state: "hidden", timeout: 60_000 }).catch(() => undefined);
+}
+
+export async function waitForFilesUploaded(page: Page, fileNames: string[]): Promise<void> {
+  const continueBtn = page.getByRole("button", { name: CONTINUE_TO_VALIDATION });
+  await expect(continueBtn).toBeEnabled({ timeout: 120_000 });
+
+  for (const filePath of fileNames) {
+    const name = filePath.split(/[/\\]/).pop()!;
+    await page.getByRole("button", { name: new RegExp(`remove ${name}`, "i") }).waitFor({
+      state: "visible",
+      timeout: 60_000,
+    });
+  }
+}
+
 export async function ensureOnValidation(page: Page): Promise<void> {
   if (page.url().includes("/validation")) return;
 
-  const continueBtn = page.getByRole("button", { name: "Continue to Validation" });
+  const continueBtn = page.getByRole("button", { name: CONTINUE_TO_VALIDATION });
   if (await continueBtn.isVisible().catch(() => false)) {
+    await expect(continueBtn).toBeEnabled({ timeout: 90_000 });
     await continueBtn.click();
   }
 
@@ -29,21 +52,11 @@ export async function ensureOnValidation(page: Page): Promise<void> {
 }
 
 export async function uploadCsvFiles(page: Page, filePaths: string[]): Promise<void> {
-  await page.goto("/upload");
-  await page.getByText("Drop your billing and CRM CSVs here").waitFor({ state: "visible" });
+  await waitForUploadPageReady(page);
 
   const fileInput = page.locator('input[type="file"][accept=".csv"]');
   await fileInput.setInputFiles(filePaths);
-
-  for (const filePath of filePaths) {
-    const name = filePath.split(/[/\\]/).pop()!;
-    await page.getByText(name).first().waitFor({ state: "visible" });
-  }
-
-  const uploadBtn = page.getByRole("button", { name: "Upload Files" });
-  await expect(uploadBtn).toBeEnabled({ timeout: 30_000 });
-  await uploadBtn.click();
-
+  await waitForFilesUploaded(page, filePaths);
   await ensureOnValidation(page);
 }
 

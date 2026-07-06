@@ -1,11 +1,13 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
+from typing import Annotated
 
-from auth.dependencies import require_clerk_user_id
+from auth.audit_access import assert_audit_modification_access
+from auth.dependencies import get_optional_clerk_user_id, require_clerk_user_id
 from auth.report_access import (
     verify_finding_access,
     verify_report_purchased,
@@ -59,7 +61,7 @@ def list_reports(
 def get_report(
     report: Report = Depends(verify_report_purchased),
     db: Session = Depends(get_db),
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
 ) -> ReportDetailResponse:
     from analytics.tracking import track_report_viewed
 
@@ -74,7 +76,7 @@ def get_report(
 def get_finding(
     finding: Finding = Depends(verify_finding_access),
     db: Session = Depends(get_db),
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
 ) -> FindingDetailResponse:
     from analytics.tracking import track_finding_viewed
 
@@ -112,7 +114,7 @@ def get_dashboard(
 def export_csv(
     report: Report = Depends(verify_report_purchased),
     db: Session = Depends(get_db),
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
 ) -> Response:
     from analytics.tracking import track_report_exported
 
@@ -135,7 +137,7 @@ def export_csv(
 def export_evidence_csv(
     report: Report = Depends(verify_report_purchased),
     db: Session = Depends(get_db),
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
 ) -> Response:
     from analytics.tracking import track_report_exported
 
@@ -158,7 +160,7 @@ def export_evidence_csv(
 def export_pdf(
     report: Report = Depends(verify_report_purchased),
     db: Session = Depends(get_db),
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
 ) -> Response:
     from analytics.tracking import track_report_exported
 
@@ -189,7 +191,8 @@ def export_pdf(
 @router.post("/dev/reports/{report_id}/unlock", response_model=UnlockReportResponse)
 def dev_unlock_report(
     report_id: uuid.UUID,
-    clerk_user_id: str = Depends(require_clerk_user_id),
+    x_audit_session: Annotated[str | None, Header(alias="X-Audit-Session")] = None,
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
     db: Session = Depends(get_db),
 ) -> UnlockReportResponse:
     if settings.environment == "production" or not settings.dev_unlock_enabled:
@@ -200,8 +203,16 @@ def dev_unlock_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
 
     audit = db.query(Audit).filter(Audit.id == report.audit_id).first()
-    if not audit or audit.clerk_user_id != clerk_user_id:
+    if not audit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+
+    if clerk_user_id:
+        try:
+            assert_audit_modification_access(audit, clerk_user_id, x_audit_session)
+        except PermissionError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    elif not x_audit_session or audit.session_token != x_audit_session:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required.")
 
     unlock_report(db, report)
     logger.info("Dev unlock applied to report %s", report.id)

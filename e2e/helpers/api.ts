@@ -5,8 +5,14 @@ import { apiBaseUrl } from "./env";
 export async function devUnlockReport(
   request: APIRequestContext,
   reportId: string,
+  sessionToken?: string,
 ): Promise<void> {
-  const response = await request.post(`${apiBaseUrl()}/dev/reports/${reportId}/unlock`);
+  const headers: Record<string, string> = {};
+  if (sessionToken) {
+    headers["X-Audit-Session"] = sessionToken;
+  }
+
+  const response = await request.post(`${apiBaseUrl()}/dev/reports/${reportId}/unlock`, { headers });
   if (!response.ok()) {
     const body = await response.text();
     throw new Error(`Dev unlock failed (${response.status}): ${body}`);

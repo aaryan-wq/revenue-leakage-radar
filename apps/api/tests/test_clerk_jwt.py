@@ -26,9 +26,10 @@ def test_get_optional_clerk_user_id_with_valid_payload():
 
     from auth.dependencies import get_optional_clerk_user_id
 
-    with patch(
+    with patch("auth.dependencies.settings") as mock_settings, patch(
         "auth.dependencies.decode_clerk_token",
         return_value={"sub": "user_abc123"},
     ):
+        mock_settings.clerk_auth_configured = True
         result = asyncio.run(get_optional_clerk_user_id(authorization="Bearer fake-token"))
         assert result == "user_abc123"
