@@ -125,11 +125,19 @@ class Settings(BaseSettings):
     @property
     def allowed_host_list(self) -> list[str]:
         hosts = [host.strip() for host in self.allowed_hosts.split(",") if host.strip()]
-        return hosts or ["*"]
+        if not hosts:
+            return ["*"]
+        if self.is_production and "*" not in hosts:
+            for host in _RAILWAY_HEALTH_HOSTS:
+                if host not in hosts:
+                    hosts.append(host)
+        return hosts
 
     @property
     def max_upload_size_bytes(self) -> int:
         return self.max_upload_size_mb * 1024 * 1024
 
+
+_RAILWAY_HEALTH_HOSTS = ("*.up.railway.app", "*.railway.app", "localhost", "127.0.0.1")
 
 settings = Settings()
