@@ -1,0 +1,3 @@
+SubscriptionNumber,AccountNumber,ProductRatePlanChargeId,Status,TermStartDate,TermEndDate,RatePlanChargePrice
+SUB-Z-001,ACC-Z-001,PRC-PRO,Active,2024-01-01,2025-01-01,120.00
+SUB-Z-002,ACC-Z-002,PRC-BASIC,Active,2024-02-01,2025-02-01,60.00

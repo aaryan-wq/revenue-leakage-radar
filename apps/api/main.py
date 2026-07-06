@@ -67,6 +67,17 @@ async def lifespan(app: FastAPI):
             "Clerk auth is not configured on the API. "
             "Copy CLERK_SECRET_KEY from apps/web/.env.local into the root .env, or run clerk init."
         )
+
+    if settings.sentry_dsn:
+        logger.info("Sentry error tracking enabled (environment=%s)", settings.environment)
+    elif settings.is_production:
+        logger.warning("Sentry DSN not configured for production")
+
+    if settings.posthog_api_key:
+        logger.info("PostHog product analytics enabled")
+    elif settings.is_production:
+        logger.warning("PostHog API key not configured for production")
+
     yield
     from analytics.client import shutdown as shutdown_analytics
 

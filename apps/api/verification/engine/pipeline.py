@@ -67,10 +67,13 @@ def run_verification_engine(db: Session, audit: Audit) -> ScanReport:
     db.commit()
 
     logger.info(
-        "Verification complete for audit %s: %d findings, ARR %s",
+        "audit_milestone audit_id=%s milestone=verification_complete "
+        "finding_count=%s recoverable_arr=%s rules_completed=%s rules_total=%s",
         audit.id,
         finding_count,
         recoverable,
+        report.rules_completed,
+        report.rules_total,
     )
     return report
 

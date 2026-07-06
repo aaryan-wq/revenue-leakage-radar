@@ -488,6 +488,7 @@ def test_fulfill_checkout_session_unlocks_report_in_db():
     from payments.service import fulfill_checkout_session
 
     db = SessionLocal()
+    session_id = f"cs_integration_{uuid.uuid4().hex[:12]}"
     audit = Audit(
         session_token=secrets.token_urlsafe(32),
         status=AuditStatus.COMPLETED.value,
@@ -507,7 +508,7 @@ def test_fulfill_checkout_session_unlocks_report_in_db():
         fulfill_checkout_session(
             db,
             {
-                "id": "cs_integration_test",
+                "id": session_id,
                 "metadata": {
                     "report_id": str(report.id),
                     "clerk_user_id": "user_integration",
@@ -520,6 +521,11 @@ def test_fulfill_checkout_session_unlocks_report_in_db():
         db.refresh(report)
         assert report.purchased is True
     finally:
+        from models import ReportPurchase
+
+        db.query(ReportPurchase).filter(ReportPurchase.report_id == report.id).delete(
+            synchronize_session=False
+        )
         db.delete(report)
         db.delete(audit)
         db.commit()
