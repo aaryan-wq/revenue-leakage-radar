@@ -49,7 +49,7 @@ test.describe("Navigation", () => {
     const links = [
       nav.getByRole("link", { name: "Pricing", exact: true }),
       nav.getByRole("link", { name: "Security", exact: true }),
-      nav.getByRole("link", { name: /run free scan/i }),
+      nav.getByRole("link", { name: "Overview", exact: true }),
     ];
 
     for (const link of links) {
@@ -57,6 +57,10 @@ test.describe("Navigation", () => {
       const href = await link.getAttribute("href");
       expect(href).toBeTruthy();
     }
+
+    const heroCta = page.getByRole("link", { name: /run free audit/i }).first();
+    await expect(heroCta).toBeVisible();
+    expect(await heroCta.getAttribute("href")).toBeTruthy();
   });
 
   test("rapid navigation does not crash", async ({ page }) => {

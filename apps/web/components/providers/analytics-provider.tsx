@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 
 import { captureUtmFromSearch } from "@/lib/analytics/context";
 import {
@@ -11,10 +10,11 @@ import {
   initAnalytics,
   resetAnalyticsIdentity,
 } from "@/lib/analytics/client";
+import { useAppAuth } from "@/lib/app-auth";
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
-  const { isSignedIn, userId, isLoaded } = useAuth();
+  const { isSignedIn, userId, isLoaded } = useAppAuth();
   const wasSignedInRef = useRef(false);
 
   useEffect(() => {

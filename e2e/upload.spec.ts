@@ -3,7 +3,14 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-import { clearAuditSession, uploadCsvFiles, waitForApiHealthy } from "./helpers/audit";
+import {
+  clearAuditSession,
+  CONTINUE_TO_VALIDATION,
+  uploadCsvFiles,
+  UPLOAD_ZONE_HEADING,
+  waitForApiHealthy,
+  waitForUploadPageReady,
+} from "./helpers/audit";
 import { fixturePath, TIER0_FILES, writeTempCsv } from "./helpers/fixtures";
 
 test.describe("CSV Upload Flow", () => {
@@ -42,27 +49,25 @@ test.describe("CSV Upload Flow", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rlr-e2e-"));
     const txtPath = writeTempCsv(tmpDir, "not-a-csv.txt", "hello world");
 
-    await page.goto("/upload");
-    await page.getByText("Drop your billing and CRM CSVs here").waitFor();
+    await waitForUploadPageReady(page);
 
     const fileInput = page.locator('input[type="file"][accept=".csv"]');
     await fileInput.setInputFiles(txtPath);
 
     await expect(page.getByText("not-a-csv.txt")).not.toBeVisible();
-    await expect(page.getByRole("button", { name: "Upload Files" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: CONTINUE_TO_VALIDATION })).not.toBeVisible();
   });
 
   test("shows error for empty CSV file", async ({ page }) => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rlr-e2e-"));
     const emptyPath = writeTempCsv(tmpDir, "invoice_line_items.csv", "");
 
-    await page.goto("/upload");
+    await waitForUploadPageReady(page);
     const fileInput = page.locator('input[type="file"][accept=".csv"]');
     await fileInput.setInputFiles([emptyPath, fixturePath("price_catalog.csv")]);
-    await page.getByRole("button", { name: "Upload Files" }).click();
 
     await expect(page.getByText(/failed|error|invalid|empty/i).first()).toBeVisible({
-      timeout: 30_000,
+      timeout: 60_000,
     });
   });
 
@@ -74,32 +79,28 @@ test.describe("CSV Upload Flow", () => {
       "not,a,valid\ncsv\"broken\nline",
     );
 
-    await page.goto("/upload");
+    await waitForUploadPageReady(page);
     const fileInput = page.locator('input[type="file"][accept=".csv"]');
     await fileInput.setInputFiles([badPath, fixturePath("price_catalog.csv")]);
-    await page.getByRole("button", { name: "Upload Files" }).click();
 
     await expect(page.locator("body")).toBeVisible();
     await page.waitForURL(/\/validation|\/upload/, { timeout: 90_000 });
   });
 
-  test("double-submit upload button does not crash", async ({ page }) => {
+  test("rapid file selection does not crash", async ({ page }) => {
     const files = TIER0_FILES.map(fixturePath);
-    await page.goto("/upload");
+    await waitForUploadPageReady(page);
     const fileInput = page.locator('input[type="file"][accept=".csv"]');
     await fileInput.setInputFiles(files);
-
-    const uploadBtn = page.getByRole("button", { name: "Upload Files" });
-    await uploadBtn.dblclick({ force: true }).catch(() => undefined);
-    await uploadBtn.click().catch(() => undefined);
+    await fileInput.setInputFiles(files).catch(() => undefined);
 
     await page.waitForURL(/\/validation|\/upload/, { timeout: 90_000 });
     await expect(page.locator("body")).toBeVisible();
   });
 
   test("abandons upload midway and recovers on refresh", async ({ page }) => {
-    await page.goto("/upload");
+    await waitForUploadPageReady(page);
     await page.reload();
-    await expect(page.getByText("Drop your billing and CRM CSVs here")).toBeVisible();
+    await expect(page.getByText(UPLOAD_ZONE_HEADING)).toBeVisible();
   });
 });

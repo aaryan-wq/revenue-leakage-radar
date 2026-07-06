@@ -66,7 +66,7 @@ test.describe("Findings UI", () => {
       test.skip(true, "No findings generated for fixture data");
     }
 
-    await devUnlockReport(request, reportId);
+    await devUnlockReport(request, reportId, sessionToken!);
     const report = await getReportDetail(request, reportId, sessionToken!);
     expect(report.findings.length).toBeGreaterThan(0);
 
