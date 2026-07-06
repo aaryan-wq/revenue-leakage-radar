@@ -1,7 +1,12 @@
-# Celery worker service — point this service at Config File Path: /apps/api/railway.worker.toml
+# Celery worker service
+# Railway settings (required):
+#   Root directory: apps/api
+#   Config file path: /apps/api/railway.worker.toml
+#   No custom start command in the UI (Dockerfile CMD runs worker.sh)
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+watchPatterns = ["apps/api/**"]
 
 [deploy]
 restartPolicyType = "ON_FAILURE"

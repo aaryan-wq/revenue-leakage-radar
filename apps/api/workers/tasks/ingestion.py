@@ -1,6 +1,9 @@
 import logging
 import uuid
 
+from audit.service import get_audit_by_id
+from database.session import SessionLocal
+from ingestion.pipeline import run_ingestion_pipeline
 from workers.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
@@ -8,9 +11,6 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name="workers.tasks.ingestion.run_ingestion", bind=True, max_retries=0)
 def run_ingestion_task(self, audit_id: str) -> dict[str, str]:
-    from ingestion.pipeline import run_ingestion_pipeline
-    from database.session import SessionLocal
-    from audit.service import get_audit_by_id
 
     db = SessionLocal()
     try:

@@ -1,6 +1,8 @@
 import logging
 import uuid
 
+from database.session import SessionLocal
+from verification.engine.pipeline import run_verification_pipeline
 from workers.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
@@ -8,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name="workers.tasks.verification.run_verification", bind=True, max_retries=0)
 def run_verification_task(self, audit_id: str) -> dict[str, str]:
-    from database.session import SessionLocal
-    from verification.engine.pipeline import run_verification_pipeline
 
     db = SessionLocal()
     try:
