@@ -459,7 +459,18 @@ export interface ReportDetailResponse {
   executive_summary: ExecutiveSummary;
   opportunity_breakdown: OpportunityBreakdownItem[];
   verification_checks: VerificationCheckItem[];
-  findings: FindingResponse[];
+  findings_total: number;
+  locked_preview: LockedPreviewItem[];
+  /** Deprecated: use GET /reports/{id}/findings for paginated results. */
+  findings?: FindingResponse[];
+}
+
+export interface PaginatedFindingsResponse {
+  items: FindingResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  has_more: boolean;
 }
 
 export interface FindingDetailResponse extends FindingResponse {

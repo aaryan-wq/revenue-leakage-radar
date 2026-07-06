@@ -935,7 +935,7 @@ def _build_findings_detail_section(
 
 
 def build_report_pdf(db: Session, report: Report) -> bytes:
-    detail = build_report_detail(db, report, evidence_record_limit=None)
+    detail = build_report_detail(db, report, evidence_record_limit=None, include_findings=True)
     styles = _build_styles()
     buffer = io.BytesIO()
 

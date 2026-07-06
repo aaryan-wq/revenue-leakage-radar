@@ -19,6 +19,7 @@ def build_report_detail(
     report: Report,
     *,
     evidence_record_limit: int | None = 3,
+    include_findings: bool = False,
 ) -> dict[str, Any]:
     audit = db.query(Audit).filter(Audit.id == report.audit_id).first()
     if not audit:
@@ -33,8 +34,21 @@ def build_report_detail(
     summary = build_free_summary(db, audit, findings=findings)
     confidence_bands = sum_arr_by_confidence_band(findings)
     narrative = generate_executive_narrative(summary)
-    entity_resolver = EntityIdResolver.for_findings(db, findings)
-    primary_by_ref = build_primary_finding_lookup(findings)
+
+    serialized_findings: list[dict[str, Any]] = []
+    if include_findings:
+        entity_resolver = EntityIdResolver.for_findings(db, findings)
+        primary_by_ref = build_primary_finding_lookup(findings)
+        serialized_findings = [
+            serialize_finding(
+                f,
+                include_evidence=True,
+                evidence_record_limit=evidence_record_limit,
+                entity_resolver=entity_resolver,
+                primary_by_ref=primary_by_ref,
+            )
+            for f in findings
+        ]
 
     return {
         "id": str(report.id),
@@ -58,14 +72,7 @@ def build_report_detail(
         },
         "opportunity_breakdown": summary["opportunity_breakdown"],
         "verification_checks": summary["verification_checks"],
-        "findings": [
-            serialize_finding(
-                f,
-                include_evidence=True,
-                evidence_record_limit=evidence_record_limit,
-                entity_resolver=entity_resolver,
-                primary_by_ref=primary_by_ref,
-            )
-            for f in findings
-        ],
+        "findings_total": len(findings),
+        "locked_preview": summary.get("locked_preview", []),
+        "findings": serialized_findings,
     }

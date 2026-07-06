@@ -7,6 +7,7 @@ import type {
   DashboardResponse,
   FindingDetailResponse,
   FreeSummaryResponse,
+  PaginatedFindingsResponse,
   ReportDetailResponse,
   UnlockCreditResponse,
   UnlockReportResponse,
@@ -43,6 +44,27 @@ export async function getReport(
   options: ReportApiOptions,
 ): Promise<ReportDetailResponse> {
   return apiFetch<ReportDetailResponse>(`/reports/${reportId}`, options);
+}
+
+export interface ReportFindingsQuery {
+  page?: number;
+  page_size?: number;
+  sort?: "arr_desc" | "severity" | "rule_id";
+  category?: string;
+}
+
+export async function getReportFindings(
+  reportId: string,
+  options: ReportApiOptions,
+  query: ReportFindingsQuery = {},
+): Promise<PaginatedFindingsResponse> {
+  const params = new URLSearchParams();
+  if (query.page) params.set("page", String(query.page));
+  if (query.page_size) params.set("page_size", String(query.page_size));
+  if (query.sort) params.set("sort", query.sort);
+  if (query.category) params.set("category", query.category);
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch<PaginatedFindingsResponse>(`/reports/${reportId}/findings${suffix}`, options);
 }
 
 export async function getFinding(

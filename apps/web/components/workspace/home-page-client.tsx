@@ -16,6 +16,7 @@ import { PageShell } from "@/components/ui/page-loading";
 import { sortAuditsByDate } from "@/lib/audit-sort";
 import { getStoredAuditSession, WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
 import { PRODUCT_NAMES } from "@/lib/pricing-content";
+import { useReportFindingsQuery } from "@/lib/hooks/use-report-findings-query";
 import { useReportQuery } from "@/lib/hooks/use-report-query";
 import { totalRecoverableArr, useWorkspaceDashboard } from "@/lib/hooks/use-workspace-dashboard";
 import { formatCurrency, type DashboardResponse, type FindingResponse } from "@rlr/shared";
@@ -30,7 +31,11 @@ export function HomePageClient() {
     [dashboard],
   );
   const reportQuery = useReportQuery(latestAudit?.report_id);
-  const findings = useMemo(() => reportQuery.data?.findings ?? [], [reportQuery.data]);
+  const findingsQuery = useReportFindingsQuery(latestAudit?.report_id, { page_size: 25 });
+  const findings = useMemo(
+    () => findingsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [findingsQuery.data],
+  );
   const activeReportId = latestAudit?.report_id ?? null;
 
   useEffect(() => {
