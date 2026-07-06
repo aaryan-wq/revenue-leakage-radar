@@ -4,13 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Logo, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
 import {
-  abandonAuditOnExit,
+  exitAuditFromFunnel,
   getAuditExitHref,
   getAuditExitHrefFromSearch,
+  isCompletedAuditPath,
 } from "@/lib/audit-session";
+import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -30,6 +33,7 @@ function stepIndex(pathname: string): number {
 
 export function AuditFunnelProgress() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const exitHrefFromUrl = getAuditExitHrefFromSearch(searchParams);
@@ -42,7 +46,11 @@ export function AuditFunnelProgress() {
   }, [exitHrefFromUrl]);
 
   const handleExit = async () => {
-    await abandonAuditOnExit();
+    const fromSummary = isCompletedAuditPath(pathname);
+    await exitAuditFromFunnel(pathname);
+    if (fromSummary) {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    }
     router.push(exitHref);
   };
 

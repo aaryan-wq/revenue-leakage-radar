@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_clerk_user_id
 from auth.report_access import (
     verify_finding_access,
+    verify_report_access,
     verify_report_purchased,
     verify_summary_access,
 )
@@ -55,6 +56,18 @@ def list_reports(
 ) -> list[ReportListItem]:
     items = list_user_reports(db, clerk_user_id)
     return [ReportListItem(**item) for item in items]
+
+
+@router.get("/reports/{report_id}/summary", response_model=FreeSummaryResponse)
+def get_report_free_summary(
+    report: Report = Depends(verify_report_access),
+    db: Session = Depends(get_db),
+) -> FreeSummaryResponse:
+    try:
+        data = get_audit_summary(db, report.audit_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return FreeSummaryResponse(**data)
 
 
 @router.get("/reports/{report_id}", response_model=ReportDetailResponse)

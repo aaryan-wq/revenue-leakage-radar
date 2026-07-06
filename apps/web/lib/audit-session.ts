@@ -101,6 +101,28 @@ export async function ensureAuditLinked(authToken: string): Promise<boolean> {
   }
 }
 
+export function isCompletedAuditPath(pathname: string): boolean {
+  return pathname === "/summary" || pathname.startsWith("/summary/");
+}
+
+/** Save a completed audit to the signed-in account and clear the browser session. */
+export async function saveCompletedAuditOnExit(authToken?: string | null): Promise<void> {
+  const token = authToken ?? (await getAuditAuthToken());
+  if (token) {
+    await ensureAuditLinked(token);
+  }
+  clearAuditSession();
+}
+
+/** Leave the audit funnel: preserve completed audits, discard in-progress ones. */
+export async function exitAuditFromFunnel(pathname: string): Promise<void> {
+  if (isCompletedAuditPath(pathname)) {
+    await saveCompletedAuditOnExit();
+    return;
+  }
+  await abandonAuditOnExit();
+}
+
 export async function abandonAuditOnExit(): Promise<void> {
   const session = getStoredAuditSession();
   if (!session) return;

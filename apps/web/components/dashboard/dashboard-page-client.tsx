@@ -15,6 +15,7 @@ import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { ApiError } from "@/lib/api";
 import { WORKSPACE_UPLOAD_HREF, getStoredAuditSession } from "@/lib/audit-session";
+import { getAuditOpenHref } from "@/lib/audit-links";
 import {
   deleteAudit,
   downloadReportCsv,
@@ -211,6 +212,8 @@ export function DashboardPageClient() {
   const totalFindings = dashboard.audits.reduce((sum, audit) => sum + audit.finding_count, 0);
   const purchasedCount = dashboard.audits.filter((audit) => audit.purchased).length;
   const nextUnpurchased = dashboard.audits.find((audit) => !audit.purchased);
+  const activeAudit =
+    dashboard.audits.find((audit) => audit.report_id === activeReportId) ?? null;
 
   return (
     <div>
@@ -246,10 +249,10 @@ export function DashboardPageClient() {
                 </div>
                 {nextUnpurchased ? (
                   <Link
-                    href={`/report/${nextUnpurchased.report_id}`}
+                    href={getAuditOpenHref(nextUnpurchased)}
                     className="inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
                   >
-                    Unlock {PRODUCT_NAMES.verificationReport}
+                    View free summary
                     <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
                   </Link>
                 ) : (
@@ -272,8 +275,13 @@ export function DashboardPageClient() {
           <p className="text-muted-foreground">
             Detailed findings require a purchased report.
           </p>
-          <Link href={`/report/${activeReportId}`} className="mt-4 inline-block">
-            <Button variant="secondary">View report</Button>
+          <Link
+            href={activeAudit ? getAuditOpenHref(activeAudit) : `/report/${activeReportId}`}
+            className="mt-4 inline-block"
+          >
+            <Button variant="secondary">
+              {activeAudit?.purchased ? "View report" : "View free summary"}
+            </Button>
           </Link>
         </div>
       )}
@@ -352,7 +360,7 @@ export function DashboardPageClient() {
                       >
                         Explore
                       </Button>
-                      <Link href={`/report/${audit.report_id}`}>
+                      <Link href={getAuditOpenHref(audit)}>
                         <Button variant="ghost" size="sm">
                           Open
                         </Button>

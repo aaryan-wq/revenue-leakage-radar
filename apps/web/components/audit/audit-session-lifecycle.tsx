@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-import { abandonAuditOnExit } from "@/lib/audit-session";
+import { exitAuditFromFunnel } from "@/lib/audit-session";
 
 const AUDIT_PATH_PREFIXES = ["/upload", "/validation", "/analysis", "/summary"] as const;
 
@@ -22,7 +22,7 @@ export function AuditSessionLifecycle() {
     previousPathRef.current = pathname;
 
     if (isAuditPath(previousPath) && !isAuditPath(pathname)) {
-      void abandonAuditOnExit();
+      void exitAuditFromFunnel(previousPath);
     }
   }, [pathname]);
 

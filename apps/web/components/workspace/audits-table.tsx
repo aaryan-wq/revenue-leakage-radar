@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Download, Trash2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getAuditOpenHref } from "@/lib/audit-links";
 import {
   DEFAULT_AUDIT_SORT_DIRECTION,
   DEFAULT_AUDIT_SORT_KEY,
@@ -187,7 +188,7 @@ export function AuditsTable({
                       Preview
                     </Button>
                   )}
-                  <Link href={`/report/${audit.report_id}`}>
+                  <Link href={getAuditOpenHref(audit)}>
                     <Button variant="ghost" size="sm">
                       Open
                     </Button>

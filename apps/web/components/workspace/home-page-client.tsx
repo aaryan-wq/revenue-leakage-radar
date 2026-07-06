@@ -14,8 +14,8 @@ import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/ui/page-loading";
 import { sortAuditsByDate } from "@/lib/audit-sort";
+import { getAuditOpenHref } from "@/lib/audit-links";
 import { getStoredAuditSession, WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
-import { PRODUCT_NAMES } from "@/lib/pricing-content";
 import { useReportFindingsQuery } from "@/lib/hooks/use-report-findings-query";
 import { useReportQuery } from "@/lib/hooks/use-report-query";
 import { totalRecoverableArr, useWorkspaceDashboard } from "@/lib/hooks/use-workspace-dashboard";
@@ -133,9 +133,9 @@ function HomeDashboardContent({
                       waiting in your free audit.
                     </p>
                   </div>
-                  <Link href={`/report/${nextUnpurchased.report_id}`}>
+                  <Link href={getAuditOpenHref(nextUnpurchased)}>
                     <Button>
-                      Unlock {PRODUCT_NAMES.verificationReport}
+                      View Free Summary
                       <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.75} />
                     </Button>
                   </Link>

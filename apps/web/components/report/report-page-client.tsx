@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAppAuth } from "@/lib/app-auth";
@@ -10,6 +10,7 @@ import { Logo } from "@/components/brand/logo";
 import { CountUp } from "@/components/count-up";
 import { CategoryBars } from "@/components/report/category-bars";
 import { FindingsTable } from "@/components/report/findings-table";
+import { FreeSummaryView } from "@/components/summary/free-summary-view";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/ui/page-loading";
@@ -21,9 +22,10 @@ import {
   downloadReportCsv,
   downloadReportEvidenceCsv,
   downloadReportPdf,
+  getReportFreeSummary,
 } from "@/lib/report-api";
 import { toast } from "@/lib/toast";
-import { formatCurrency, type ReportDetailResponse } from "@rlr/shared";
+import { formatCurrency, type FreeSummaryResponse, type ReportDetailResponse } from "@rlr/shared";
 
 type ReportPageClientProps = {
   backHref?: string;
@@ -47,6 +49,31 @@ export function ReportPageClient({
         : null;
   const [isExporting, setIsExporting] = useState<"pdf" | "csv" | "evidence" | null>(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [freeSummary, setFreeSummary] = useState<FreeSummaryResponse | null>(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+
+  const isLocked = Boolean(error?.toLowerCase().includes("purchased"));
+
+  const loadFreeSummary = useCallback(async () => {
+    if (!isSignedIn || !isLocked) return;
+    setIsLoadingSummary(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const summary = await getReportFreeSummary(params.id, token);
+      setFreeSummary(summary);
+    } catch {
+      setFreeSummary(null);
+    } finally {
+      setIsLoadingSummary(false);
+    }
+  }, [getToken, isLocked, isSignedIn, params.id]);
+
+  useEffect(() => {
+    if (isLocked && isSignedIn) {
+      void loadFreeSummary();
+    }
+  }, [isLocked, isSignedIn, loadFreeSummary]);
 
   const handleExport = async (type: "pdf" | "csv" | "evidence") => {
     if (!report) return;
@@ -84,7 +111,36 @@ export function ReportPageClient({
   };
 
   if (!isLoading && error && !report) {
-    const isLocked = error.toLowerCase().includes("purchased");
+    if (isLocked && (isLoadingSummary || freeSummary)) {
+      return (
+        <PageShell
+          isLoading={isLoadingSummary}
+          message="Loading free summary…"
+          variant="report"
+        >
+          {freeSummary && (
+            <FreeSummaryView
+              summary={freeSummary}
+              onUnlocked={() => {
+                void loadFreeSummary();
+                void reportQuery.refetch();
+              }}
+              footer={
+                <div className="border-t border-line pt-10">
+                  <Link
+                    href={backHref}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    ← {backLabel}
+                  </Link>
+                </div>
+              }
+            />
+          )}
+        </PageShell>
+      );
+    }
+
     return (
       <div className="mx-auto max-w-report px-6 py-20 text-center md:px-10">
         <p className="text-lg leading-relaxed text-muted-foreground">

@@ -29,6 +29,20 @@ function withSession(session: AuditSession | null, authToken?: string | null): R
   };
 }
 
+export async function getSummaryForAccount(
+  auditId: string,
+  authToken: string,
+): Promise<FreeSummaryResponse> {
+  return apiFetch<FreeSummaryResponse>(`/summary/${auditId}`, { authToken });
+}
+
+export async function getReportFreeSummary(
+  reportId: string,
+  authToken: string,
+): Promise<FreeSummaryResponse> {
+  return apiFetch<FreeSummaryResponse>(`/reports/${reportId}/summary`, { authToken });
+}
+
 export async function getSummary(
   auditId: string,
   session: AuditSession,

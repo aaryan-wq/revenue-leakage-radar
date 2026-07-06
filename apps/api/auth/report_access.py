@@ -37,7 +37,7 @@ def _grant_report_access(
     return bool(x_audit_session and audit.session_token == x_audit_session)
 
 
-async def verify_report_purchased(
+async def verify_report_access(
     report_id: uuid.UUID,
     x_audit_session: str | None = Header(default=None, alias="X-Audit-Session"),
     db: Session = Depends(get_db),
@@ -53,6 +53,17 @@ async def verify_report_purchased(
 
     if not _grant_report_access(audit, clerk_user_id=clerk_user_id, x_audit_session=x_audit_session):
         raise _not_found("Report not found.")
+
+    return report
+
+
+async def verify_report_purchased(
+    report_id: uuid.UUID,
+    x_audit_session: str | None = Header(default=None, alias="X-Audit-Session"),
+    db: Session = Depends(get_db),
+    clerk_user_id: str | None = Depends(get_optional_clerk_user_id),
+) -> Report:
+    report = await verify_report_access(report_id, x_audit_session, db, clerk_user_id)
 
     if not report.purchased:
         raise HTTPException(

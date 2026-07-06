@@ -3,27 +3,33 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { CoverageSection } from "@/components/summary/coverage-section";
-import { LockedPreview } from "@/components/summary/locked-preview";
-import { OpportunityBreakdown } from "@/components/summary/opportunity-breakdown";
-import { SummaryHero } from "@/components/summary/summary-hero";
-import { UnlockCta } from "@/components/summary/unlock-cta";
-import { VerificationChecklist } from "@/components/summary/verification-checklist";
+import { FreeSummaryView } from "@/components/summary/free-summary-view";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { PageShell } from "@/components/ui/page-loading";
-import { getStoredAuditSession } from "@/lib/audit-session";
+import { useAppAuth } from "@/lib/app-auth";
+import {
+  getStoredAuditSession,
+  saveCompletedAuditOnExit,
+  WORKSPACE_EXIT_HREF,
+} from "@/lib/audit-session";
 import { captureAuditEvent } from "@/lib/analytics/client";
 import { getSummary } from "@/lib/report-api";
+import { queryKeys } from "@/lib/query/keys";
 import { useTrackOnce } from "@/lib/analytics/hooks";
+import { toast } from "@/lib/toast";
 import type { FreeSummaryResponse } from "@rlr/shared";
 import { AnalyticsEvents } from "@rlr/shared";
 
 export function SummaryPageClient() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { getToken, isSignedIn } = useAppAuth();
   const [summary, setSummary] = useState<FreeSummaryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadSummary = useCallback(async () => {
@@ -62,6 +68,21 @@ export function SummaryPageClient() {
     Boolean(summary),
   );
 
+  const handleCompleteAudit = async () => {
+    setIsCompleting(true);
+    try {
+      const token = isSignedIn ? await getToken() : null;
+      await saveCompletedAuditOnExit(token);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      toast.success("Audit saved to your workspace.");
+      router.push(WORKSPACE_EXIT_HREF);
+    } catch {
+      toast.error("Unable to save audit. Please try again.");
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
   if (!isLoading && (error || !summary)) {
     return (
       <div className="mx-auto max-w-report">
@@ -87,26 +108,25 @@ export function SummaryPageClient() {
   return (
     <PageShell isLoading={isLoading} message="Loading free audit…" variant="report">
       {summary && (
-    <div className="mx-auto max-w-report space-y-0">
-      <SummaryHero summary={summary} />
-      <OpportunityBreakdown items={summary.opportunity_breakdown} />
-      <VerificationChecklist checks={summary.verification_checks} />
-      <CoverageSection coverage={summary.coverage} />
-      <LockedPreview items={summary.locked_preview} />
-      <UnlockCta
-        reportId={summary.report_id}
-        purchased={summary.purchased}
-        onUnlocked={() => void loadSummary()}
-      />
-      <div className="border-t border-line pt-10">
-        <Link
-          href="/analysis"
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          ← Back to analysis
-        </Link>
-      </div>
-    </div>
+        <FreeSummaryView
+          summary={summary}
+          onUnlocked={() => void loadSummary()}
+          footer={
+            <div className="border-t border-line pt-10">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <Link
+                  href="/analysis"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  ← Back to analysis
+                </Link>
+                <Button onClick={() => void handleCompleteAudit()} disabled={isCompleting}>
+                  {isCompleting ? "Saving…" : "Complete Audit"}
+                </Button>
+              </div>
+            </div>
+          }
+        />
       )}
     </PageShell>
   );
