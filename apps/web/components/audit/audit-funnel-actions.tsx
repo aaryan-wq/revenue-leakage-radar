@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -17,56 +18,87 @@ export interface AuditFunnelAction {
   onClick: () => void | Promise<void>;
 }
 
-interface AuditFunnelActionsContextValue {
-  action: AuditFunnelAction | null;
-  setAction: (action: AuditFunnelAction | null) => void;
+interface FunnelActionMeta {
+  label: string;
+  disabled?: boolean;
+  loading?: boolean;
 }
 
-const AuditFunnelActionsContext = createContext<AuditFunnelActionsContextValue | null>(null);
+interface FunnelActionsApi {
+  register: (action: AuditFunnelAction | null) => void;
+  invoke: () => void;
+}
+
+const FunnelActionsApiContext = createContext<FunnelActionsApi | null>(null);
+const FunnelActionMetaContext = createContext<FunnelActionMeta | null>(null);
 
 export function AuditFunnelActionsProvider({ children }: { children: ReactNode }) {
-  const [action, setAction] = useState<AuditFunnelAction | null>(null);
-  const value = useMemo(() => ({ action, setAction }), [action]);
+  const onClickRef = useRef<(() => void | Promise<void>) | null>(null);
+  const [meta, setMeta] = useState<FunnelActionMeta | null>(null);
+
+  const register = useCallback((action: AuditFunnelAction | null) => {
+    if (!action) {
+      onClickRef.current = null;
+      setMeta(null);
+      return;
+    }
+
+    onClickRef.current = action.onClick;
+    setMeta({
+      label: action.label,
+      disabled: action.disabled,
+      loading: action.loading,
+    });
+  }, []);
+
+  const invoke = useCallback(() => {
+    void onClickRef.current?.();
+  }, []);
+
+  const api = useMemo(() => ({ register, invoke }), [invoke, register]);
 
   return (
-    <AuditFunnelActionsContext.Provider value={value}>{children}</AuditFunnelActionsContext.Provider>
+    <FunnelActionsApiContext.Provider value={api}>
+      <FunnelActionMetaContext.Provider value={meta}>{children}</FunnelActionMetaContext.Provider>
+    </FunnelActionsApiContext.Provider>
   );
 }
 
-export function useAuditFunnelAction(): AuditFunnelAction | null {
-  const context = useContext(AuditFunnelActionsContext);
-  return context?.action ?? null;
+export function useAuditFunnelAction(): FunnelActionMeta | null {
+  return useContext(FunnelActionMetaContext);
+}
+
+export function useInvokeFunnelAction(): () => void {
+  const api = useContext(FunnelActionsApiContext);
+  return api?.invoke ?? (() => undefined);
 }
 
 /** Register the primary funnel CTA for the current page (cleared on unmount). */
 export function useRegisterFunnelAction(action: AuditFunnelAction | null) {
-  const context = useContext(AuditFunnelActionsContext);
-  const setAction = context?.setAction;
+  const api = useContext(FunnelActionsApiContext);
+  const onClickRef = useRef(action?.onClick ?? null);
+  onClickRef.current = action?.onClick ?? null;
 
   const label = action?.label ?? "";
   const disabled = action?.disabled ?? false;
   const loading = action?.loading ?? false;
-  const onClick = action?.onClick;
-
-  const stableOnClick = useCallback(() => {
-    void onClick?.();
-  }, [onClick]);
+  const isActive = action != null;
 
   useEffect(() => {
-    if (!setAction) return;
+    if (!api) return;
 
-    if (!action) {
-      setAction(null);
+    if (!isActive) {
+      api.register(null);
       return;
     }
 
-    setAction({
+    api.register({
       label,
       disabled,
       loading,
-      onClick: stableOnClick,
+      onClick: () => onClickRef.current?.(),
     });
 
-    return () => setAction(null);
-  }, [action, disabled, label, loading, setAction, stableOnClick]);
+    return () => api.register(null);
+  }, [api, disabled, isActive, label, loading]);
 }

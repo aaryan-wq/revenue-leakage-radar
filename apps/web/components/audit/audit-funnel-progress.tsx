@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-import { useAuditFunnelAction } from "@/components/audit/audit-funnel-actions";
+import { useAuditFunnelAction, useInvokeFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { Logo, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +42,7 @@ export function AuditFunnelProgress() {
   const exitHrefFromUrl = getAuditExitHrefFromSearch(searchParams);
   const [exitHref, setExitHref] = useState(exitHrefFromUrl);
   const funnelAction = useAuditFunnelAction();
+  const invokeFunnelAction = useInvokeFunnelAction();
   const current = stepIndex(pathname);
   const progressPercent = ((current + 1) / STEPS.length) * 100;
 
@@ -75,10 +76,11 @@ export function AuditFunnelProgress() {
           <div className="flex items-center gap-4 self-center">
             {funnelAction && (
               <Button
+                type="button"
                 size="sm"
                 className="h-9 rounded-full px-5"
                 disabled={funnelAction.disabled || funnelAction.loading}
-                onClick={() => void funnelAction.onClick()}
+                onClick={invokeFunnelAction}
               >
                 {funnelAction.loading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.75} />
