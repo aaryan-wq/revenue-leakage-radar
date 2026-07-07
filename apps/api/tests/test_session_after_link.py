@@ -62,6 +62,33 @@ async def test_unlinked_audit_allows_valid_session():
     assert result.id == audit.id
 
 
+def test_link_audit_explicitly_links_unlinked_audit():
+    from auth.report_access import link_audit_explicitly
+
+    audit = _make_audit(clerk_user_id=None)
+    db = MagicMock()
+
+    with patch("auth.report_access.link_audit_to_user") as mock_link:
+        mock_link.return_value = audit
+        result = link_audit_explicitly(audit, "user_a", db)
+
+    mock_link.assert_called_once_with(db, audit, "user_a")
+    assert result is audit
+
+
+def test_link_audit_explicitly_is_idempotent_for_owner():
+    from auth.report_access import link_audit_explicitly
+
+    audit = _make_audit(clerk_user_id="user_a")
+    db = MagicMock()
+
+    with patch("auth.report_access.link_audit_to_user") as mock_link:
+        result = link_audit_explicitly(audit, "user_a", db)
+
+    mock_link.assert_not_called()
+    assert result is audit
+
+
 def test_link_audit_rotates_session_token():
     audit = _make_audit(clerk_user_id=None, session_token="old-token")
     db = MagicMock()

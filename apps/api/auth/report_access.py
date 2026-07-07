@@ -14,7 +14,7 @@ def _not_found(detail: str = "Not found.") -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-async def link_audit_explicitly(
+def link_audit_explicitly(
     audit: Audit,
     clerk_user_id: str,
     db: Session,

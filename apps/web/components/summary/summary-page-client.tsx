@@ -16,7 +16,7 @@ import {
   WORKSPACE_EXIT_HREF,
 } from "@/lib/audit-session";
 import { captureAuditEvent } from "@/lib/analytics/client";
-import { getSummary } from "@/lib/report-api";
+import { getDashboard, getSummary } from "@/lib/report-api";
 import { queryKeys } from "@/lib/query/keys";
 import { useTrackOnce } from "@/lib/analytics/hooks";
 import { toast } from "@/lib/toast";
@@ -82,7 +82,23 @@ export function SummaryPageClient() {
         return;
       }
       await saveCompletedAuditOnExit(token, { auditId: summary?.audit_id });
-      await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard,
+        refetchType: "all",
+      });
+
+      const savedAuditId = summary?.audit_id;
+      if (savedAuditId) {
+        const dashboard = await getDashboard(token);
+        const savedAuditVisible = dashboard.audits.some((audit) => audit.audit_id === savedAuditId);
+        if (!savedAuditVisible) {
+          throw new Error(
+            "Audit could not be added to your workspace. Please try again or contact support.",
+          );
+        }
+        queryClient.setQueryData(queryKeys.dashboard, dashboard);
+      }
+
       toast.success("Audit saved to your workspace.");
       router.push(WORKSPACE_EXIT_HREF);
     } catch (err) {
