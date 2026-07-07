@@ -77,8 +77,12 @@ export function SummaryPageClient() {
     setIsCompleting(true);
     try {
       const token = await getToken();
-      await saveCompletedAuditOnExit(token);
-      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      if (!token) {
+        toast.error("Sign in to save this audit to your workspace.");
+        return;
+      }
+      await saveCompletedAuditOnExit(token, { auditId: summary?.audit_id });
+      await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
       toast.success("Audit saved to your workspace.");
       router.push(WORKSPACE_EXIT_HREF);
     } catch (err) {
@@ -88,7 +92,7 @@ export function SummaryPageClient() {
     } finally {
       setIsCompleting(false);
     }
-  }, [getToken, isSignedIn, queryClient, router]);
+  }, [getToken, isSignedIn, queryClient, router, summary?.audit_id]);
 
   useRegisterFunnelAction(
     summary && !isLoading && !error

@@ -52,9 +52,13 @@ export function AuditFunnelProgress() {
 
   const handleExit = async () => {
     const fromSummary = isCompletedAuditPath(pathname);
-    await exitAuditFromFunnel(pathname);
-    if (fromSummary) {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    try {
+      await exitAuditFromFunnel(pathname);
+      if (fromSummary) {
+        await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
+      }
+    } catch {
+      // Exit audit without saving when sign-in is required.
     }
     router.push(exitHref);
   };

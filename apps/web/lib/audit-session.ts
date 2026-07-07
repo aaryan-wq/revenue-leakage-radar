@@ -88,6 +88,14 @@ export async function linkAuditToAccount(
   });
 }
 
+/** Link a completed audit using Clerk auth (works when already linked; unlinked audits still need a session). */
+export async function linkAuditById(auditId: string, authToken: string): Promise<void> {
+  await auditApiFetch<void>(`/audit/${auditId}/link`, {
+    method: "POST",
+    authToken,
+  });
+}
+
 /** Attach the in-progress audit to the signed-in Clerk account so it appears in the workspace. */
 export async function ensureAuditLinked(authToken: string): Promise<boolean> {
   const session = getStoredAuditSession();
@@ -105,17 +113,42 @@ export function isCompletedAuditPath(pathname: string): boolean {
   return pathname === "/summary" || pathname.startsWith("/summary/");
 }
 
-/** Save a completed audit to the signed-in account and clear the browser session. */
-export async function saveCompletedAuditOnExit(authToken?: string | null): Promise<void> {
-  const session = getStoredAuditSession();
-  if (!session) return;
+export interface SaveCompletedAuditOptions {
+  /** Fallback when local session was cleared after an earlier link attempt. */
+  auditId?: string;
+}
 
+/** Save a completed audit to the signed-in account and clear the browser session. */
+export async function saveCompletedAuditOnExit(
+  authToken?: string | null,
+  options?: SaveCompletedAuditOptions,
+): Promise<void> {
   const token = authToken ?? (await getAuditAuthToken());
   if (!token) {
     throw new Error("Sign in to save this audit to your workspace.");
   }
 
-  await linkAuditToAccount(session, token);
+  const session = getStoredAuditSession();
+  const auditId = options?.auditId ?? session?.auditId;
+  if (!auditId) {
+    throw new Error("Audit session expired. Return to your summary and try again.");
+  }
+
+  if (session) {
+    try {
+      await linkAuditToAccount(session, token);
+    } catch (err) {
+      // Session token may be stale after a prior link; auth-only retry still succeeds for owned audits.
+      if (err instanceof ApiError && err.status === 404) {
+        await linkAuditById(auditId, token);
+      } else {
+        throw err;
+      }
+    }
+  } else {
+    await linkAuditById(auditId, token);
+  }
+
   clearAuditSession();
 }
 

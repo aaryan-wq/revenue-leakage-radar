@@ -31,7 +31,7 @@ function processingStatus(report: ScanReportResponse | null): AuditStatus {
 export function AnalysisPageClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { getToken, isSignedIn } = useAppAuth();
+  const { getToken } = useAppAuth();
   const [report, setReport] = useState<ScanReportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [backendComplete, setBackendComplete] = useState(false);
@@ -106,12 +106,10 @@ export function AnalysisPageClient() {
 
         setReport(initial);
         if (initial.status === "completed") {
-          if (isSignedIn) {
-            const token = await getToken();
-            if (token) {
-              await ensureAuditLinked(token);
-              void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
-            }
+          const token = await getToken();
+          if (token) {
+            await ensureAuditLinked(token);
+            void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
           }
           toast.success("Analysis complete. Your revenue summary is ready.");
         } else if (initial.scan_error || initial.status === "processing_failed") {
@@ -142,7 +140,7 @@ export function AnalysisPageClient() {
     }
 
     void run();
-  }, [getToken, isSignedIn, queryClient, router, attempt]);
+  }, [getToken, queryClient, router, attempt]);
 
   const isProcessing = (!backendComplete || !visualComplete) && !error;
 
