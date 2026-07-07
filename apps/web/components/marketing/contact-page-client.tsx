@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import { AnalyticsEvents } from "@rlr/shared";
 
+import { FeedbackForm } from "@/components/feedback/feedback-form";
 import { LegalLinks } from "@/components/legal/legal-links";
 import { Reveal } from "@/components/motion";
 import { HairlineCard } from "@/components/ui/hairline-card";
@@ -26,7 +27,17 @@ export function ContactPageClient({ email }: ContactPageClientProps) {
         </p>
       </Reveal>
 
-      <Reveal delay={0.1} className="mt-12">
+      <Reveal delay={0.08} className="mt-12">
+        <HairlineCard padding="lg">
+          <h2 className="font-heading text-2xl tracking-tight">Send us a message</h2>
+          <p className="mt-2 text-[0.92rem] leading-relaxed text-muted-foreground">
+            Billing, technical, or product feedback — we read every submission.
+          </p>
+          <FeedbackForm source="contact" className="mt-8" />
+        </HairlineCard>
+      </Reveal>
+
+      <Reveal delay={0.12} className="mt-8">
         <HairlineCard padding="lg" className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-line bg-secondary/40">
             <Mail className="h-7 w-7 text-primary" strokeWidth={1.75} />
@@ -54,6 +65,10 @@ export function ContactPageClient({ email }: ContactPageClientProps) {
           Looking for quick answers? Visit our{" "}
           <Link href="/faq" className="text-primary underline-offset-4 hover:underline">
             FAQ
+          </Link>
+          {" "}or share product feedback on our{" "}
+          <Link href="/feedback" className="text-primary underline-offset-4 hover:underline">
+            feedback page
           </Link>
           .
         </p>

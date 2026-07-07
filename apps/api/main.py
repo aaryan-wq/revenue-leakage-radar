@@ -16,6 +16,7 @@ from core.config import settings
 from core.rate_limit import RateLimitMiddleware
 from core.startup_checks import StartupConfigurationError, validate_production_settings
 from database.session import SessionLocal
+from feedback.routes import router as feedback_router
 from payments.routes import router as payments_router
 from reports.routes import router as reports_router
 from schemas import HealthResponse
@@ -105,6 +106,7 @@ app.add_middleware(RateLimitMiddleware)
 app.include_router(audit_router)
 app.include_router(reports_router)
 app.include_router(payments_router)
+app.include_router(feedback_router)
 
 
 def _check_database() -> bool:

@@ -14,6 +14,7 @@ const links = [
   { href: "/pricing", label: "Pricing" },
   { href: "/security", label: "Security" },
   { href: "/faq", label: "FAQ" },
+  { href: "/feedback", label: "Feedback" },
 ];
 
 function isLinkActive(pathname: string, href: string): boolean {

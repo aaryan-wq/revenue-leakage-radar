@@ -20,6 +20,7 @@ const links = [
   { href: "/team", label: "Team", prefetch: false },
   { href: "/account", label: "Settings", prefetch: false },
   { href: "/help", label: "Help", prefetch: false },
+  { href: "/feedback", label: "Feedback", prefetch: false },
 ] as const;
 
 function isLinkActive(pathname: string, href: string): boolean {

@@ -2,7 +2,7 @@ import { ContactPageClient } from "@/components/marketing/contact-page-client";
 import { SiteFooter } from "@/components/site-footer";
 
 const SUPPORT_EMAIL =
-  process.env.SUPPORT_EMAIL ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contact@paevo.co";
+  process.env.SUPPORT_EMAIL ?? process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "aaryan@paevo.co";
 
 export default function ContactPage() {
   return (

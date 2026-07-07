@@ -51,7 +51,8 @@ class Settings(BaseSettings):
         default="http://localhost:3000",
         validation_alias=AliasChoices("WEB_URL", "FRONTEND_URL", "APP_BASE_URL"),
     )
-    support_email: str = "contact@paevo.co"
+    support_email: str = "aaryan@paevo.co"
+    feedback_email: str = Field(default="aaryan@paevo.co", validation_alias="FEEDBACK_EMAIL")
     from_email: str = Field(default="hello@paevo.co", validation_alias="FROM_EMAIL")
     posthog_api_key: str = ""
     posthog_host: str = "https://us.i.posthog.com"

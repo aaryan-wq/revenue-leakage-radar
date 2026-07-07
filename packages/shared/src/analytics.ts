@@ -11,6 +11,10 @@ export const AnalyticsEvents = {
   ENTERPRISE_CTA_CLICKED: "enterprise_cta_clicked",
   CONTACT_SALES_CLICKED: "contact_sales_clicked",
   CONTACT_SALES_SUBMITTED: "contact_sales_submitted",
+  FEEDBACK_FAB_CLICKED: "feedback_fab_clicked",
+  FEEDBACK_FORM_OPENED: "feedback_form_opened",
+  FEEDBACK_SUBMITTED: "feedback_submitted",
+  FEEDBACK_PAGE_VIEWED: "feedback_page_viewed",
 
   // Audit lifecycle
   AUDIT_SESSION_CREATED: "audit_session_created",
