@@ -42,8 +42,8 @@ def main() -> int:
     print("=" * 60)
     print(f"Ground truth findings:  {len(findings)}")
     print(f"Engine findings:        {len(engine.findings)}")
-    print(f"Rules in ground truth:  {len(injected_rules)}/25")
-    print(f"Rules fired by engine:  {len({f.rule_id for f in engine.findings})}/25")
+    print(f"Rules in ground truth:  {len(injected_rules)}/{len(ALL_RULE_IDS)}")
+    print(f"Rules fired by engine:  {len({f.rule_id for f in engine.findings})}/{len(ALL_RULE_IDS)}")
     print(f"Ground truth match:     {comparison.matched}/{comparison.expected_count}")
     print()
 

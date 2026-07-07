@@ -1,4 +1,4 @@
-# Full Suite, Upload Test Dataset (24/25 Rules)
+# Full Suite, Upload Test Dataset (25/26 Rules)
 
 Synthetic billing dataset with **one deterministic injection per rule** for CSV upload. Use for manual upload testing and engine validation through the real ingestion pipeline.
 
@@ -42,7 +42,7 @@ python scripts/verify_full_suite_dataset.py
 | contracts.csv | 2 |
 
 - **Seed:** 4242 (deterministic, same output every run)
-- **Rules injected:** 24/25 (24 upload-safe; orphaned_records via harness only)
+- **Rules injected:** 25/26 (25 upload-safe; orphaned_records via harness only)
 - **Engine validation:** PASS
 
 Upload all eight CSV files for full Tier 3 coverage (billing + CRM).

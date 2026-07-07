@@ -213,14 +213,15 @@ def build_readme(config: DatasetConfig, manifest: dict, output_dir: Path) -> str
 
     counts = manifest["counts"]
     upload_path = output_dir / "upload"
+    total = manifest["rules_total"]
 
     return f"""# Verification Run, Seed {config.seed}
 
-Fresh synthetic billing data with **one injected scenario per rule (25/25)**.
+Fresh synthetic billing data with **one injected scenario per rule ({total}/{total})**.
 
 ## Quick start
 
-### 1. Upload test (25 rules via product UI)
+### 1. Upload test ({total} rules via product UI)
 
 Upload all 8 files from `{upload_path.name}/`:
 
@@ -229,15 +230,15 @@ Upload all 8 files from `{upload_path.name}/`:
 
 Start a **new audit** each time. Continue to validation → scan.
 
-> Preview may show **22/25** rules before scan (credit/manual flags unknown pre-ingestion). After scan: **25/25** rules run and produce findings (including `orphaned_records` for line items with unresolved invoice parents).
+> Preview may show fewer rules before scan (credit/manual flags unknown pre-ingestion). After scan: **{total}/{total}** rules run and produce findings (including `orphaned_records` for line items with unresolved invoice parents).
 
-### 2. Verify all 25 rules (engine)
+### 2. Verify all {total} rules (engine)
 
 ```bash
 python scripts/verify_verification_dataset.py --seed {config.seed}
 ```
 
-Uses `harness/` CSVs (same data as upload) to validate **25/25** injected scenarios via the harness engine path.
+Uses `harness/` CSVs (same data as upload) to validate **{total}/{total}** injected scenarios via the harness engine path.
 
 ### 3. Regenerate this exact dataset
 

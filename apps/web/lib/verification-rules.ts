@@ -1,6 +1,6 @@
-/** Marketing + product copy for the live verification ruleset (v2.0, 25 rules). */
+/** Marketing + product copy for the live verification ruleset (v2.0, 26 rules). */
 
-export const VERIFICATION_RULE_COUNT = 25;
+export const VERIFICATION_RULE_COUNT = 26;
 
 export type VerificationRuleSummary = {
   name: string;
@@ -19,6 +19,7 @@ export const VERIFICATION_RULE_CATEGORIES: VerificationRuleCategory[] = [
     description: "Catalog truth vs what customers are actually billed.",
     checks: [
       { name: "Legacy Pricing", detail: "Subscriptions priced below catalog after a newer price became effective." },
+      { name: "Contract vs Billing Price Divergence", detail: "Subscription prices that diverge from the contracted unit price." },
       { name: "Price Catalog Mismatch", detail: "Invoice lines billed below the active list price." },
       { name: "Grandfathered Pricing", detail: "Legacy rates with no contract exception on file." },
       { name: "Missing Scheduled Increase", detail: "Contracted uplifts that never hit billing." },

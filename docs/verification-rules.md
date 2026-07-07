@@ -1,4 +1,4 @@
-# Verification Rules v2.0 (25 Deterministic Rules)
+# Verification Rules v2.0 (26 Deterministic Rules)
 
 Production verification engine rules. All rules:
 
@@ -7,11 +7,12 @@ Production verification engine rules. All rules:
 - Emit structured `calculation_trace` evidence
 - Skip automatically when required fields are missing
 
-## Pricing (8)
+## Pricing (9)
 
 | Rule ID | Name |
 |---------|------|
 | `legacy_pricing` | Legacy Pricing |
+| `contract_billing_price_divergence` | Contract vs Billing Price Divergence |
 | `price_catalog_mismatch` | Price Catalog Mismatch |
 | `grandfathered_pricing` | Grandfathered Pricing |
 | `missing_scheduled_increase` | Missing Scheduled Increase |

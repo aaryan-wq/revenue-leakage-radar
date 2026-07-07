@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a fresh verification dataset (new seed, new leakage, all 25 rules)."""
+"""Generate a fresh verification dataset (new seed, new leakage, all 26 rules)."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from verification_dataset import (  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate fresh CSV test data with injected leakage for all 25 verification rules.",
+        description="Generate fresh CSV test data with injected leakage for all 26 verification rules.",
     )
     parser.add_argument(
         "--seed",
@@ -76,7 +76,10 @@ def main() -> int:
     print(f"Generated verification run: {result.output_dir}")
     print(f"  Seed:           {seed}")
     print(f"  Upload CSVs:    {upload_dir}")
-    print(f"  Rules injected: 25/25 (24 upload + 1 harness)")
+    print(
+        f"  Rules injected: {result.all_rules_comparison.expected_count}/"
+        f"{result.all_rules_comparison.expected_count}"
+    )
     print(f"  Upload GT:      {result.upload_comparison.matched}/{result.upload_comparison.expected_count} matched")
     print(f"  All rules GT:   {result.all_rules_comparison.matched}/{result.all_rules_comparison.expected_count} matched")
     print(f"  Injected ARR:   ${annual:,.2f}  (${monthly:,.2f}/mo), ground truth only")

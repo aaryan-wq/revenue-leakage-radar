@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify a generated verification dataset (all 25 rules)."""
+"""Verify a generated verification dataset (all 26 rules)."""
 
 from __future__ import annotations
 
@@ -70,8 +70,8 @@ def main() -> int:
     print("=" * 60)
     print(f"VERIFY RUN seed={seed}")
     print("=" * 60)
-    print(f"Upload CSVs (25):   {upload_cmp.matched}/{upload_cmp.expected_count} ground truth matched")
-    print(f"Harness CSVs (25):  {all_rules_cmp.matched}/{all_rules_cmp.expected_count} ground truth matched")
+    print(f"Upload CSVs ({len(ALL_RULE_IDS)}):   {upload_cmp.matched}/{upload_cmp.expected_count} ground truth matched")
+    print(f"Harness CSVs ({len(ALL_RULE_IDS)}):  {all_rules_cmp.matched}/{all_rules_cmp.expected_count} ground truth matched")
     print(f"Injected ARR:       ${manifest['injected_leakage_annual']}")
     print(f"Upload primary ARR: ${manifest.get('upload_primary_arr', '-')}")
     print()
