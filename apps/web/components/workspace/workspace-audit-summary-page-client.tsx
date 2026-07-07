@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { FreeSummaryView } from "@/components/summary/free-summary-view";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
-import { PageShell } from "@/components/ui/page-loading";
+import { DelayedPageFallback } from "@/components/ui/page-loading";
 import { useAppAuth } from "@/lib/app-auth";
 import { ApiError } from "@/lib/api";
 import { getSummaryForAccount } from "@/lib/report-api";
@@ -51,8 +51,14 @@ export function WorkspaceAuditSummaryPageClient() {
     void loadSummary();
   }, [isLoaded, isSignedIn, loadSummary, params.auditId, router]);
 
+  useEffect(() => {
+    if (summary?.purchased) {
+      router.replace(`/report/${summary.report_id}`);
+    }
+  }, [router, summary]);
+
   if (!isLoaded || isLoading) {
-    return <PageShell isLoading message="Loading audit summary…" variant="report" />;
+    return <DelayedPageFallback message="Loading audit summary…" variant="report" />;
   }
 
   if (error || !summary) {
@@ -72,26 +78,23 @@ export function WorkspaceAuditSummaryPageClient() {
   }
 
   if (summary.purchased) {
-    router.replace(`/report/${summary.report_id}`);
-    return <PageShell isLoading message="Opening report…" variant="report" />;
+    return <DelayedPageFallback message="Opening report…" variant="report" />;
   }
 
   return (
-    <PageShell variant="report">
-      <FreeSummaryView
-        summary={summary}
-        onUnlocked={() => void loadSummary()}
-        footer={
-          <div className="border-t border-line pt-10">
-            <Link
-              href="/audits"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ← Back to audits
-            </Link>
-          </div>
-        }
-      />
-    </PageShell>
+    <FreeSummaryView
+      summary={summary}
+      onUnlocked={() => void loadSummary()}
+      footer={
+        <div className="border-t border-line pt-10">
+          <Link
+            href="/audits"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            ← Back to audits
+          </Link>
+        </div>
+      }
+    />
   );
 }
