@@ -15,13 +15,19 @@ from core.enums import AuditStatus, FileType, UploadStatus
 from models import Audit, Upload
 from storage.factory import get_storage, upload_key
 from storage.reader import storage_exists
+from upload.classification import FileTypeDetection, detect_file_type_from_upload
 
 
 _generic_adapter = GenericAdapter()
 
 
-def detect_file_type(filename: str) -> FileType:
-    return _generic_adapter.classify_upload(filename)
+def detect_file_type(filename: str, content: bytes | None = None) -> FileTypeDetection:
+    if content is not None:
+        return detect_file_type_from_upload(filename, content)
+    result = _generic_adapter.classify_upload(filename)
+    if result == FileType.UNKNOWN:
+        return FileTypeDetection(file_type=FileType.UNKNOWN, source="filename", confidence=0.0)
+    return FileTypeDetection(file_type=result, source="filename", confidence=1.0)
 
 
 def validate_csv_file(file: UploadFile) -> None:
@@ -71,13 +77,14 @@ async def save_upload(
             detail=f"File exceeds maximum size of {settings.max_upload_size_mb} MB.",
         )
 
-    file_type = detect_file_type(file.filename)
+    detection = detect_file_type(file.filename, content)
+    file_type = detection.file_type
     if file_type == FileType.UNKNOWN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
-                f"Could not detect file type from filename: {file.filename}. "
-                "Use standard names like subscriptions.csv, invoices.csv, etc."
+                f"We couldn't identify this file from its name or columns: {file.filename}. "
+                "Expected billing exports like subscriptions, invoices, customers, or related CRM files."
             ),
         )
 
@@ -117,6 +124,7 @@ async def save_upload(
             detected_file_type=file_type.value,
             file_size_bytes=file_size,
             replaced=True,
+            detection_source=detection.source,
         )
         return existing
 
@@ -146,6 +154,7 @@ async def save_upload(
         detected_file_type=file_type.value,
         file_size_bytes=file_size,
         replaced=False,
+        detection_source=detection.source,
     )
     return upload
 

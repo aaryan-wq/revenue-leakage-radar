@@ -11,6 +11,7 @@ def test_generic_adapter_classifies_filename():
     assert adapter.classify_upload("crm_accounts.csv") == FileType.CRM_ACCOUNTS
     assert adapter.classify_upload("contracts.csv") == FileType.CRM_CONTRACTS
     assert adapter.classify_upload("crm_contracts.csv") == FileType.CRM_CONTRACTS
+    assert adapter.classify_upload("stripe_subscriptions_export_2024.csv") == FileType.SUBSCRIPTIONS
     assert adapter.classify_upload("unknown.csv") == FileType.UNKNOWN
 
 

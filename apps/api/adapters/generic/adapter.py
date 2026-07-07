@@ -1,12 +1,11 @@
 """Generic CSV adapter, filename-based classification and header mapping."""
 
-from pathlib import Path
-
 from adapters.base import AdapterOutput
 from adapters.headers import build_column_mappings
-from core.canonical_entities import SOURCE_FILE_TYPE_TO_ENTITIES, entities_from_uploaded_files
-from core.enums import FILENAME_TO_FILE_TYPE, FileType, Platform
+from core.canonical_entities import entities_from_uploaded_files
+from core.enums import FileType, Platform
 from models import Upload
+from upload.classification import classify_from_filename, resolve_file_type
 
 
 class GenericAdapter:
@@ -17,9 +16,12 @@ class GenericAdapter:
         return build_column_mappings(file_headers)
 
     def classify_upload(self, filename: str, headers: list[str] | None = None) -> FileType:
-        stem = Path(filename).stem.lower()
-        name = filename.lower()
-        return FILENAME_TO_FILE_TYPE.get(stem, FILENAME_TO_FILE_TYPE.get(name, FileType.UNKNOWN))
+        if headers:
+            detection = resolve_file_type(filename, headers, [])
+            return detection.file_type
+
+        filename_result = classify_from_filename(filename)
+        return filename_result.file_type if filename_result else FileType.UNKNOWN
 
 
 def map_uploads(uploads: list[Upload]) -> AdapterOutput:

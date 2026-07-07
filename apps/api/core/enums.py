@@ -74,6 +74,39 @@ FILENAME_TO_FILE_TYPE: dict[str, FileType] = {
     "crm_contracts.csv": FileType.CRM_CONTRACTS,
 }
 
+# Fuzzy filename tokens, longest/most-specific first for substring matching.
+FILENAME_ALIASES: list[tuple[str, FileType, float]] = [
+    ("invoice_line_items", FileType.INVOICE_LINE_ITEMS, 0.8),
+    ("invoice_line_item", FileType.INVOICE_LINE_ITEMS, 0.8),
+    ("line_items", FileType.INVOICE_LINE_ITEMS, 0.75),
+    ("lineitems", FileType.INVOICE_LINE_ITEMS, 0.75),
+    ("price_catalog", FileType.PRICE_CATALOG, 0.8),
+    ("pricecatalog", FileType.PRICE_CATALOG, 0.75),
+    ("crm_opportunities", FileType.CRM_OPPORTUNITIES, 0.8),
+    ("crm_opportunity", FileType.CRM_OPPORTUNITIES, 0.8),
+    ("crm_accounts", FileType.CRM_ACCOUNTS, 0.8),
+    ("crm_account", FileType.CRM_ACCOUNTS, 0.8),
+    ("crm_contracts", FileType.CRM_CONTRACTS, 0.8),
+    ("crm_contract", FileType.CRM_CONTRACTS, 0.8),
+    ("subscriptions", FileType.SUBSCRIPTIONS, 0.8),
+    ("subscription", FileType.SUBSCRIPTIONS, 0.75),
+    ("customers", FileType.CUSTOMERS, 0.8),
+    ("customer", FileType.CUSTOMERS, 0.7),
+    ("invoices", FileType.INVOICES, 0.8),
+    ("invoice", FileType.INVOICES, 0.7),
+    ("opportunities", FileType.CRM_OPPORTUNITIES, 0.75),
+    ("opportunity", FileType.CRM_OPPORTUNITIES, 0.7),
+    ("contracts", FileType.CRM_CONTRACTS, 0.75),
+    ("contract", FileType.CRM_CONTRACTS, 0.7),
+    ("accounts", FileType.CRM_ACCOUNTS, 0.7),
+    ("account", FileType.CRM_ACCOUNTS, 0.65),
+    ("coupons", FileType.COUPONS, 0.8),
+    ("coupon", FileType.COUPONS, 0.75),
+    ("prices", FileType.PRICE_CATALOG, 0.7),
+    ("catalog", FileType.PRICE_CATALOG, 0.65),
+]
+
+
 class Platform(str, enum.Enum):
     STRIPE = "stripe"
     CHARGEBEE = "chargebee"

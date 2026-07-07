@@ -43,6 +43,7 @@ def track_upload_completed(
     detected_file_type: str,
     file_size_bytes: int,
     replaced: bool = False,
+    detection_source: str | None = None,
 ) -> None:
     event = events.CSV_REPLACED if replaced else events.CSV_UPLOAD_COMPLETED
     capture(
@@ -55,6 +56,7 @@ def track_upload_completed(
             detected_file_type=detected_file_type,
             file_size_bytes=file_size_bytes,
             replaced=replaced,
+            detection_source=detection_source,
         ),
     )
 

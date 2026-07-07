@@ -148,6 +148,7 @@ def upload_file_properties(
     unknown_columns_count: int | None = None,
     source_platform_guess: str | None = None,
     replaced: bool = False,
+    detection_source: str | None = None,
 ) -> dict[str, Any]:
     props = audit_lifecycle_properties(audit)
     props.update(
@@ -155,6 +156,7 @@ def upload_file_properties(
             "file_id": str(file_id),
             "original_filename": original_filename,
             "detected_file_type": detected_file_type,
+            "detection_source": detection_source,
             "source_platform_guess": source_platform_guess or audit.platform,
             "row_count": row_count,
             "column_count": column_count,

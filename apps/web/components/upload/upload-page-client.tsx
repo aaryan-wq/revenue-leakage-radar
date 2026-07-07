@@ -26,10 +26,21 @@ import {
   getStoredAuditSession,
   uploadFiles,
 } from "@/lib/audit-session";
-import { hasBillingUpload, type CoverageAnalysis, type AuditStatusResponse, type DataTier, type FileType } from "@rlr/shared";
+import { hasBillingUpload, FILE_TYPE_FILENAMES, FILE_TYPE_LABELS, type CoverageAnalysis, type AuditStatusResponse, type DataTier, type FileType } from "@rlr/shared";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function shouldShowDetectionToast(filename: string, fileType: FileType): boolean {
+  const stem = filename.replace(/\.csv$/i, "").toLowerCase();
+  const accepted = FILE_TYPE_FILENAMES[fileType] ?? [];
+  if (accepted.some((name) => name.replace(/\.csv$/i, "").toLowerCase() === stem)) {
+    return false;
+  }
+  const normalizedStem = stem.replace(/[^a-z0-9]+/g, "_");
+  const typeTokens = fileType.split("_").filter((token) => token !== "crm");
+  return !typeTokens.some((token) => normalizedStem.includes(token));
 }
 
 function mergeFilesFromStatus(
@@ -189,6 +200,14 @@ export function UploadPageClient() {
               };
             }),
           );
+
+          for (const response of responses) {
+            if (shouldShowDetectionToast(response.original_filename, response.file_type)) {
+              const label = FILE_TYPE_LABELS[response.file_type];
+              toast.info(`Detected as ${label} from file contents.`);
+            }
+          }
+
           await syncAuditStatus();
         } catch (err) {
           const message = err instanceof Error ? err.message : "Upload failed";
