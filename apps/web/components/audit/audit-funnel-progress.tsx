@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
+import { useAuditFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { Logo, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
 import {
   exitAuditFromFunnel,
   getAuditExitHref,
@@ -38,6 +41,7 @@ export function AuditFunnelProgress() {
   const searchParams = useSearchParams();
   const exitHrefFromUrl = getAuditExitHrefFromSearch(searchParams);
   const [exitHref, setExitHref] = useState(exitHrefFromUrl);
+  const funnelAction = useAuditFunnelAction();
   const current = stepIndex(pathname);
   const progressPercent = ((current + 1) / STEPS.length) * 100;
 
@@ -67,13 +71,29 @@ export function AuditFunnelProgress() {
           >
             <Logo variant="short" className={NAV_LOGO_CLASS.short} />
           </button>
-          <button
-            type="button"
-            onClick={() => void handleExit()}
-            className="inline-flex h-9 items-center text-[0.78rem] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Exit audit
-          </button>
+
+          <div className="flex items-center gap-4 self-center">
+            {funnelAction && (
+              <Button
+                size="sm"
+                className="h-9 rounded-full px-5"
+                disabled={funnelAction.disabled || funnelAction.loading}
+                onClick={() => void funnelAction.onClick()}
+              >
+                {funnelAction.loading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.75} />
+                )}
+                {funnelAction.label}
+              </Button>
+            )}
+            <button
+              type="button"
+              onClick={() => void handleExit()}
+              className="inline-flex h-9 items-center text-[0.78rem] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Exit audit
+            </button>
+          </div>
         </div>
 
         <div className="pb-4">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Loader2 } from "lucide-react";
 
+import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { ColumnMappingTable } from "@/components/validation/column-mapping-table";
 import { PlatformBadge } from "@/components/validation/platform-badge";
 import { ValidationIssuesList } from "@/components/validation/validation-issues-list";
@@ -29,7 +30,6 @@ import { toast } from "@/lib/toast";
 import { useTrackOnce } from "@/lib/analytics/hooks";
 import { AnalyticsEvents } from "@rlr/shared";
 import {
-  analysisNavigationLabel,
   canNavigateToAnalysis,
 } from "@/lib/validation-navigation";
 import type { AuditStatus, ValidationReportResponse } from "@rlr/shared";
@@ -194,6 +194,19 @@ export function ValidationPageClient() {
   const isProcessing =
     isLoading || (currentStatus !== null && !isValidationSettled(currentStatus));
 
+  const handleContinueToAnalysis = useCallback(() => {
+    router.push("/analysis");
+  }, [router]);
+
+  useRegisterFunnelAction(
+    report && !isProcessing && !error && canNavigateToAnalysis(report)
+      ? {
+          label: "Continue",
+          onClick: handleContinueToAnalysis,
+        }
+      : null,
+  );
+
   if (isProcessing && !error) {
     return (
       <section className={PAGE_SHELL}>
@@ -340,16 +353,6 @@ export function ValidationPageClient() {
       </Reveal>
 
       <div className="flex flex-wrap items-center gap-4 border-t border-line pt-10">
-        {canNavigateToAnalysis(report) && (
-          <Button onClick={() => router.push("/analysis")}>
-            {analysisNavigationLabel(report)}
-          </Button>
-        )}
-        {report.status === "completed" && (
-          <Button variant="secondary" onClick={() => router.push("/summary")}>
-            View Summary
-          </Button>
-        )}
         <Button variant="secondary" onClick={handleBackToUpload}>
           Back to Upload
         </Button>

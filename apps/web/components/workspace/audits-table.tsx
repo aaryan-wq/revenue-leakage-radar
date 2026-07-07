@@ -190,8 +190,12 @@ export function AuditsTable({
                       Preview
                     </Button>
                   )}
-                  <Link href={getAuditOpenHref(audit)}>
-                    <Button variant="ghost" size="sm">
+                  <Link
+                    href={getAuditOpenHref(audit)}
+                    aria-disabled={audit.summary_available === false}
+                    className={audit.summary_available === false ? "pointer-events-none" : undefined}
+                  >
+                    <Button variant="ghost" size="sm" disabled={audit.summary_available === false}>
                       Open
                     </Button>
                   </Link>

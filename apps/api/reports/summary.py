@@ -24,6 +24,15 @@ from reports.findings import (
 from verification.recoverable import finding_recoverable_amount
 
 
+def audit_has_free_summary(audit: Audit, report: Report | None) -> bool:
+    """True when a workspace user can open the free summary for this audit."""
+    if not report:
+        return False
+    if audit.status == "completed":
+        return True
+    return bool(audit.scan_report)
+
+
 def _canonical_counts(db: Session, audit: Audit) -> dict[str, int]:
     report = audit.validation_report or {}
     counts = report.get("canonical_counts") or {}
@@ -212,6 +221,7 @@ def get_audit_summary(db: Session, audit_id: uuid.UUID) -> dict[str, Any]:
     audit = db.query(Audit).filter(Audit.id == audit_id).first()
     if not audit:
         raise ValueError("Audit not found")
-    if audit.status != "completed":
+    report = db.query(Report).filter(Report.audit_id == audit.id).first()
+    if not audit_has_free_summary(audit, report):
         raise ValueError("Audit scan is not complete")
     return build_free_summary(db, audit)

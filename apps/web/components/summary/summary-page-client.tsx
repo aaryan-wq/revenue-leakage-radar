@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { FreeSummaryView } from "@/components/summary/free-summary-view";
+import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { PageShell } from "@/components/ui/page-loading";
@@ -68,7 +68,7 @@ export function SummaryPageClient() {
     Boolean(summary),
   );
 
-  const handleCompleteAudit = async () => {
+  const handleCompleteAudit = useCallback(async () => {
     if (!isSignedIn) {
       toast.error("Sign in to save this audit to your workspace.");
       return;
@@ -88,7 +88,18 @@ export function SummaryPageClient() {
     } finally {
       setIsCompleting(false);
     }
-  };
+  }, [getToken, isSignedIn, queryClient, router]);
+
+  useRegisterFunnelAction(
+    summary && !isLoading && !error
+      ? {
+          label: isCompleting ? "Saving…" : "Complete Audit",
+          disabled: isCompleting,
+          loading: isCompleting,
+          onClick: handleCompleteAudit,
+        }
+      : null,
+  );
 
   if (!isLoading && (error || !summary)) {
     return (
@@ -115,25 +126,7 @@ export function SummaryPageClient() {
   return (
     <PageShell isLoading={isLoading} message="Loading free audit…" variant="report">
       {summary && (
-        <FreeSummaryView
-          summary={summary}
-          onUnlocked={() => void loadSummary()}
-          headerAction={
-            <Button onClick={() => void handleCompleteAudit()} disabled={isCompleting}>
-              {isCompleting ? "Saving…" : "Complete Audit"}
-            </Button>
-          }
-          footer={
-            <div className="border-t border-line pt-10">
-              <Link
-                href="/analysis"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                ← Back to analysis
-              </Link>
-            </div>
-          }
-        />
+        <FreeSummaryView summary={summary} onUnlocked={() => void loadSummary()} />
       )}
     </PageShell>
   );

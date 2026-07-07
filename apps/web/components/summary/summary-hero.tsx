@@ -1,12 +1,9 @@
-import type { ReactNode } from "react";
-
 import { CountUp } from "@/components/count-up";
 import { Reveal } from "@/components/motion";
 import { formatCurrency, type FreeSummaryResponse } from "@rlr/shared";
 
 interface SummaryHeroProps {
   summary: FreeSummaryResponse;
-  headerAction?: ReactNode;
 }
 
 function parseArrForCountUp(value: string): {
@@ -28,7 +25,7 @@ function parseArrForCountUp(value: string): {
   return { to: amount, prefix: "$", suffix: "", decimals: 0 };
 }
 
-export function SummaryHero({ summary, headerAction }: SummaryHeroProps) {
+export function SummaryHero({ summary }: SummaryHeroProps) {
   const countUp = parseArrForCountUp(summary.recoverable_arr);
   const confidence = summary.confidence ? `${summary.confidence}%` : "-";
 
@@ -46,12 +43,9 @@ export function SummaryHero({ summary, headerAction }: SummaryHeroProps) {
   return (
     <section>
       <Reveal>
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-6">
-          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Free audit summary
-          </p>
-          {headerAction}
-        </div>
+        <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+          Free audit summary
+        </p>
       </Reveal>
 
       <Reveal delay={0.1}>

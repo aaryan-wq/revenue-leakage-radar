@@ -487,6 +487,7 @@ export interface ReportListItem {
   finding_count: number;
   purchased: boolean;
   company_name: string | null;
+  summary_available?: boolean;
 }
 
 export interface DashboardResponse {

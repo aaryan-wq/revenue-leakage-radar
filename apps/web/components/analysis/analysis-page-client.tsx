@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { ScanPipeline } from "@/components/analysis/scan-pipeline";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
@@ -146,6 +146,26 @@ export function AnalysisPageClient() {
 
   const isProcessing = (!backendComplete || !visualComplete) && !error;
 
+  const handleContinueToSummary = useCallback(() => {
+    router.push("/summary");
+  }, [router]);
+
+  useRegisterFunnelAction(
+    report?.status === "completed" && !isProcessing && !error
+      ? {
+          label: "Continue",
+          onClick: handleContinueToSummary,
+        }
+      : isProcessing && !error
+        ? {
+            label: "Analyzing…",
+            disabled: true,
+            loading: true,
+            onClick: () => {},
+          }
+        : null,
+  );
+
   if (isProcessing && !error) {
     return (
       <section className="mx-auto flex min-h-[50vh] max-w-processing flex-col items-center justify-center px-6 py-10 md:px-10">
@@ -235,12 +255,9 @@ export function AnalysisPageClient() {
       />
 
       <div className="flex flex-wrap items-center gap-4">
-        <Link href="/summary">
-          <Button>View Full Summary</Button>
-        </Link>
-        <Link href="/validation">
-          <Button variant="secondary">Back to Validation</Button>
-        </Link>
+        <Button variant="secondary" onClick={() => router.replace("/validation")}>
+          Back to Validation
+        </Button>
       </div>
     </div>
   );

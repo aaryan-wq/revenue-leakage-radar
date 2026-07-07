@@ -286,6 +286,7 @@ class ReportListItem(BaseModel):
     finding_count: int
     purchased: bool
     company_name: str | None = None
+    summary_available: bool = False
 
 
 class DashboardResponse(BaseModel):

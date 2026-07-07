@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from models import Audit, Report
 from payments.entitlements import get_reports_remaining
+from reports.summary import audit_has_free_summary
 
 
 def upsert_report(
@@ -68,8 +69,6 @@ def list_user_reports(db: Session, clerk_user_id: str) -> list[dict]:
 
     items: list[dict] = []
     for audit in audits:
-        if audit.status != "completed":
-            continue
         report = audit.report
         if not report:
             continue
@@ -83,6 +82,7 @@ def list_user_reports(db: Session, clerk_user_id: str) -> list[dict]:
                 "finding_count": report.finding_count,
                 "purchased": report.purchased,
                 "company_name": audit.company.name if audit.company else None,
+                "summary_available": audit_has_free_summary(audit, report),
             }
         )
     return items

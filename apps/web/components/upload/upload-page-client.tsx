@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
 
+import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { DataTierFilesChecklist } from "@/components/upload/data-tier-files-checklist";
 import { LegalConsent } from "@/components/legal/legal-consent";
 import { UploadZone, type UploadFileItem } from "@/components/upload/upload-zone";
-import { glide, Magnetic } from "@/components/motion";
+import { glide } from "@/components/motion";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/api";
@@ -341,6 +342,18 @@ export function UploadPageClient() {
   const uploadsInFlight =
     isUploading || isSyncingCoverage || uploadingCount > 0 || pendingCount > 0;
   const canContinueToValidation = billingUploadReady && !uploadsInFlight;
+
+  useRegisterFunnelAction(
+    billingUploadReady
+      ? {
+          label: uploadsInFlight ? "Waiting…" : "Continue",
+          disabled: !canContinueToValidation,
+          loading: uploadsInFlight,
+          onClick: handleContinueToValidation,
+        }
+      : null,
+  );
+
   const readyLabel =
     uploadingCount > 0
       ? `Uploading ${uploadingCount} file${uploadingCount > 1 ? "s" : ""}…`
@@ -414,39 +427,22 @@ export function UploadPageClient() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.3 }}
-        className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-8"
+        className="mt-12 border-t border-line pt-8"
       >
-        <div>
-          <p className="text-sm text-muted-foreground tnum">{readyLabel}</p>
-          {billingUploadReady && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Coverage updates as you add files.
-              {missingRecommended.length > 0 &&
-                " Add more exports anytime to unlock additional verification rules."}
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          {billingUploadReady && (
-            <Magnetic strength={0.3}>
-              <button
-                type="button"
-                onClick={() => void handleContinueToValidation()}
-                disabled={!canContinueToValidation}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-[0.92rem] font-medium text-primary-foreground transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {uploadsInFlight ? "Waiting for uploads…" : "Continue to Validation →"}
-              </button>
-            </Magnetic>
-          )}
-          {(isUploading || isSyncingCoverage) && (
-            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {isUploading ? "Uploading files…" : "Analyzing coverage…"}
-            </span>
-          )}
-        </div>
+        <p className="text-sm text-muted-foreground tnum">{readyLabel}</p>
+        {billingUploadReady && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Coverage updates as you add files.
+            {missingRecommended.length > 0 &&
+              " Add more exports anytime to unlock additional verification rules."}
+          </p>
+        )}
+        {(isUploading || isSyncingCoverage) && (
+          <p className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {isUploading ? "Uploading files…" : "Analyzing coverage…"}
+          </p>
+        )}
       </motion.div>
 
       <LegalConsent action="uploading data" className="mt-6" />
