@@ -107,7 +107,7 @@ export function CoverageAnalysisPanel({ coverage, compact = false }: CoverageAna
   const topUnlock = coverage.unlock_hints[0];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="grid gap-6 lg:grid-cols-2">
       <motion.div
         key={`${coverage.rules_available}-${coverage.estimated_confidence}`}
         initial={{ opacity: 0.6 }}
@@ -181,7 +181,7 @@ export function CoverageAnalysisPanel({ coverage, compact = false }: CoverageAna
       )}
 
       {topUnlock && (
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground lg:col-span-2">
           Upload{" "}
           <span className="text-foreground">{topUnlock.label.toLowerCase()}</span> to unlock{" "}
           {topUnlock.rules_unlocked} more check{topUnlock.rules_unlocked === 1 ? "" : "s"}.

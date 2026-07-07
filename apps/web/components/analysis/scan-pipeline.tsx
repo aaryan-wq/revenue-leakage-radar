@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 
 import { glide } from "@/components/motion";
+import { useSmoothProgress } from "@/lib/hooks/use-smooth-progress";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 import type { AuditStatus } from "@rlr/shared";
 
@@ -24,108 +25,85 @@ const STAGE_DETAILS: Record<string, string> = {
   "Report Generation": "Ranking findings by confidence",
 };
 
-function buildStages(status: AuditStatus): PipelineStage[] {
-  const preScanComplete =
-    status !== "ready_for_scan" && status !== "created" && status !== "uploading";
-  const upload: StageStatus = preScanComplete
-    ? "complete"
-    : status === "uploading"
-      ? "active"
-      : "pending";
-  const parse: StageStatus = preScanComplete ? "complete" : "pending";
-  const normalize: StageStatus = preScanComplete ? "complete" : "pending";
-  const validation: StageStatus = preScanComplete ? "complete" : "pending";
+const STAGE_LABELS = [
+  "Upload",
+  "Parse",
+  "Normalize",
+  "Validation",
+  "Verification Checks",
+  "Revenue Estimation",
+  "Report Generation",
+] as const;
 
-  const verification: StageStatus =
-    status === "scanning" || status === "ready_for_scan"
-      ? "active"
-      : status === "completed" || status === "generating_report"
-        ? "complete"
-        : "pending";
-  const estimation: StageStatus =
-    status === "generating_report" ? "active" : status === "completed" ? "complete" : "pending";
-  const report: StageStatus = status === "completed" ? "complete" : "pending";
+function buildStages(status: AuditStatus, progress: number): PipelineStage[] {
+  const stageCount = STAGE_LABELS.length;
+  const activeIndex = Math.min(stageCount - 1, Math.floor(progress * stageCount));
 
-  const labels = [
-    "Upload",
-    "Parse",
-    "Normalize",
-    "Validation",
-    "Verification Checks",
-    "Revenue Estimation",
-    "Report Generation",
-  ] as const;
+  return STAGE_LABELS.map((label, index) => {
+    let stageStatus: StageStatus = "pending";
+    if (index < activeIndex) {
+      stageStatus = "complete";
+    } else if (index === activeIndex) {
+      stageStatus = status === "completed" && progress >= 1 ? "complete" : "active";
+    }
 
-  const statuses = [upload, parse, normalize, validation, verification, estimation, report];
-
-  return labels.map((label, index) => ({
-    label,
-    detail: STAGE_DETAILS[label] ?? "",
-    status: statuses[index] ?? "pending",
-  }));
+    return {
+      label,
+      detail: STAGE_DETAILS[label] ?? "",
+      status: stageStatus,
+    };
+  });
 }
 
-function estimateRemainingMinutes(rulesTotal: number, status: AuditStatus): string {
-  if (status === "generating_report") return "~1 min remaining";
-  if (status === "scanning") {
-    if (rulesTotal >= 20) return "~3–5 min remaining";
-    return "~2–3 min remaining";
-  }
-  return "~2–5 min remaining";
-}
-
-function getPhaseIndex(stages: PipelineStage[]): number {
-  const activeIndex = stages.findIndex((stage) => stage.status === "active");
-  if (activeIndex >= 0) return activeIndex;
-  const completedCount = stages.filter((stage) => stage.status === "complete").length;
-  return Math.min(completedCount, stages.length - 1);
-}
-
-function getProgress(
-  stages: PipelineStage[],
-  status: AuditStatus,
-  rulesCompleted: number,
-  rulesTotal: number,
-): number {
-  if (status === "completed") return 1;
-
-  const completedCount = stages.filter((stage) => stage.status === "complete").length;
-  const activeIndex = stages.findIndex((stage) => stage.status === "active");
-
-  if (status === "scanning" && rulesTotal > 0) {
-    const verificationProgress = Math.min(rulesCompleted / rulesTotal, 1);
-    return Math.min((4 + verificationProgress * 0.9) / stages.length, 0.96);
-  }
-
-  if (activeIndex >= 0) {
-    return Math.min((completedCount + 0.6) / stages.length, 0.96);
-  }
-
-  if (status === "ready_for_scan") {
-    return 4 / stages.length;
-  }
-
-  return completedCount / stages.length;
+function estimateRemainingMinutes(progress: number): string {
+  if (progress >= 0.95) return "Almost done";
+  if (progress >= 0.7) return "~1–2 min remaining";
+  return "~2–4 min remaining";
 }
 
 interface ScanPipelineProps {
   status: AuditStatus;
   rulesCompleted?: number;
   rulesTotal?: number;
+  /** Backend scan finished — progress animation will complete to 100%. */
+  backendComplete?: boolean;
+  /** Show a static 100% ring (post-scan results view). */
+  instantComplete?: boolean;
+  onVisualComplete?: () => void;
 }
 
-export function ScanPipeline({ status, rulesCompleted = 0, rulesTotal = 0 }: ScanPipelineProps) {
+export function ScanPipeline({
+  status,
+  rulesCompleted = 0,
+  rulesTotal = 0,
+  backendComplete = false,
+  instantComplete = false,
+  onVisualComplete,
+}: ScanPipelineProps) {
   const motionEnabled = useMotionEnabled();
-  const stages = buildStages(status);
-  const phase = getPhaseIndex(stages);
-  const progress = getProgress(stages, status, rulesCompleted, rulesTotal);
-  const currentStage = stages[phase];
-  const isProcessing =
-    status === "scanning" || status === "generating_report" || status === "ready_for_scan";
-  const isComplete = status === "completed";
-  const progressPercent = Math.round(progress * 100);
-  const centerLabel = isComplete ? "Complete" : status === "generating_report" ? "Finalizing" : "Analyzing";
+  const isBackendDone = instantComplete || backendComplete || status === "completed";
+  const progress = useSmoothProgress({
+    isComplete: isBackendDone,
+    minDurationMs: 4_000,
+    onReached100: onVisualComplete,
+    disabled: instantComplete,
+  });
+
+  const stages = buildStages(status, progress);
+  const phase = Math.min(
+    stages.length - 1,
+    stages.findIndex((stage) => stage.status === "active"),
+  );
+  const currentStage = stages[phase >= 0 ? phase : stages.length - 1];
+  const progressPercent = Math.min(100, Math.round(progress * 100));
+  const isComplete = progressPercent >= 100;
+  const centerLabel = isComplete ? "Complete" : progress >= 0.9 ? "Finalizing" : "Analyzing";
   const ringCircumference = 2 * Math.PI * 88;
+
+  const verificationDetail =
+    rulesTotal > 0 && phase >= 4
+      ? `Running verification rules (${rulesCompleted} of ${rulesTotal})`
+      : currentStage?.detail;
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -144,7 +122,7 @@ export function ScanPipeline({ status, rulesCompleted = 0, rulesTotal = 0 }: Sca
             animate={{
               strokeDashoffset: ringCircumference * (1 - progress),
             }}
-            transition={{ ease: "linear", duration: motionEnabled ? 0.4 : 0 }}
+            transition={{ ease: "linear", duration: motionEnabled ? 0.12 : 0 }}
           />
         </svg>
 
@@ -189,13 +167,13 @@ export function ScanPipeline({ status, rulesCompleted = 0, rulesTotal = 0 }: Sca
               transition={{ duration: 0.6, ease: glide }}
             >
               <p className="font-heading text-2xl tracking-tight">{currentStage?.label}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{currentStage?.detail}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{verificationDetail}</p>
             </motion.div>
           </AnimatePresence>
         ) : (
           <div>
             <p className="font-heading text-2xl tracking-tight">{currentStage?.label}</p>
-            <p className="mt-2 text-sm text-muted-foreground">{currentStage?.detail}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{verificationDetail}</p>
           </div>
         )}
       </div>
@@ -214,9 +192,9 @@ export function ScanPipeline({ status, rulesCompleted = 0, rulesTotal = 0 }: Sca
         ))}
       </div>
 
-      {isProcessing && (
+      {!isComplete && (
         <p className="mt-8 text-sm text-muted-foreground">
-          {estimateRemainingMinutes(rulesTotal, status)}
+          {estimateRemainingMinutes(progress)}
         </p>
       )}
 
@@ -226,7 +204,7 @@ export function ScanPipeline({ status, rulesCompleted = 0, rulesTotal = 0 }: Sca
         </p>
       )}
 
-      {isProcessing && (
+      {!isComplete && (
         <p className="mt-8 max-w-sm text-sm leading-relaxed text-muted-foreground">
           This usually takes under a minute. We&apos;re being thorough so the findings are ones you
           can stand behind.

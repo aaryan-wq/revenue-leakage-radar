@@ -5,11 +5,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, FileUp, Loader2, Trash2 } from "lucide-react";
 
 import { glide } from "@/components/motion";
+import { formatFileSize } from "@/lib/format-file-size";
 import { cn } from "@/lib/utils";
 
 export interface UploadFileItem {
   id: string;
   file: File;
+  /** Byte size from the local file or server after rehydrate. */
+  fileSizeBytes: number;
   progress: number;
   status: "pending" | "uploading" | "uploaded" | "error";
   error?: string;
@@ -163,7 +166,7 @@ export function UploadZone({
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-foreground">{item.file.name}</p>
                     <p className="text-xs text-muted-foreground tnum">
-                      {(item.file.size / 1024).toFixed(1)} KB
+                      {formatFileSize(item.fileSizeBytes)}
                       {item.status === "error" && item.error && (
                         <span className="ml-2 text-destructive">: {item.error}</span>
                       )}

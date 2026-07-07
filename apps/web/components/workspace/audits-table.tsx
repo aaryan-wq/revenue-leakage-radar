@@ -17,6 +17,8 @@ import {
 } from "@/lib/audit-sort";
 import { formatCurrency, type ReportListItem } from "@rlr/shared";
 
+import { formatAuditStatusLabel } from "@/lib/format-audit-status";
+
 interface AuditsTableProps {
   audits: ReportListItem[];
   activeReportId?: string | null;
@@ -162,8 +164,8 @@ export function AuditsTable({
                     })
                   : "-"}
               </td>
-              <td className="px-6 py-4 capitalize text-muted-foreground">
-                {audit.status.replace(/_/g, " ")}
+              <td className="px-6 py-4 text-muted-foreground">
+                {formatAuditStatusLabel(audit.status)}
               </td>
               {showPlatform && (
                 <td className="px-6 py-4 text-muted-foreground">CSV export</td>

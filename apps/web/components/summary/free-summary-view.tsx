@@ -13,13 +13,14 @@ import type { FreeSummaryResponse } from "@rlr/shared";
 interface FreeSummaryViewProps {
   summary: FreeSummaryResponse;
   onUnlocked?: () => void;
+  headerAction?: ReactNode;
   footer?: ReactNode;
 }
 
-export function FreeSummaryView({ summary, onUnlocked, footer }: FreeSummaryViewProps) {
+export function FreeSummaryView({ summary, onUnlocked, headerAction, footer }: FreeSummaryViewProps) {
   return (
-    <div className="mx-auto max-w-report space-y-0">
-      <SummaryHero summary={summary} />
+    <div className="mx-auto max-w-report space-y-0 px-6 md:px-10">
+      <SummaryHero summary={summary} headerAction={headerAction} />
       <OpportunityBreakdown items={summary.opportunity_breakdown} />
       <VerificationChecklist checks={summary.verification_checks} />
       <CoverageSection coverage={summary.coverage} />

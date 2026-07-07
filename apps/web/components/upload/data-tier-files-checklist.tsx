@@ -61,23 +61,27 @@ function FileRow({ fileType, isUploaded }: { fileType: FileType; isUploaded: boo
   const hint = filenameHint(fileType);
 
   return (
-    <li className="flex items-start gap-3 border-t border-line py-4 first:border-t-0 first:pt-0">
+    <li
+      className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${
+        isUploaded ? "border-primary/25 bg-primary/5" : "border-line bg-card"
+      }`}
+    >
       <span className="mt-0.5 shrink-0">
         {isUploaded ? (
-          <CheckCircle2 className="h-5 w-5 text-primary" strokeWidth={1.75} />
+          <CheckCircle2 className="h-4 w-4 text-primary" strokeWidth={1.75} />
         ) : (
-          <Circle className="h-5 w-5 text-muted-foreground/40" strokeWidth={1.75} />
+          <Circle className="h-4 w-4 text-muted-foreground/40" strokeWidth={1.75} />
         )}
       </span>
-      <div>
+      <div className="min-w-0">
         <span
-          className={
-            isUploaded ? "text-[0.98rem] text-foreground" : "text-[0.98rem] text-muted-foreground"
-          }
+          className={`block text-sm leading-snug ${
+            isUploaded ? "text-foreground" : "text-muted-foreground"
+          }`}
         >
           {FILE_TYPE_LABELS[fileType]}
         </span>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+        {hint && <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p>}
       </div>
     </li>
   );
@@ -91,7 +95,7 @@ export function DataTierFilesChecklist({
   const hasUpload = uploadedTypes.length > 0;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col border-t border-line pt-10">
       <CoverageAnalysisPanel coverage={coverage} />
 
       {dataTier && hasUpload && (
@@ -105,26 +109,37 @@ export function DataTierFilesChecklist({
         </HairlineCard>
       )}
 
-      <p className="mb-5 mt-8 text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="mb-6 mt-10 text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
         Accepted exports
       </p>
 
-      <div className="flex-1">
-        {TIER_SECTIONS.map((section) => (
-          <div key={section.title} className="border-t border-line py-5 first:border-t-0 first:pt-0">
-            <p className="text-[0.98rem] text-foreground">{section.title}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
-            <ul className="mt-4">
-              {section.files.map((fileType) => (
-                <FileRow
-                  key={fileType}
-                  fileType={fileType}
-                  isUploaded={uploadedTypes.includes(fileType)}
-                />
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {TIER_SECTIONS.map((section) => {
+          const isBilling = section.title === "Billing Exports";
+          return (
+            <HairlineCard
+              key={section.title}
+              padding="sm"
+              className={`h-full ${isBilling ? "md:col-span-2 xl:col-span-2" : ""}`}
+            >
+              <p className="text-[0.98rem] font-medium text-foreground">{section.title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.description}</p>
+              <ul
+                className={`mt-4 grid gap-3 ${
+                  isBilling ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 xl:grid-cols-1"
+                }`}
+              >
+                {section.files.map((fileType) => (
+                  <FileRow
+                    key={`${section.title}-${fileType}`}
+                    fileType={fileType}
+                    isUploaded={uploadedTypes.includes(fileType)}
+                  />
+                ))}
+              </ul>
+            </HairlineCard>
+          );
+        })}
       </div>
 
       <HairlineCard subtle padding="sm" className="mt-6">

@@ -149,6 +149,7 @@ def resolve_rule_availability(
     *,
     has_credit_data: bool = False,
     has_manual_override_data: bool = False,
+    preview_mode: bool = False,
 ) -> RuleAvailability:
     if rule.evaluate is None:
         return RuleAvailability(rule.rule_id, rule.name, rule.category, "skipped", "Check not configured")
@@ -164,6 +165,8 @@ def resolve_rule_availability(
         )
 
     if rule.requires_credit_data and not has_credit_data:
+        if preview_mode:
+            return RuleAvailability(rule.rule_id, rule.name, rule.category, "partial", None)
         return RuleAvailability(
             rule.rule_id,
             rule.name,
@@ -173,6 +176,8 @@ def resolve_rule_availability(
         )
 
     if rule.requires_manual_override and not has_manual_override_data:
+        if preview_mode:
+            return RuleAvailability(rule.rule_id, rule.name, rule.category, "partial", None)
         return RuleAvailability(
             rule.rule_id,
             rule.name,
@@ -260,6 +265,7 @@ def analyze_coverage(
     uploaded_file_types: set[FileType] | None = None,
     has_credit_data: bool = False,
     has_manual_override_data: bool = False,
+    preview_mode: bool = False,
 ) -> dict[str, Any]:
     uploaded_types = uploaded_file_types or set()
     all_rules = get_all_rules()
@@ -269,6 +275,7 @@ def analyze_coverage(
             available_entities,
             has_credit_data=has_credit_data,
             has_manual_override_data=has_manual_override_data,
+            preview_mode=preview_mode,
         )
         for rule in all_rules
     ]

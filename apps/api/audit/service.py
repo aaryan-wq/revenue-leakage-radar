@@ -100,6 +100,7 @@ def get_coverage_analysis_for_audit(audit: Audit) -> dict:
     return analyze_coverage(
         available_entities=available,
         uploaded_file_types=uploaded,
+        preview_mode=True,
     )
 
 

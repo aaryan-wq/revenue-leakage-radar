@@ -107,10 +107,15 @@ export function isCompletedAuditPath(pathname: string): boolean {
 
 /** Save a completed audit to the signed-in account and clear the browser session. */
 export async function saveCompletedAuditOnExit(authToken?: string | null): Promise<void> {
+  const session = getStoredAuditSession();
+  if (!session) return;
+
   const token = authToken ?? (await getAuditAuthToken());
-  if (token) {
-    await ensureAuditLinked(token);
+  if (!token) {
+    throw new Error("Sign in to save this audit to your workspace.");
   }
+
+  await linkAuditToAccount(session, token);
   clearAuditSession();
 }
 

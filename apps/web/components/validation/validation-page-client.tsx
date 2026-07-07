@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Loader2 } from "lucide-react";
+
 import { ColumnMappingTable } from "@/components/validation/column-mapping-table";
 import { PlatformBadge } from "@/components/validation/platform-badge";
 import { ValidationIssuesList } from "@/components/validation/validation-issues-list";
@@ -202,6 +204,9 @@ export function ValidationPageClient() {
           Checking your files
         </h1>
         <p className="mt-4 text-sm text-muted-foreground">{processingLabel(currentStatus)}</p>
+        <div className="mt-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" strokeWidth={1.5} aria-hidden />
+        </div>
         <div className="mt-10">
           <ValidationSkeleton />
         </div>

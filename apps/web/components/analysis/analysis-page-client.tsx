@@ -35,12 +35,14 @@ export function AnalysisPageClient() {
   const [report, setReport] = useState<ScanReportResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [backendComplete, setBackendComplete] = useState(false);
+  const [visualComplete, setVisualComplete] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const scanStartRequestedRef = useRef(false);
 
   const retryScan = () => {
     setError(null);
     setBackendComplete(false);
+    setVisualComplete(false);
     setReport(null);
     scanStartRequestedRef.current = false;
     setAttempt((count) => count + 1);
@@ -118,9 +120,11 @@ export function AnalysisPageClient() {
               "Verification scan could not be completed. Please try again.",
           );
           toast.error("Verification scan failed.");
+          setVisualComplete(true);
         } else {
           setError("Analysis did not complete successfully. Please try again.");
           toast.error("Verification scan failed.");
+          setVisualComplete(true);
         }
         setBackendComplete(true);
       } catch (err) {
@@ -133,13 +137,14 @@ export function AnalysisPageClient() {
         setError(message);
         toast.error("Verification scan failed.");
         setBackendComplete(true);
+        setVisualComplete(true);
       }
     }
 
     void run();
   }, [getToken, isSignedIn, queryClient, router, attempt]);
 
-  const isProcessing = !backendComplete;
+  const isProcessing = (!backendComplete || !visualComplete) && !error;
 
   if (isProcessing && !error) {
     return (
@@ -148,6 +153,8 @@ export function AnalysisPageClient() {
           status={processingStatus(report)}
           rulesCompleted={report?.rules_completed ?? 0}
           rulesTotal={report?.rules_total ?? 0}
+          backendComplete={backendComplete}
+          onVisualComplete={() => setVisualComplete(true)}
         />
       </section>
     );
@@ -224,6 +231,7 @@ export function AnalysisPageClient() {
         status={report.status}
         rulesCompleted={report.rules_completed}
         rulesTotal={report.rules_total}
+        instantComplete
       />
 
       <div className="flex flex-wrap items-center gap-4">

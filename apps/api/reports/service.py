@@ -68,6 +68,8 @@ def list_user_reports(db: Session, clerk_user_id: str) -> list[dict]:
 
     items: list[dict] = []
     for audit in audits:
+        if audit.status != "completed":
+            continue
         report = audit.report
         if not report:
             continue

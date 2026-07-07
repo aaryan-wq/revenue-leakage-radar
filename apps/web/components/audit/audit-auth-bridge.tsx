@@ -3,9 +3,14 @@
 import { useEffect } from "react";
 
 import { useAppAuth } from "@/lib/app-auth";
-import { ensureAuditLinked, getStoredAuditSession, setAuditAuthTokenProvider } from "@/lib/audit-session";
+import {
+  ensureAuditLinked,
+  getAuditStatus,
+  getStoredAuditSession,
+  setAuditAuthTokenProvider,
+} from "@/lib/audit-session";
 
-/** Wires Clerk auth into the audit funnel and links anonymous audits to signed-in accounts. */
+/** Wires Clerk auth into the audit funnel and links completed audits to signed-in accounts. */
 export function AuditAuthBridge() {
   const { getToken, isLoaded, isSignedIn } = useAppAuth();
 
@@ -16,12 +21,21 @@ export function AuditAuthBridge() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    if (!getStoredAuditSession()) return;
+    const session = getStoredAuditSession();
+    if (!session) return;
 
     void (async () => {
       const token = await getToken();
       if (!token) return;
-      await ensureAuditLinked(token);
+
+      try {
+        const status = await getAuditStatus(session);
+        if (status.status === "completed") {
+          await ensureAuditLinked(token);
+        }
+      } catch {
+        // Best effort — funnel pages will retry linking after scan completes.
+      }
     })();
   }, [getToken, isLoaded, isSignedIn]);
 

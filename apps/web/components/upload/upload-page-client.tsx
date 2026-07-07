@@ -47,6 +47,7 @@ function mergeFilesFromStatus(
     .map((upload) => ({
       id: upload.id,
       file: new File([], upload.original_filename, { type: "text/csv" }),
+      fileSizeBytes: upload.file_size,
       progress: 100,
       status: "uploaded" as const,
     }));
@@ -63,6 +64,7 @@ export function UploadPageClient() {
   const [coverage, setCoverage] = useState<CoverageAnalysis | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSyncingCoverage, setIsSyncingCoverage] = useState(false);
   const [removingIds, setRemovingIds] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [auditReady, setAuditReady] = useState(false);
@@ -77,13 +79,18 @@ export function UploadPageClient() {
   const syncAuditStatus = useCallback(async () => {
     const session = getStoredAuditSession();
     if (!session) return;
-    const status = await getAuditStatus(session);
-    setUploadedTypes(status.uploads.map((u) => u.file_type));
-    setMissingRecommended(status.missing_recommended_file_types ?? []);
-    setDataTier(status.data_tier ?? "insufficient");
-    setCoverage(status.coverage_analysis ?? null);
-    setFiles((prev) => mergeFilesFromStatus(prev, status));
-    return status;
+    setIsSyncingCoverage(true);
+    try {
+      const status = await getAuditStatus(session);
+      setUploadedTypes(status.uploads.map((u) => u.file_type));
+      setMissingRecommended(status.missing_recommended_file_types ?? []);
+      setDataTier(status.data_tier ?? "insufficient");
+      setCoverage(status.coverage_analysis ?? null);
+      setFiles((prev) => mergeFilesFromStatus(prev, status));
+      return status;
+    } finally {
+      setIsSyncingCoverage(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -175,6 +182,7 @@ export function UploadPageClient() {
               return {
                 ...f,
                 id: response.id,
+                fileSizeBytes: response.file_size,
                 status: "uploaded" as const,
                 progress: 100,
               };
@@ -216,6 +224,7 @@ export function UploadPageClient() {
         additions.push({
           id: generateId(),
           file,
+          fileSizeBytes: file.size,
           progress: 0,
           status: "pending",
         });
@@ -329,7 +338,8 @@ export function UploadPageClient() {
   const uploadingCount = files.filter((f) => f.status === "uploading").length;
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const uploadedCount = files.filter((f) => f.status === "uploaded").length;
-  const uploadsInFlight = isUploading || uploadingCount > 0 || pendingCount > 0;
+  const uploadsInFlight =
+    isUploading || isSyncingCoverage || uploadingCount > 0 || pendingCount > 0;
   const canContinueToValidation = billingUploadReady && !uploadsInFlight;
   const readyLabel =
     uploadingCount > 0
@@ -367,9 +377,9 @@ export function UploadPageClient() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: glide, delay: 0.15 }}
-        className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr]"
+        className="mt-12 space-y-10"
       >
-        <div>
+        <div className="w-full">
           <UploadZone
             files={files}
             onFilesSelected={handleFilesSelected}
@@ -430,10 +440,10 @@ export function UploadPageClient() {
               </button>
             </Magnetic>
           )}
-          {isUploading && (
+          {(isUploading || isSyncingCoverage) && (
             <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Analyzing coverage…
+              {isUploading ? "Uploading files…" : "Analyzing coverage…"}
             </span>
           )}
         </div>

@@ -78,6 +78,39 @@ def test_analyze_coverage_unlock_hints_suggest_missing_coupons():
     assert coupon_hint["rules_unlocked"] >= 1
 
 
+def test_preview_mode_includes_credit_and_manual_rules_with_full_billing_data():
+    entities = {
+        CanonicalEntity.CUSTOMER,
+        CanonicalEntity.SUBSCRIPTION,
+        CanonicalEntity.PRICE,
+        CanonicalEntity.INVOICE,
+        CanonicalEntity.INVOICE_LINE_ITEM,
+        CanonicalEntity.COUPON,
+        CanonicalEntity.ACCOUNT,
+        CanonicalEntity.CONTRACT,
+    }
+    uploaded = {
+        FileType.CUSTOMERS,
+        FileType.SUBSCRIPTIONS,
+        FileType.PRICE_CATALOG,
+        FileType.INVOICES,
+        FileType.INVOICE_LINE_ITEMS,
+        FileType.COUPONS,
+        FileType.CRM_ACCOUNTS,
+        FileType.CRM_CONTRACTS,
+    }
+
+    result = analyze_coverage(
+        available_entities=entities,
+        uploaded_file_types=uploaded,
+        has_credit_data=False,
+        preview_mode=True,
+    )
+
+    assert result["rules_available"] == len(get_all_rules())
+    assert result["rules_total"] == len(get_all_rules())
+
+
 def test_resolve_rule_availability_partial_when_optimal_entities_missing():
     rule = next(rule for rule in get_all_rules() if rule.rule_id == "renewal_price_drift")
     availability = resolve_rule_availability(

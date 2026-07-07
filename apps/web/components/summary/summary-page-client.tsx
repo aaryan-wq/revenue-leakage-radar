@@ -69,15 +69,22 @@ export function SummaryPageClient() {
   );
 
   const handleCompleteAudit = async () => {
+    if (!isSignedIn) {
+      toast.error("Sign in to save this audit to your workspace.");
+      return;
+    }
+
     setIsCompleting(true);
     try {
-      const token = isSignedIn ? await getToken() : null;
+      const token = await getToken();
       await saveCompletedAuditOnExit(token);
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       toast.success("Audit saved to your workspace.");
       router.push(WORKSPACE_EXIT_HREF);
-    } catch {
-      toast.error("Unable to save audit. Please try again.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to save audit. Please try again.";
+      toast.error(message);
     } finally {
       setIsCompleting(false);
     }
@@ -111,19 +118,19 @@ export function SummaryPageClient() {
         <FreeSummaryView
           summary={summary}
           onUnlocked={() => void loadSummary()}
+          headerAction={
+            <Button onClick={() => void handleCompleteAudit()} disabled={isCompleting}>
+              {isCompleting ? "Saving…" : "Complete Audit"}
+            </Button>
+          }
           footer={
             <div className="border-t border-line pt-10">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <Link
-                  href="/analysis"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  ← Back to analysis
-                </Link>
-                <Button onClick={() => void handleCompleteAudit()} disabled={isCompleting}>
-                  {isCompleting ? "Saving…" : "Complete Audit"}
-                </Button>
-              </div>
+              <Link
+                href="/analysis"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                ← Back to analysis
+              </Link>
             </div>
           }
         />
