@@ -27,9 +27,14 @@ from models import Report
 from reports.generator import build_report_detail
 from verification.recoverable import recoverable_amount_from_payload
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+# Anchor to the api directory (reports/ lives directly under it). This is stable
+# across environments: locally it is apps/api, and in the Docker image the api
+# contents are copied to /app. Deriving the repo root by fixed-depth parent
+# indexing crashes in the container, where the path is only /app/reports/pdf.py.
+_API_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = _API_ROOT.parent.parent
 _LOGO_CANDIDATES = (
-    _REPO_ROOT / "apps" / "api" / "assets" / "logo-full.png",
+    _API_ROOT / "assets" / "logo-full.png",
     _REPO_ROOT / "apps" / "web" / "public" / "brand" / "logo-full.png",
     _REPO_ROOT / "assets" / "logofull.png",
 )
