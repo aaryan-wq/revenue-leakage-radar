@@ -46,7 +46,7 @@ def feedback_email(
     submitted_at: datetime,
 ) -> bool:
     display_name = sender_name.strip() if sender_name and sender_name.strip() else "Anonymous"
-    subject = f"[Paevo Feedback] {category} — from {sender_email}"
+    subject = f"[Paevo Feedback] {category} from {sender_email}"
     timestamp = submitted_at.strftime("%Y-%m-%d %H:%M UTC")
     safe_message = escape(message)
     safe_page_url = escape(page_url) if page_url else None

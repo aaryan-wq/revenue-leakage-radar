@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { CountUp } from "@/components/count-up";
 import { Reveal } from "@/components/motion";
@@ -23,8 +23,10 @@ import { formatCurrency, type DashboardResponse, type FindingResponse } from "@r
 import { toast } from "@/lib/toast";
 
 export function HomePageClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { dashboard, isLoading, error, reload } = useWorkspaceDashboard();
+  const purchaseToastShown = useRef(false);
 
   const latestAudit = useMemo(
     () => (dashboard ? sortAuditsByDate(dashboard.audits)[0] ?? null : null),
@@ -39,11 +41,13 @@ export function HomePageClient() {
   const activeReportId = latestAudit?.report_id ?? null;
 
   useEffect(() => {
-    if (searchParams.get("checkout") === "success") {
-      toast.success("Purchase complete. Your report credits have been updated.");
-      void reload();
-    }
-  }, [reload, searchParams]);
+    if (searchParams.get("checkout") !== "success") return;
+    if (purchaseToastShown.current) return;
+    purchaseToastShown.current = true;
+    toast.success("Purchase complete. Your report credits have been updated.");
+    void reload();
+    router.replace("/dashboard");
+  }, [reload, router, searchParams]);
 
   if (!isLoading && error && !dashboard) {
     return (

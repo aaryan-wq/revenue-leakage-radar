@@ -151,7 +151,7 @@ function FeedbackFormFields({
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           className={cn(fieldClassName, "resize-y")}
-          placeholder="Tell us what's on your mind — bugs, ideas, or anything we could do better."
+          placeholder="Tell us what's on your mind: bugs, ideas, or anything we could do better."
         />
       </div>
 

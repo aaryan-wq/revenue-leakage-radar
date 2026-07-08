@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import { useAppAuth } from "@/lib/app-auth";
 import { ApiError } from "@/lib/api";
@@ -27,12 +27,15 @@ export function useWorkspaceDashboard() {
         ? query.error.message
         : null;
 
+  const { refetch } = query;
+  const reload = useCallback(() => refetch(), [refetch]);
+
   return {
     dashboard: (query.data ?? null) as DashboardResponse | null,
     isLoading: !isLoaded || (query.isLoading && !query.data),
     isFetching: query.isFetching,
     error,
-    reload: () => query.refetch(),
+    reload,
     isSignedIn,
     isLoaded,
   };

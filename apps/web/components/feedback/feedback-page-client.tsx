@@ -33,7 +33,7 @@ export function FeedbackPageClient() {
         <HairlineCard padding="lg">
           <h2 className="font-heading text-2xl tracking-tight">Send us a message</h2>
           <p className="mt-2 text-[0.92rem] leading-relaxed text-muted-foreground">
-            Your note goes straight to our team — no ticket queue, no black hole.
+            Your note goes straight to our team, no ticket queue, no black hole.
           </p>
           <FeedbackForm source="page" className="mt-8" />
         </HairlineCard>

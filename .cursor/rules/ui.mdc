@@ -114,6 +114,20 @@ font-variant-numeric: tabular-nums
 
 ---
 
+# Copy and Punctuation
+
+Never use em dashes (`—`) anywhere on the site, in any user-facing copy, UI text, placeholders, email templates, subjects, or generated content. This is a hard rule with no exceptions.
+
+Instead, rewrite the sentence using one of:
+
+- A comma, colon, or period
+- A parenthetical `( )`
+- Two shorter sentences
+
+Also avoid en dashes (`–`) in prose; use a hyphen or "to" for ranges (for example, `h1-h4` or `1 to 12`). Straight hyphens (`-`) remain allowed.
+
+---
+
 # Spacing
 
 Use the spacing scale only. Never use arbitrary spacing.
