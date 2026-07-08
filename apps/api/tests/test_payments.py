@@ -514,7 +514,7 @@ def test_fulfill_checkout_session_unlocks_report_in_db():
                     "clerk_user_id": "user_integration",
                     "plan": CheckoutPlan.SINGLE_REPORT.value,
                 },
-                "amount_total": 150000,
+                "amount_total": 250000,
                 "currency": "usd",
             },
         )

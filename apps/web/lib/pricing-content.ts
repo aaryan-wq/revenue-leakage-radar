@@ -4,7 +4,7 @@ export const PRODUCT_NAMES = {
   enterprise: "Enterprise",
 } as const;
 
-export const VERIFICATION_REPORT_PRICE = "$1,500";
+export const VERIFICATION_REPORT_PRICE = "$2,500";
 
 export const PRICING_TIERS = {
   free: {

@@ -188,7 +188,7 @@ def create_checkout_session(
         db.commit()
         amount_usd = None
         if plan == CheckoutPlan.SINGLE_REPORT:
-            amount_usd = 1500.0
+            amount_usd = 2500.0
         tracking.track_checkout_started(
             audit,
             checkout_type=plan.value,
@@ -375,7 +375,7 @@ def fulfill_checkout_session(db: Session, session: dict[str, Any]) -> None:
             from analytics import audit_summary, tracking
 
             audit_summary.mark_checkout_completed(db, audit)
-            price_usd = (amount_total / 100) if amount_total else 1500.0
+            price_usd = (amount_total / 100) if amount_total else 2500.0
             tracking.track_checkout_completed(
                 audit,
                 checkout_type="single_report",

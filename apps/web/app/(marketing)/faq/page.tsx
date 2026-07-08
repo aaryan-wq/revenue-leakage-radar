@@ -6,6 +6,7 @@ import { ChevronDown } from "lucide-react";
 import { AnalyticsEvents } from "@rlr/shared";
 
 import { FaqPageTracker } from "@/components/analytics/marketing-page-tracker";
+import { VERIFICATION_REPORT_PRICE } from "@/lib/pricing-content";
 
 import { Reveal } from "@/components/motion";
 import { SiteFooter } from "@/components/site-footer";
@@ -47,7 +48,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What is the ROI on a Revenue Verification Report?",
-    a: "Most finance teams recover more than the report cost in the first finding. At $1,500 per audit, one verified leakage issue often pays for the entire engagement. Enterprise plans are available for teams running recurring audits.",
+    a: `Most finance teams recover more than the report cost in the first finding. At ${VERIFICATION_REPORT_PRICE} per audit, one verified leakage issue often pays for the entire engagement. Enterprise plans are available for teams running recurring audits.`,
   },
 ];
 
