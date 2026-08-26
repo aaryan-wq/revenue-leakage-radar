@@ -149,8 +149,11 @@ export function TermsContent() {
             </>,
             <>
               <LegalStrong>Paid Reports:</LegalStrong> Detailed audit reports and premium features are
-              subject to payment of specified fees. Prices are subject to change prospectively upon
-              notice.
+              subject to payment of specified fees. The Revenue Verification Report includes a base audit
+              fee of $2,500 plus a success fee equal to 10% of confirmed recovery, both due at checkout.
+              Confirmed recovery means the portion of recoverable revenue identified in your free audit
+              summary that you affirm at checkout you expect to invoice or collect. Prices are subject to
+              change prospectively upon notice.
             </>,
             <>
               <LegalStrong>Payment Processing:</LegalStrong> Payments are processed securely via our

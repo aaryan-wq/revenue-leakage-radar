@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { AnalyticsEvents } from "@rlr/shared";
 
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useAppAuth } from "@/lib/app-auth";
 import { isClerkConfigured } from "@/lib/clerk";
 import { PRICING_TIERS, PRODUCT_NAMES } from "@/lib/pricing-content";
+import { getReportFreeSummary } from "@/lib/report-api";
 import { buildPricingSignInHref } from "@/lib/use-checkout-report";
 import { captureEvent } from "@/lib/analytics/client";
 
@@ -82,8 +84,26 @@ function PricingCard({
 export function PricingPageClient() {
   const searchParams = useSearchParams();
   const urlReportId = searchParams.get("report_id");
-  const { isSignedIn, isLoaded } = useAppAuth();
+  const { isSignedIn, isLoaded, getToken } = useAppAuth();
+  const [recoverableArr, setRecoverableArr] = useState<string | null>(null);
   const tiers = PRICING_TIERS;
+
+  useEffect(() => {
+    if (!isSignedIn || !urlReportId) {
+      setRecoverableArr(null);
+      return;
+    }
+    void (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const summary = await getReportFreeSummary(urlReportId, token);
+        setRecoverableArr(summary.recoverable_arr);
+      } catch {
+        setRecoverableArr(null);
+      }
+    })();
+  }, [getToken, isSignedIn, urlReportId]);
 
   const renderVerificationReportCta = () => {
     if (!isLoaded) {
@@ -109,12 +129,23 @@ export function PricingPageClient() {
       );
     }
 
+    if (!urlReportId || recoverableArr == null) {
+      return (
+        <Link href="/upload" className="block">
+          <Button className="w-full" size="lg">
+            Run Free Audit
+          </Button>
+        </Link>
+      );
+    }
+
     return (
       <CheckoutButton
         plan="single_report"
         label={tiers.verificationReport.cta}
         variant="primary"
         reportId={urlReportId}
+        recoverableArr={recoverableArr}
       />
     );
   };
@@ -162,6 +193,7 @@ export function PricingPageClient() {
               label={tiers.verificationReport.label}
               price={tiers.verificationReport.price}
               priceNote={tiers.verificationReport.priceNote}
+              compactPrice
               description={tiers.verificationReport.description}
               features={[...tiers.verificationReport.features]}
               highlighted

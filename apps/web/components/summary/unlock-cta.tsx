@@ -16,11 +16,12 @@ import { PRODUCT_NAMES, VERIFICATION_REPORT_PRICE } from "@/lib/pricing-content"
 
 interface UnlockCtaProps {
   reportId: string;
+  recoverableArr: string;
   purchased: boolean;
   onUnlocked?: () => void;
 }
 
-export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
+export function UnlockCta({ reportId, recoverableArr, purchased, onUnlocked }: UnlockCtaProps) {
   const { isSignedIn, getToken } = useAppAuth();
   const [reportsRemaining, setReportsRemaining] = useState(0);
   const [isUsingCredit, setIsUsingCredit] = useState(false);
@@ -85,7 +86,7 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
           </h3>
           <p className="mt-3 text-sm text-muted-foreground">
             Get customer-level findings, invoice evidence, calculation traces, and remediation
-            guidance. {VERIFICATION_REPORT_PRICE} per audit.
+            guidance. {VERIFICATION_REPORT_PRICE}.
           </p>
 
           {!isSignedIn ? (
@@ -128,6 +129,7 @@ export function UnlockCta({ reportId, purchased, onUnlocked }: UnlockCtaProps) {
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <CheckoutButton
                   reportId={reportId}
+                  recoverableArr={recoverableArr}
                   plan="single_report"
                   label={`Purchase ${PRODUCT_NAMES.verificationReport}`}
                   onCreditUnlock={onUnlocked}

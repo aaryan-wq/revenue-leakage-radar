@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AnalyticsEvents } from "@rlr/shared";
 
+import { CheckoutConfirmationModal } from "@/components/summary/checkout-confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { useAppAuth } from "@/lib/app-auth";
 import { getStoredAuditSession } from "@/lib/audit-session";
@@ -15,6 +16,7 @@ interface CheckoutButtonProps {
   plan: CheckoutPlan;
   label: string;
   reportId?: string | null;
+  recoverableArr?: string | null;
   variant?: "primary" | "secondary";
   onCreditUnlock?: () => void;
 }
@@ -23,13 +25,15 @@ export function CheckoutButton({
   reportId,
   plan,
   label,
+  recoverableArr,
   variant = "primary",
 }: CheckoutButtonProps) {
   const { getToken, isSignedIn } = useAppAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const handleClick = async () => {
+  const startCheckout = async (confirmedRecoveryUsd: number) => {
     if (!isSignedIn) return;
     setIsLoading(true);
     setError(null);
@@ -50,6 +54,7 @@ export function CheckoutButton({
         captureAuditEvent(AnalyticsEvents.CHECKOUT_STARTED, session.auditId, {
           checkout_type: plan,
           payment_provider: "stripe",
+          confirmed_recovery_usd: confirmedRecoveryUsd,
         });
       }
       const { checkout_url } = await createCheckout(
@@ -57,6 +62,7 @@ export function CheckoutButton({
         token,
         reportId,
         session?.sessionToken,
+        confirmedRecoveryUsd,
       );
       if (!checkout_url) {
         setError("Unable to start checkout.");
@@ -83,24 +89,53 @@ export function CheckoutButton({
     }
   };
 
+  const handleClick = () => {
+    if (!isSignedIn) return;
+    if (plan === "single_report" && reportId && recoverableArr != null) {
+      setModalOpen(true);
+      return;
+    }
+    void startCheckout(0);
+  };
+
   return (
-    <div className="flex flex-col items-center gap-2">
-      <Button
-        size="lg"
-        variant={variant === "secondary" ? "secondary" : "primary"}
-        onClick={() => void handleClick()}
-        disabled={!isSignedIn || isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.75} />
-            Processing…
-          </>
-        ) : (
-          label
-        )}
-      </Button>
-      {error && <p className="text-sm text-leak">{error}</p>}
-    </div>
+    <>
+      <div className="flex flex-col items-center gap-2">
+        <Button
+          size="lg"
+          variant={variant === "secondary" ? "secondary" : "primary"}
+          onClick={handleClick}
+          disabled={!isSignedIn || isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.75} />
+              Processing…
+            </>
+          ) : (
+            label
+          )}
+        </Button>
+        {error && !modalOpen && <p className="text-sm text-leak">{error}</p>}
+      </div>
+
+      {plan === "single_report" && reportId && recoverableArr != null && (
+        <CheckoutConfirmationModal
+          open={modalOpen}
+          onClose={() => {
+            if (!isLoading) {
+              setModalOpen(false);
+              setError(null);
+            }
+          }}
+          identifiedRecoverableArr={recoverableArr}
+          onConfirm={async (confirmedRecoveryUsd) => {
+            await startCheckout(confirmedRecoveryUsd);
+          }}
+          isSubmitting={isLoading}
+          error={error}
+        />
+      )}
+    </>
   );
 }

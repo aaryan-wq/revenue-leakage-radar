@@ -507,7 +507,17 @@ export type CheckoutPlan = "single_report" | "annual_membership";
 export interface CheckoutRequest {
   plan: CheckoutPlan;
   report_id?: string | null;
+  confirmed_recovery_usd?: number;
 }
+
+export {
+  VERIFICATION_REPORT_BASE_FEE_USD,
+  SUCCESS_FEE_RATE,
+  computeCheckoutTotal,
+  computeSuccessFeeCents,
+  parseUsdAmount,
+} from "./pricing";
+export type { CheckoutTotalBreakdown } from "./pricing";
 
 export interface CheckoutResponse {
   checkout_url: string;

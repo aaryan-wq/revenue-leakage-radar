@@ -26,6 +26,7 @@ export function FreeSummaryView({ summary, onUnlocked, footer }: FreeSummaryView
       <LockedPreview items={summary.locked_preview} />
       <UnlockCta
         reportId={summary.report_id}
+        recoverableArr={summary.recoverable_arr}
         purchased={summary.purchased}
         onUnlocked={onUnlocked}
       />

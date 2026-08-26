@@ -105,10 +105,14 @@ export async function createCheckout(
   authToken: string,
   reportId?: string | null,
   auditSession?: string | null,
+  confirmedRecoveryUsd?: number,
 ): Promise<CheckoutResponse> {
   const body: CheckoutRequest = { plan };
   if (reportId) {
     body.report_id = reportId;
+  }
+  if (confirmedRecoveryUsd != null) {
+    body.confirmed_recovery_usd = confirmedRecoveryUsd;
   }
   return apiFetch<CheckoutResponse>("/checkout", {
     method: "POST",

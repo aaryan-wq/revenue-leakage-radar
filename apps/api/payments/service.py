@@ -1,5 +1,6 @@
 import logging
 import uuid
+from decimal import Decimal
 from typing import Any
 
 import stripe
@@ -18,6 +19,7 @@ from payments.entitlements import (
     record_report_purchase,
     update_membership_status,
 )
+from payments.pricing import compute_success_fee_cents, compute_total_amount_usd
 from reports.service import get_report_by_id, unlock_report
 
 logger = logging.getLogger(__name__)
@@ -91,12 +93,48 @@ def _send_purchase_confirmation(clerk_user_id: str, report_id: uuid.UUID | None)
     purchase_confirmation_email(to=email, report_url=report_url)
 
 
+def _resolve_confirmed_recovery(
+    report,
+    confirmed_recovery_usd: float | None,
+) -> Decimal:
+    identified = Decimal(str(report.recoverable_arr))
+    if confirmed_recovery_usd is None:
+        return identified
+    confirmed = Decimal(str(confirmed_recovery_usd))
+    if confirmed < 0:
+        raise ValueError("Confirmed recovery cannot be negative.")
+    if confirmed > identified:
+        raise ValueError("Confirmed recovery cannot exceed the recoverable amount from your free audit.")
+    return confirmed
+
+
+def _build_single_report_line_items(success_fee_cents: int) -> list[dict[str, Any]]:
+    line_items: list[dict[str, Any]] = [
+        {"price": settings.stripe_price_single_report, "quantity": 1},
+    ]
+    if success_fee_cents > 0:
+        line_items.append(
+            {
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "Success fee (10% of confirmed recovery)",
+                    },
+                    "unit_amount": success_fee_cents,
+                },
+                "quantity": 1,
+            }
+        )
+    return line_items
+
+
 def create_checkout_session(
     db: Session,
     clerk_user_id: str,
     plan: CheckoutPlan,
     report_id: uuid.UUID | None = None,
     audit_session_token: str | None = None,
+    confirmed_recovery_usd: float | None = None,
 ) -> dict[str, str]:
     ensure_stripe_configured()
     _configure_stripe()
@@ -104,16 +142,29 @@ def create_checkout_session(
     if plan == CheckoutPlan.ANNUAL_MEMBERSHIP and not settings.annual_membership_configured:
         raise ValueError("Annual membership is not configured.")
 
+    if plan == CheckoutPlan.SINGLE_REPORT and report_id is None:
+        raise ValueError("Report ID is required to purchase a Revenue Verification Report.")
+
     metadata: dict[str, str] = {
         "clerk_user_id": clerk_user_id,
         "plan": plan.value,
     }
     audit = None
+    report = None
+    confirmed_recovery = Decimal("0")
+    success_fee_cents = 0
 
     if report_id is not None:
         report = get_report_by_id(db, report_id)
         if not report:
             raise ValueError("Report not found.")
+
+        if plan == CheckoutPlan.SINGLE_REPORT:
+            confirmed_recovery = _resolve_confirmed_recovery(report, confirmed_recovery_usd)
+            success_fee_cents = compute_success_fee_cents(confirmed_recovery)
+            metadata["identified_recoverable_usd"] = str(report.recoverable_arr)
+            metadata["confirmed_recovery_usd"] = str(confirmed_recovery)
+            metadata["success_fee_cents"] = str(success_fee_cents)
 
         audit = get_audit_by_id(db, report.audit_id)
         if not audit:
@@ -147,7 +198,7 @@ def create_checkout_session(
     if plan == CheckoutPlan.SINGLE_REPORT:
         session_params: dict[str, Any] = {
             "mode": "payment",
-            "line_items": [{"price": settings.stripe_price_single_report, "quantity": 1}],
+            "line_items": _build_single_report_line_items(success_fee_cents),
             "success_url": success_url,
             "cancel_url": cancel_url,
             "metadata": metadata,
@@ -188,7 +239,7 @@ def create_checkout_session(
         db.commit()
         amount_usd = None
         if plan == CheckoutPlan.SINGLE_REPORT:
-            amount_usd = 2500.0
+            amount_usd = compute_total_amount_usd(confirmed_recovery)
         tracking.track_checkout_started(
             audit,
             checkout_type=plan.value,

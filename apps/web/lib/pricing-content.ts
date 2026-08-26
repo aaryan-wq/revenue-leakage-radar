@@ -1,10 +1,33 @@
+import {
+  SUCCESS_FEE_RATE,
+  VERIFICATION_REPORT_BASE_FEE_USD,
+  computeCheckoutTotal,
+} from "@rlr/shared";
+
 export const PRODUCT_NAMES = {
   freeAudit: "Free Audit",
   verificationReport: "Revenue Verification Report",
   enterprise: "Enterprise",
 } as const;
 
-export const VERIFICATION_REPORT_PRICE = "$2,500";
+export const VERIFICATION_REPORT_BASE_FEE = "$2,500";
+export const SUCCESS_FEE_RATE_LABEL = "10%";
+
+export const VERIFICATION_REPORT_PRICE = `${VERIFICATION_REPORT_BASE_FEE} + ${SUCCESS_FEE_RATE_LABEL} of confirmed recovery`;
+
+export const CONFIRMED_RECOVERY_DEFINITION =
+  "Confirmed recovery is the portion of recoverable revenue identified in your free audit that you affirm at checkout you expect to invoice or collect.";
+
+export function formatSuccessFee(confirmedRecoveryUsd: number): string {
+  const { successFeeUsd } = computeCheckoutTotal(confirmedRecoveryUsd);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(successFeeUsd);
+}
+
+export { VERIFICATION_REPORT_BASE_FEE_USD, SUCCESS_FEE_RATE, computeCheckoutTotal };
 
 export const PRICING_TIERS = {
   free: {
@@ -24,8 +47,8 @@ export const PRICING_TIERS = {
   },
   verificationReport: {
     label: PRODUCT_NAMES.verificationReport,
-    price: VERIFICATION_REPORT_PRICE,
-    priceNote: "/ audit",
+    price: VERIFICATION_REPORT_BASE_FEE,
+    priceNote: `+ ${SUCCESS_FEE_RATE_LABEL} of confirmed recovery`,
     description:
       "A full evidence-backed audit showing exactly where revenue is leaking and how much can be recovered.",
     features: [
@@ -34,6 +57,7 @@ export const PRICING_TIERS = {
       "Customer / subscription / invoice-level detail where available",
       "Downloadable report + findings export",
       "Coverage report + remediation view",
+      "Success fee based on recovery you confirm at checkout",
       "Workspace access for the purchased audit",
     ],
     cta: "Unlock Full Report",
@@ -65,8 +89,8 @@ export const PRICING_PREVIEW_TIERS = [
   },
   {
     name: PRODUCT_NAMES.verificationReport,
-    price: `${VERIFICATION_REPORT_PRICE} / audit`,
-    note: "One dataset · full evidence",
+    price: VERIFICATION_REPORT_PRICE,
+    note: "Base fee + success fee at checkout",
     highlight: "Detailed findings, calculation trace, and downloadable exports",
   },
   {

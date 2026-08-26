@@ -28,6 +28,7 @@ router = APIRouter(tags=["payments"])
 class CheckoutRequest(BaseModel):
     plan: CheckoutPlan
     report_id: uuid.UUID | None = None
+    confirmed_recovery_usd: float | None = None
 
 
 class CheckoutResponse(BaseModel):
@@ -83,6 +84,7 @@ def checkout(
             body.plan,
             body.report_id,
             audit_session_token=x_audit_session,
+            confirmed_recovery_usd=body.confirmed_recovery_usd,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc

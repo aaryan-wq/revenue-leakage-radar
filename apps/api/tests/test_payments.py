@@ -374,31 +374,126 @@ def test_create_checkout_session_without_report_id():
     from payments.service import create_checkout_session
 
     db = MagicMock()
-    stripe_session = MagicMock()
-    stripe_session.url = "https://checkout.stripe.test/session"
-    stripe_session.id = "cs_test_credit"
 
     with patch("payments.service.ensure_stripe_configured"), patch(
         "payments.service._configure_stripe"
-    ), patch("payments.service.get_or_create_membership") as membership_mock, patch(
+    ):
+        with pytest.raises(ValueError, match="Report ID is required"):
+            create_checkout_session(db, "user_123", CheckoutPlan.SINGLE_REPORT)
+
+
+def test_create_checkout_session_single_report_two_line_items():
+    from payments.service import create_checkout_session
+
+    report = _make_report()
+    report.recoverable_arr = Decimal("100000")
+    audit = _make_audit(report)
+    audit.clerk_user_id = "user_123"
+    db = MagicMock()
+    stripe_session = MagicMock()
+    stripe_session.url = "https://checkout.stripe.test/session"
+    stripe_session.id = "cs_test_single"
+
+    with patch("payments.service.ensure_stripe_configured"), patch(
+        "payments.service._configure_stripe"
+    ), patch("payments.service.settings.stripe_price_single_report", "price_single_test"), patch(
+        "payments.service.get_report_by_id", return_value=report
+    ), patch("payments.service.get_audit_by_id", return_value=audit), patch(
+        "payments.service.link_audit_to_user"
+    ), patch("payments.service.transition_audit_status"), patch(
+        "payments.service.get_or_create_membership"
+    ) as membership_mock, patch(
         "payments.service.stripe.checkout.Session.create", return_value=stripe_session
-    ) as create_mock:
+    ) as create_mock, patch("analytics.audit_summary.mark_checkout_started"), patch(
+        "analytics.tracking.track_checkout_started"
+    ):
         membership_mock.return_value = Membership(
             clerk_user_id="user_123",
             plan="none",
             reports_remaining=0,
             status="active",
         )
-        result = create_checkout_session(db, "user_123", CheckoutPlan.SINGLE_REPORT)
+        result = create_checkout_session(
+            db,
+            "user_123",
+            CheckoutPlan.SINGLE_REPORT,
+            report.id,
+            confirmed_recovery_usd=50000,
+        )
 
     assert result["checkout_url"] == "https://checkout.stripe.test/session"
-    create_mock.assert_called_once()
-    call_kwargs = create_mock.call_args.args[0] if create_mock.call_args.args else create_mock.call_args.kwargs
-    # Session.create is called with keyword args dict as only positional in our code
-    session_params = create_mock.call_args.kwargs if create_mock.call_args.kwargs else create_mock.call_args[1]
-    if not session_params:
-        session_params = create_mock.call_args[0][0]
-    assert "report_id" not in (session_params.get("metadata") or {})
+    session_params = create_mock.call_args.kwargs
+    line_items = session_params["line_items"]
+    assert len(line_items) == 2
+    assert line_items[0]["price"] == "price_single_test"
+    assert line_items[1]["price_data"]["unit_amount"] == 500000
+    metadata = session_params["metadata"]
+    assert metadata["confirmed_recovery_usd"] == "50000"
+    assert metadata["success_fee_cents"] == "500000"
+
+
+def test_create_checkout_session_rejects_confirmed_above_identified():
+    from payments.service import create_checkout_session
+
+    report = _make_report()
+    report.recoverable_arr = Decimal("1000")
+    audit = _make_audit(report)
+    audit.clerk_user_id = "user_123"
+    db = MagicMock()
+
+    with patch("payments.service.ensure_stripe_configured"), patch(
+        "payments.service._configure_stripe"
+    ), patch("payments.service.get_report_by_id", return_value=report), patch(
+        "payments.service.get_audit_by_id", return_value=audit
+    ), patch("payments.service.link_audit_to_user"), patch(
+        "payments.service.transition_audit_status"
+    ):
+        with pytest.raises(ValueError, match="cannot exceed"):
+            create_checkout_session(
+                db,
+                "user_123",
+                CheckoutPlan.SINGLE_REPORT,
+                report.id,
+                confirmed_recovery_usd=2000,
+            )
+
+
+def test_create_checkout_session_defaults_confirmed_to_identified():
+    from payments.service import create_checkout_session
+
+    report = _make_report()
+    report.recoverable_arr = Decimal("12000")
+    audit = _make_audit(report)
+    audit.clerk_user_id = "user_123"
+    db = MagicMock()
+    stripe_session = MagicMock()
+    stripe_session.url = "https://checkout.stripe.test/session"
+    stripe_session.id = "cs_test_default"
+
+    with patch("payments.service.ensure_stripe_configured"), patch(
+        "payments.service._configure_stripe"
+    ), patch("payments.service.settings.stripe_price_single_report", "price_single_test"), patch(
+        "payments.service.get_report_by_id", return_value=report
+    ), patch("payments.service.get_audit_by_id", return_value=audit), patch(
+        "payments.service.link_audit_to_user"
+    ), patch("payments.service.transition_audit_status"), patch(
+        "payments.service.get_or_create_membership"
+    ) as membership_mock, patch(
+        "payments.service.stripe.checkout.Session.create", return_value=stripe_session
+    ) as create_mock, patch("analytics.audit_summary.mark_checkout_started"), patch(
+        "analytics.tracking.track_checkout_started"
+    ):
+        membership_mock.return_value = Membership(
+            clerk_user_id="user_123",
+            plan="none",
+            reports_remaining=0,
+            status="active",
+        )
+        create_checkout_session(db, "user_123", CheckoutPlan.SINGLE_REPORT, report.id)
+
+    metadata = create_mock.call_args.kwargs["metadata"]
+    assert metadata["confirmed_recovery_usd"] == "12000"
+    assert metadata["success_fee_cents"] == "120000"
 
 
 def test_stripe_webhook_records_event_after_fulfillment():
