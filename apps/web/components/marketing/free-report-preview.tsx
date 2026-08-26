@@ -133,10 +133,16 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
               Customer names blurred in the free audit. Unlock for full evidence.
             </p>
             <Link
-              href="/pricing"
+              href="/demo"
               className="inline-flex items-center gap-2 rounded-full border border-foreground/15 px-5 py-2.5 text-[0.85rem] transition-colors hover:bg-foreground hover:text-background"
             >
-              View pricing →
+              Explore the full sample report →
+            </Link>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[0.85rem] text-muted-foreground transition-colors hover:border-foreground/15 hover:text-foreground"
+            >
+              View pricing
             </Link>
           </Reveal>
         )}

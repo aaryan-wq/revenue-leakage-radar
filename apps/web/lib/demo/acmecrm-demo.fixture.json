@@ -1,0 +1,5392 @@
+{
+  "report": {
+    "id": "00000000-0000-4000-a000-000000000002",
+    "audit_id": "00000000-0000-4000-a000-000000000001",
+    "purchased": true,
+    "generated_at": "2025-06-01T00:00:00+00:00",
+    "company_name": "AcmeCRM",
+    "executive_summary": {
+      "recoverable_arr": "5156099.03",
+      "high_confidence_arr": "4778020.41",
+      "medium_confidence_arr": "378078.62",
+      "low_confidence_arr": "0.00",
+      "accounts_reviewed": 300,
+      "invoices_reviewed": 4506,
+      "finding_count": 744,
+      "confidence": "88.53",
+      "rules_completed": 26,
+      "rules_total": 26,
+      "narrative": "AcmeCRM's billing exports reveal 98 primary revenue leakage findings totaling 5156099.03 in recoverable ARR. The largest concentrations are expired promotional discounts still billing, legacy catalog pricing after renewal, and invoice execution drift. Each finding includes subscription-level evidence and a recommended remediation path.",
+      "reconciliation": {
+        "total_findings": 744,
+        "primary_findings": 98,
+        "secondary_findings": 646,
+        "primary_recoverable_arr": "5156099.03",
+        "secondary_excluded_arr": "5060401.60",
+        "raw_sum_arr": "10216500.63",
+        "headline_recoverable_arr": "5156099.03"
+      }
+    },
+    "opportunity_breakdown": [
+      {
+        "category": "discounts",
+        "label": "Expired Discounts",
+        "arr": "3214613.74",
+        "confidence": "88.86",
+        "issue_count": 33,
+        "account_count": 0
+      },
+      {
+        "category": "billing",
+        "label": "Invoice Errors",
+        "arr": "1433484.60",
+        "confidence": "90.00",
+        "issue_count": 18,
+        "account_count": 0
+      },
+      {
+        "category": "pricing",
+        "label": "Legacy Pricing",
+        "arr": "508000.69",
+        "confidence": "82.31",
+        "issue_count": 47,
+        "account_count": 0
+      }
+    ],
+    "verification_checks": [],
+    "findings_total": 744,
+    "locked_preview": []
+  },
+  "findings": [
+    {
+      "id": "1456f921-724c-56cc-b886-828959c2a086",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c",
+      "subscription_id": "756aafb6-739c-4371-b43d-2220f4c6f1f5",
+      "invoice_id": "5d86b967-1ead-46f2-a9f7-63a22dd54bf7",
+      "estimated_monthly_loss": "56615.24",
+      "estimated_arr_loss": "679382.88",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "d1354bc7ec81a42a",
+      "primary_finding_ref": null,
+      "recoverable_amount": "679382.88",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "LAUNCH20"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "679382.88",
+          "actual": "679382.88",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "56615.24",
+        "delta": "56615.24",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "d1354bc7ec81a42a",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "LAUNCH20"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "679382.88",
+            "actual": "679382.88",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "679382.8800",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "56615.2400",
+          "result_annual": "679382.8800",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "56615.24",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "56615.2400",
+          "annual_loss": "679382.8800",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "56615.24",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "56615.24",
+        "annual_loss": "679382.88",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "679382.88",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "56615.24",
+        "result_annual": "679382.88",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "d365ecfe-0ce8-510b-b19e-9c94a13e0649",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "2b590c07-0537-425c-9736-1e26a3daa3fb",
+      "subscription_id": "ab85de38-29ec-44d8-8407-77a35c935380",
+      "invoice_id": "ebd99ef4-35d8-4076-b9d4-92f2efdb549e",
+      "estimated_monthly_loss": "51560.3",
+      "estimated_arr_loss": "618723.6",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "f133d6bec75bdeab",
+      "primary_finding_ref": null,
+      "recoverable_amount": "618723.6",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "PARTNER15"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "618723.6",
+          "actual": "618723.6",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "51560.30",
+        "delta": "51560.30",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "f133d6bec75bdeab",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "PARTNER15"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "618723.6",
+            "actual": "618723.6",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "618723.6000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "51560.3000",
+          "result_annual": "618723.6000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "51560.30",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "51560.3000",
+          "annual_loss": "618723.6000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "51560.3",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "51560.3",
+        "annual_loss": "618723.6",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "618723.6",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "51560.3",
+        "result_annual": "618723.6",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "da173ffd-e528-5915-9eb5-f2a2947bdfa1",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "881f6b59-ca49-44c1-a5e8-a84374f4c551",
+      "subscription_id": "58fd23fe-1441-493d-96ea-56205ecad32c",
+      "invoice_id": "f3e0e307-63d7-4f76-863c-1499115ff8ac",
+      "estimated_monthly_loss": "35533.3",
+      "estimated_arr_loss": "426399.6",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "cce9b512cda920b5",
+      "primary_finding_ref": null,
+      "recoverable_amount": "426399.6",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "LAUNCH20"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "426399.6",
+          "actual": "426399.6",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "35533.30",
+        "delta": "35533.30",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "cce9b512cda920b5",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "LAUNCH20"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "426399.6",
+            "actual": "426399.6",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "426399.6000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "35533.3000",
+          "result_annual": "426399.6000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "35533.30",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "35533.3000",
+          "annual_loss": "426399.6000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "35533.3",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "35533.3",
+        "annual_loss": "426399.6",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "426399.6",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "35533.3",
+        "result_annual": "426399.6",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "4d37bd7e-e058-5798-902f-6036440508df",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "12724ad1-2c5a-43f3-ba8d-49454614e3b4",
+      "subscription_id": "ebc05219-32f7-4d2c-bde2-5dca925fe9d5",
+      "invoice_id": "2a6b1437-4f68-44eb-8a46-b6eac3b9bf8c",
+      "estimated_monthly_loss": "30063.88",
+      "estimated_arr_loss": "360766.56",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "6b6a888c716ba124",
+      "primary_finding_ref": null,
+      "recoverable_amount": "360766.56",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "PARTNER15"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "360766.56",
+          "actual": "360766.56",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "30063.88",
+        "delta": "30063.88",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "6b6a888c716ba124",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "PARTNER15"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "360766.56",
+            "actual": "360766.56",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "360766.5600",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "30063.8800",
+          "result_annual": "360766.5600",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "30063.88",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "30063.8800",
+          "annual_loss": "360766.5600",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "30063.88",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "30063.88",
+        "annual_loss": "360766.56",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "360766.56",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "30063.88",
+        "result_annual": "360766.56",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "306183c9-c14a-527a-ab4d-b4df65e3f263",
+      "rule_id": "cancelled_subscription_still_billing",
+      "title": "Cancelled Subscription Still Billing",
+      "category": "billing",
+      "category_label": "Invoice Errors",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "22e9210a-e086-49fb-bdbe-a3d7408ae44e",
+      "subscription_id": "fa3009c0-1a41-4b85-9c74-0faf575ebbef",
+      "invoice_id": "f257a017-e774-4c19-92be-0ff02956b8ab",
+      "estimated_monthly_loss": "24975",
+      "estimated_arr_loss": "299700",
+      "recommendation": "Stop billing cancelled subscriptions and review erroneous invoices.",
+      "attribution": "primary",
+      "leak_family": "invoice_execution",
+      "finding_ref": "4fc5288cff8f8ffd",
+      "primary_finding_ref": null,
+      "recoverable_amount": "299700",
+      "evidence_records": [
+        {
+          "field": "post_cancel_invoice",
+          "expected": "no billing after cancel",
+          "actual": "2023-11-24",
+          "reference_ids": {
+            "invoice": "f257a017-e774-4c19-92be-0ff02956b8ab"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "299700",
+          "actual": "299700",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Cancelled Subscription Still Billing",
+        "expected_value": "0",
+        "actual_value": "24975.00",
+        "delta": "24975.00",
+        "leak_family": "invoice_execution",
+        "attribution": "primary",
+        "finding_ref": "4fc5288cff8f8ffd",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "post_cancel_invoice",
+            "expected": "no billing after cancel",
+            "actual": "2023-11-24",
+            "reference_ids": {
+              "invoice": "f257a017-e774-4c19-92be-0ff02956b8ab"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "299700",
+            "actual": "299700",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "299700.0000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "24975.0000",
+          "result_annual": "299700.0000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "24975.00",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "24975.0000",
+          "annual_loss": "299700.0000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "24975",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "24975",
+        "annual_loss": "299700",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "299700",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "24975",
+        "result_annual": "299700",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "b6396dde-c208-5000-95ca-e269d8b19bf8",
+      "rule_id": "cancelled_subscription_still_billing",
+      "title": "Cancelled Subscription Still Billing",
+      "category": "billing",
+      "category_label": "Invoice Errors",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "709a7107-8283-411b-9b30-608e2d39b6b6",
+      "subscription_id": "9a3b764b-8fe7-4a77-96db-a5bd0704d2f9",
+      "invoice_id": "c3a174bc-4b88-4905-a51f-d8f209e74fda",
+      "estimated_monthly_loss": "21978",
+      "estimated_arr_loss": "263736",
+      "recommendation": "Stop billing cancelled subscriptions and review erroneous invoices.",
+      "attribution": "primary",
+      "leak_family": "invoice_execution",
+      "finding_ref": "fe3e721ea80ebca0",
+      "primary_finding_ref": null,
+      "recoverable_amount": "263736",
+      "evidence_records": [
+        {
+          "field": "post_cancel_invoice",
+          "expected": "no billing after cancel",
+          "actual": "2024-02-29",
+          "reference_ids": {
+            "invoice": "c3a174bc-4b88-4905-a51f-d8f209e74fda"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "263736",
+          "actual": "263736",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Cancelled Subscription Still Billing",
+        "expected_value": "0",
+        "actual_value": "21978.00",
+        "delta": "21978.00",
+        "leak_family": "invoice_execution",
+        "attribution": "primary",
+        "finding_ref": "fe3e721ea80ebca0",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "post_cancel_invoice",
+            "expected": "no billing after cancel",
+            "actual": "2024-02-29",
+            "reference_ids": {
+              "invoice": "c3a174bc-4b88-4905-a51f-d8f209e74fda"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "263736",
+            "actual": "263736",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "263736.0000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "21978.0000",
+          "result_annual": "263736.0000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "21978.00",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "21978.0000",
+          "annual_loss": "263736.0000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "21978",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "21978",
+        "annual_loss": "263736",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "263736",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "21978",
+        "result_annual": "263736",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "239fa4c8-1676-5cfd-8ad9-530d00b34911",
+      "rule_id": "grandfathered_pricing",
+      "title": "Grandfathered Pricing",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "medium",
+      "confidence": "70",
+      "customer_id": "2b590c07-0537-425c-9736-1e26a3daa3fb",
+      "subscription_id": "ab85de38-29ec-44d8-8407-77a35c935380",
+      "invoice_id": null,
+      "estimated_monthly_loss": "4135.92",
+      "estimated_arr_loss": "49631.04",
+      "recommendation": "Validate whether legacy pricing is contractually approved.",
+      "attribution": "primary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "67d6e3725a23b4f1",
+      "primary_finding_ref": null,
+      "recoverable_amount": "49631.04",
+      "evidence_records": [
+        {
+          "field": "grandfathered_price",
+          "expected": "1148.85",
+          "actual": "976.52",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "976.52",
+          "actual": "976.52",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "172.33",
+          "actual": "172.33",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "24",
+          "actual": "24",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "4135.92",
+          "actual": "4135.92",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "49631.04",
+          "actual": "49631.04",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Grandfathered Pricing",
+        "expected_value": "1148.85",
+        "actual_value": "976.52",
+        "delta": "172.33",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "primary",
+        "finding_ref": "67d6e3725a23b4f1",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "grandfathered_price",
+            "expected": "1148.85",
+            "actual": "976.52",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "976.52",
+            "actual": "976.52",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "172.33",
+            "actual": "172.33",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "24",
+            "actual": "24",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "4135.92",
+            "actual": "4135.92",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "49631.04",
+            "actual": "49631.04",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "976.5200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "172.3300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "24.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "4135.9200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "49631.0400",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "4135.9200",
+          "result_annual": "49631.0400",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "976.52",
+          "quantity": 24,
+          "billing_interval": "monthly",
+          "monthly_loss": "4135.9200",
+          "annual_loss": "49631.0400",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "976.52",
+        "quantity": 24,
+        "billing_interval": "monthly",
+        "monthly_loss": "4135.92",
+        "annual_loss": "49631.04",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "976.52",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "172.33",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "4135.92",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "49631.04",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "4135.92",
+        "result_annual": "49631.04",
+        "semantics": "recurring_run_rate"
+      }
+    },
+    {
+      "id": "daae7a47-e1d3-5b7e-b845-a07872720712",
+      "rule_id": "excessive_discount",
+      "title": "Excessive Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "medium",
+      "confidence": "70",
+      "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c",
+      "subscription_id": null,
+      "invoice_id": "b23099fa-178f-46ac-a3bf-554ebf8822b3",
+      "estimated_monthly_loss": "3752.4",
+      "estimated_arr_loss": "45028.8",
+      "recommendation": "Review discount approval policy for this customer.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "0bba61a1400ec5a3",
+      "primary_finding_ref": null,
+      "recoverable_amount": "45028.8",
+      "evidence_records": [
+        {
+          "field": "discount_frequency",
+          "expected": "<=3 in 12mo",
+          "actual": "13",
+          "reference_ids": {
+            "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "45028.8",
+          "actual": "45028.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Excessive Discount",
+        "expected_value": "3",
+        "actual_value": "13",
+        "delta": "10",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "0bba61a1400ec5a3",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "discount_frequency",
+            "expected": "<=3 in 12mo",
+            "actual": "13",
+            "reference_ids": {
+              "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "45028.8",
+            "actual": "45028.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "45028.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3752.4000",
+          "result_annual": "45028.8000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "3",
+          "unit_actual": "13",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "3752.4000",
+          "annual_loss": "45028.8000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "3",
+        "unit_actual": "13",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "3752.4",
+        "annual_loss": "45028.8",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "45028.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3752.4",
+        "result_annual": "45028.8",
+        "semantics": "per_period"
+      }
+    },
+    {
+      "id": "1ba0d90d-d614-5bbc-86c3-9063a73ea06a",
+      "rule_id": "price_catalog_mismatch",
+      "title": "Price Catalog Mismatch",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "d96d43bc-cdf5-4277-ad4b-41fe656f8815",
+      "subscription_id": "04f15778-6083-4cd3-913b-bdf7d1c7218b",
+      "invoice_id": "900cc116-9ed1-4d5a-9ed2-959c88ce9f06",
+      "estimated_monthly_loss": "3676.4",
+      "estimated_arr_loss": "44116.8",
+      "recommendation": "Reconcile line item unit price with active price catalog entry.",
+      "attribution": "primary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "723e54c890f8285e",
+      "primary_finding_ref": null,
+      "recoverable_amount": "44116.8",
+      "evidence_records": [
+        {
+          "field": "unit_price",
+          "expected": "1148.85",
+          "actual": "965.03",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo",
+            "sku": "SKU-ULT"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "965.03",
+          "actual": "965.03",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "183.82",
+          "actual": "183.82",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "20",
+          "actual": "20",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3676.4",
+          "actual": "3676.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "44116.8",
+          "actual": "44116.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Price Catalog Mismatch",
+        "expected_value": "1148.85",
+        "actual_value": "965.03",
+        "delta": "183.82",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "primary",
+        "finding_ref": "723e54c890f8285e",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "unit_price",
+            "expected": "1148.85",
+            "actual": "965.03",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo",
+              "sku": "SKU-ULT"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "965.03",
+            "actual": "965.03",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "183.82",
+            "actual": "183.82",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "20",
+            "actual": "20",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3676.4",
+            "actual": "3676.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "44116.8",
+            "actual": "44116.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "965.0300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "183.8200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "20.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3676.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "44116.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3676.4000",
+          "result_annual": "44116.8000",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "965.03",
+          "quantity": 20,
+          "billing_interval": "monthly",
+          "monthly_loss": "3676.4000",
+          "annual_loss": "44116.8000",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "965.03",
+        "quantity": 20,
+        "billing_interval": "monthly",
+        "monthly_loss": "3676.4",
+        "annual_loss": "44116.8",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "965.03",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "183.82",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "20",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3676.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "44116.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3676.4",
+        "result_annual": "44116.8",
+        "semantics": "recurring_run_rate"
+      }
+    },
+    {
+      "id": "a1da008a-eb08-547d-9409-0abed08ef4cc",
+      "rule_id": "price_catalog_mismatch",
+      "title": "Price Catalog Mismatch",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "d96d43bc-cdf5-4277-ad4b-41fe656f8815",
+      "subscription_id": "04f15778-6083-4cd3-913b-bdf7d1c7218b",
+      "invoice_id": "fed8ff4b-b9cc-4c1a-a13b-3bdccd122375",
+      "estimated_monthly_loss": "3676.4",
+      "estimated_arr_loss": "44116.8",
+      "recommendation": "Reconcile line item unit price with active price catalog entry.",
+      "attribution": "secondary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "2ec10f34ca39e72c",
+      "primary_finding_ref": "723e54c890f8285e",
+      "recoverable_amount": "44116.8",
+      "evidence_records": [
+        {
+          "field": "unit_price",
+          "expected": "1148.85",
+          "actual": "965.03",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo",
+            "sku": "SKU-ULT"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "965.03",
+          "actual": "965.03",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "183.82",
+          "actual": "183.82",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "20",
+          "actual": "20",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3676.4",
+          "actual": "3676.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "44116.8",
+          "actual": "44116.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Price Catalog Mismatch",
+        "expected_value": "1148.85",
+        "actual_value": "965.03",
+        "delta": "183.82",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "secondary",
+        "finding_ref": "2ec10f34ca39e72c",
+        "primary_finding_ref": "723e54c890f8285e",
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "unit_price",
+            "expected": "1148.85",
+            "actual": "965.03",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo",
+              "sku": "SKU-ULT"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "965.03",
+            "actual": "965.03",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "183.82",
+            "actual": "183.82",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "20",
+            "actual": "20",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3676.4",
+            "actual": "3676.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "44116.8",
+            "actual": "44116.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "965.0300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "183.8200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "20.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3676.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "44116.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3676.4000",
+          "result_annual": "44116.8000",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "965.03",
+          "quantity": 20,
+          "billing_interval": "monthly",
+          "monthly_loss": "3676.4000",
+          "annual_loss": "44116.8000",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "965.03",
+        "quantity": 20,
+        "billing_interval": "monthly",
+        "monthly_loss": "3676.4",
+        "annual_loss": "44116.8",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "965.03",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "183.82",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "20",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3676.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "44116.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3676.4",
+        "result_annual": "44116.8",
+        "semantics": "recurring_run_rate"
+      },
+      "primary_finding_title": "Price Catalog Mismatch"
+    },
+    {
+      "id": "24606ec2-86e8-50ce-9ed5-573894e70c0e",
+      "rule_id": "price_catalog_mismatch",
+      "title": "Price Catalog Mismatch",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "d96d43bc-cdf5-4277-ad4b-41fe656f8815",
+      "subscription_id": "04f15778-6083-4cd3-913b-bdf7d1c7218b",
+      "invoice_id": "dc59a99d-9424-4a9b-9687-73282aa24c01",
+      "estimated_monthly_loss": "3676.4",
+      "estimated_arr_loss": "44116.8",
+      "recommendation": "Reconcile line item unit price with active price catalog entry.",
+      "attribution": "secondary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "5c03b01a3bd4bb58",
+      "primary_finding_ref": "723e54c890f8285e",
+      "recoverable_amount": "44116.8",
+      "evidence_records": [
+        {
+          "field": "unit_price",
+          "expected": "1148.85",
+          "actual": "965.03",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo",
+            "sku": "SKU-ULT"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "965.03",
+          "actual": "965.03",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "183.82",
+          "actual": "183.82",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "20",
+          "actual": "20",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3676.4",
+          "actual": "3676.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "44116.8",
+          "actual": "44116.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Price Catalog Mismatch",
+        "expected_value": "1148.85",
+        "actual_value": "965.03",
+        "delta": "183.82",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "secondary",
+        "finding_ref": "5c03b01a3bd4bb58",
+        "primary_finding_ref": "723e54c890f8285e",
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "unit_price",
+            "expected": "1148.85",
+            "actual": "965.03",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo",
+              "sku": "SKU-ULT"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "965.03",
+            "actual": "965.03",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "183.82",
+            "actual": "183.82",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "20",
+            "actual": "20",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3676.4",
+            "actual": "3676.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "44116.8",
+            "actual": "44116.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "965.0300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "183.8200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "20.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3676.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "44116.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3676.4000",
+          "result_annual": "44116.8000",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "965.03",
+          "quantity": 20,
+          "billing_interval": "monthly",
+          "monthly_loss": "3676.4000",
+          "annual_loss": "44116.8000",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "965.03",
+        "quantity": 20,
+        "billing_interval": "monthly",
+        "monthly_loss": "3676.4",
+        "annual_loss": "44116.8",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "965.03",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "183.82",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "20",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3676.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "44116.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3676.4",
+        "result_annual": "44116.8",
+        "semantics": "recurring_run_rate"
+      },
+      "primary_finding_title": "Price Catalog Mismatch"
+    },
+    {
+      "id": "9ec446c4-0a66-5687-ad4b-5a18a8ae2396",
+      "rule_id": "price_catalog_mismatch",
+      "title": "Price Catalog Mismatch",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "d96d43bc-cdf5-4277-ad4b-41fe656f8815",
+      "subscription_id": "04f15778-6083-4cd3-913b-bdf7d1c7218b",
+      "invoice_id": "89ac957c-5304-4f83-8fc4-046f8bfb62a6",
+      "estimated_monthly_loss": "3676.4",
+      "estimated_arr_loss": "44116.8",
+      "recommendation": "Reconcile line item unit price with active price catalog entry.",
+      "attribution": "secondary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "d1a2dbb908cac39d",
+      "primary_finding_ref": "723e54c890f8285e",
+      "recoverable_amount": "44116.8",
+      "evidence_records": [
+        {
+          "field": "unit_price",
+          "expected": "1148.85",
+          "actual": "965.03",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo",
+            "sku": "SKU-ULT"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "965.03",
+          "actual": "965.03",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "183.82",
+          "actual": "183.82",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "20",
+          "actual": "20",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3676.4",
+          "actual": "3676.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "44116.8",
+          "actual": "44116.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Price Catalog Mismatch",
+        "expected_value": "1148.85",
+        "actual_value": "965.03",
+        "delta": "183.82",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "secondary",
+        "finding_ref": "d1a2dbb908cac39d",
+        "primary_finding_ref": "723e54c890f8285e",
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "unit_price",
+            "expected": "1148.85",
+            "actual": "965.03",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo",
+              "sku": "SKU-ULT"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "965.03",
+            "actual": "965.03",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "183.82",
+            "actual": "183.82",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "20",
+            "actual": "20",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3676.4",
+            "actual": "3676.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "44116.8",
+            "actual": "44116.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "965.0300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "183.8200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "20.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3676.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "44116.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3676.4000",
+          "result_annual": "44116.8000",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "965.03",
+          "quantity": 20,
+          "billing_interval": "monthly",
+          "monthly_loss": "3676.4000",
+          "annual_loss": "44116.8000",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "965.03",
+        "quantity": 20,
+        "billing_interval": "monthly",
+        "monthly_loss": "3676.4",
+        "annual_loss": "44116.8",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "965.03",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "183.82",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "20",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3676.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "44116.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3676.4",
+        "result_annual": "44116.8",
+        "semantics": "recurring_run_rate"
+      },
+      "primary_finding_title": "Price Catalog Mismatch"
+    }
+  ],
+  "finding_details": {
+    "duplicate-discount-756aafb6-739c-4371-b43d-2220f4c6f1f5": {
+      "id": "1456f921-724c-56cc-b886-828959c2a086",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c",
+      "subscription_id": "756aafb6-739c-4371-b43d-2220f4c6f1f5",
+      "invoice_id": "5d86b967-1ead-46f2-a9f7-63a22dd54bf7",
+      "estimated_monthly_loss": "56615.24",
+      "estimated_arr_loss": "679382.88",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "d1354bc7ec81a42a",
+      "primary_finding_ref": null,
+      "recoverable_amount": "679382.88",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "LAUNCH20"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "56615.24",
+          "actual": "56615.24",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "679382.88",
+          "actual": "679382.88",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "56615.24",
+        "delta": "56615.24",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "d1354bc7ec81a42a",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "LAUNCH20"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "56615.24",
+            "actual": "56615.24",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "679382.88",
+            "actual": "679382.88",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "56615.2400",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "679382.8800",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "56615.2400",
+          "result_annual": "679382.8800",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "56615.24",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "56615.2400",
+          "annual_loss": "679382.8800",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "56615.24",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "56615.24",
+        "annual_loss": "679382.88",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "56615.24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "679382.88",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "56615.24",
+        "result_annual": "679382.88",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "duplicate-discount-ab85de38-29ec-44d8-8407-77a35c935380": {
+      "id": "d365ecfe-0ce8-510b-b19e-9c94a13e0649",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "2b590c07-0537-425c-9736-1e26a3daa3fb",
+      "subscription_id": "ab85de38-29ec-44d8-8407-77a35c935380",
+      "invoice_id": "ebd99ef4-35d8-4076-b9d4-92f2efdb549e",
+      "estimated_monthly_loss": "51560.3",
+      "estimated_arr_loss": "618723.6",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "f133d6bec75bdeab",
+      "primary_finding_ref": null,
+      "recoverable_amount": "618723.6",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "PARTNER15"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "51560.3",
+          "actual": "51560.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "618723.6",
+          "actual": "618723.6",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "51560.30",
+        "delta": "51560.30",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "f133d6bec75bdeab",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "PARTNER15"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "51560.3",
+            "actual": "51560.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "618723.6",
+            "actual": "618723.6",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "51560.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "618723.6000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "51560.3000",
+          "result_annual": "618723.6000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "51560.30",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "51560.3000",
+          "annual_loss": "618723.6000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "51560.3",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "51560.3",
+        "annual_loss": "618723.6",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "51560.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "618723.6",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "51560.3",
+        "result_annual": "618723.6",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "duplicate-discount-58fd23fe-1441-493d-96ea-56205ecad32c": {
+      "id": "da173ffd-e528-5915-9eb5-f2a2947bdfa1",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "881f6b59-ca49-44c1-a5e8-a84374f4c551",
+      "subscription_id": "58fd23fe-1441-493d-96ea-56205ecad32c",
+      "invoice_id": "f3e0e307-63d7-4f76-863c-1499115ff8ac",
+      "estimated_monthly_loss": "35533.3",
+      "estimated_arr_loss": "426399.6",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "cce9b512cda920b5",
+      "primary_finding_ref": null,
+      "recoverable_amount": "426399.6",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "LAUNCH20"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "35533.3",
+          "actual": "35533.3",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "426399.6",
+          "actual": "426399.6",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "35533.30",
+        "delta": "35533.30",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "cce9b512cda920b5",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "LAUNCH20"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "35533.3",
+            "actual": "35533.3",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "426399.6",
+            "actual": "426399.6",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "35533.3000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "426399.6000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "35533.3000",
+          "result_annual": "426399.6000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "35533.30",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "35533.3000",
+          "annual_loss": "426399.6000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "35533.3",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "35533.3",
+        "annual_loss": "426399.6",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "35533.3",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "426399.6",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "35533.3",
+        "result_annual": "426399.6",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "duplicate-discount-ebc05219-32f7-4d2c-bde2-5dca925fe9d5": {
+      "id": "4d37bd7e-e058-5798-902f-6036440508df",
+      "rule_id": "duplicate_discount",
+      "title": "Duplicate Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "12724ad1-2c5a-43f3-ba8d-49454614e3b4",
+      "subscription_id": "ebc05219-32f7-4d2c-bde2-5dca925fe9d5",
+      "invoice_id": "2a6b1437-4f68-44eb-8a46-b6eac3b9bf8c",
+      "estimated_monthly_loss": "30063.88",
+      "estimated_arr_loss": "360766.56",
+      "recommendation": "Remove duplicate coupon applications.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "6b6a888c716ba124",
+      "primary_finding_ref": null,
+      "recoverable_amount": "360766.56",
+      "evidence_records": [
+        {
+          "field": "duplicate_coupon",
+          "expected": "1 application",
+          "actual": "23 invoices with discount",
+          "reference_ids": {
+            "coupon": "PARTNER15"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "30063.88",
+          "actual": "30063.88",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "360766.56",
+          "actual": "360766.56",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Duplicate Discount",
+        "expected_value": "0",
+        "actual_value": "30063.88",
+        "delta": "30063.88",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "6b6a888c716ba124",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "duplicate_coupon",
+            "expected": "1 application",
+            "actual": "23 invoices with discount",
+            "reference_ids": {
+              "coupon": "PARTNER15"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "30063.88",
+            "actual": "30063.88",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "360766.56",
+            "actual": "360766.56",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "30063.8800",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "360766.5600",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "30063.8800",
+          "result_annual": "360766.5600",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "30063.88",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "30063.8800",
+          "annual_loss": "360766.5600",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "30063.88",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "30063.88",
+        "annual_loss": "360766.56",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "30063.88",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "360766.56",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "30063.88",
+        "result_annual": "360766.56",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "cancelled-subscription-still-billing-fa3009c0-1a41-4b85-9c74-0faf575ebbef": {
+      "id": "306183c9-c14a-527a-ab4d-b4df65e3f263",
+      "rule_id": "cancelled_subscription_still_billing",
+      "title": "Cancelled Subscription Still Billing",
+      "category": "billing",
+      "category_label": "Invoice Errors",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "22e9210a-e086-49fb-bdbe-a3d7408ae44e",
+      "subscription_id": "fa3009c0-1a41-4b85-9c74-0faf575ebbef",
+      "invoice_id": "f257a017-e774-4c19-92be-0ff02956b8ab",
+      "estimated_monthly_loss": "24975",
+      "estimated_arr_loss": "299700",
+      "recommendation": "Stop billing cancelled subscriptions and review erroneous invoices.",
+      "attribution": "primary",
+      "leak_family": "invoice_execution",
+      "finding_ref": "4fc5288cff8f8ffd",
+      "primary_finding_ref": null,
+      "recoverable_amount": "299700",
+      "evidence_records": [
+        {
+          "field": "post_cancel_invoice",
+          "expected": "no billing after cancel",
+          "actual": "2023-11-24",
+          "reference_ids": {
+            "invoice": "f257a017-e774-4c19-92be-0ff02956b8ab"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "24975",
+          "actual": "24975",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "299700",
+          "actual": "299700",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Cancelled Subscription Still Billing",
+        "expected_value": "0",
+        "actual_value": "24975.00",
+        "delta": "24975.00",
+        "leak_family": "invoice_execution",
+        "attribution": "primary",
+        "finding_ref": "4fc5288cff8f8ffd",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "post_cancel_invoice",
+            "expected": "no billing after cancel",
+            "actual": "2023-11-24",
+            "reference_ids": {
+              "invoice": "f257a017-e774-4c19-92be-0ff02956b8ab"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "24975",
+            "actual": "24975",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "299700",
+            "actual": "299700",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "24975.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "299700.0000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "24975.0000",
+          "result_annual": "299700.0000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "24975.00",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "24975.0000",
+          "annual_loss": "299700.0000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "24975",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "24975",
+        "annual_loss": "299700",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "24975",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "299700",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "24975",
+        "result_annual": "299700",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "cancelled-subscription-still-billing-9a3b764b-8fe7-4a77-96db-a5bd0704d2f9": {
+      "id": "b6396dde-c208-5000-95ca-e269d8b19bf8",
+      "rule_id": "cancelled_subscription_still_billing",
+      "title": "Cancelled Subscription Still Billing",
+      "category": "billing",
+      "category_label": "Invoice Errors",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "709a7107-8283-411b-9b30-608e2d39b6b6",
+      "subscription_id": "9a3b764b-8fe7-4a77-96db-a5bd0704d2f9",
+      "invoice_id": "c3a174bc-4b88-4905-a51f-d8f209e74fda",
+      "estimated_monthly_loss": "21978",
+      "estimated_arr_loss": "263736",
+      "recommendation": "Stop billing cancelled subscriptions and review erroneous invoices.",
+      "attribution": "primary",
+      "leak_family": "invoice_execution",
+      "finding_ref": "fe3e721ea80ebca0",
+      "primary_finding_ref": null,
+      "recoverable_amount": "263736",
+      "evidence_records": [
+        {
+          "field": "post_cancel_invoice",
+          "expected": "no billing after cancel",
+          "actual": "2024-02-29",
+          "reference_ids": {
+            "invoice": "c3a174bc-4b88-4905-a51f-d8f209e74fda"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "21978",
+          "actual": "21978",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "263736",
+          "actual": "263736",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Cancelled Subscription Still Billing",
+        "expected_value": "0",
+        "actual_value": "21978.00",
+        "delta": "21978.00",
+        "leak_family": "invoice_execution",
+        "attribution": "primary",
+        "finding_ref": "fe3e721ea80ebca0",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "post_cancel_invoice",
+            "expected": "no billing after cancel",
+            "actual": "2024-02-29",
+            "reference_ids": {
+              "invoice": "c3a174bc-4b88-4905-a51f-d8f209e74fda"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "21978",
+            "actual": "21978",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "263736",
+            "actual": "263736",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "21978.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "263736.0000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "21978.0000",
+          "result_annual": "263736.0000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "0",
+          "unit_actual": "21978.00",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "21978.0000",
+          "annual_loss": "263736.0000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "0",
+        "unit_actual": "21978",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "21978",
+        "annual_loss": "263736",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "21978",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "263736",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "21978",
+        "result_annual": "263736",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "undercharged-subscriptions-ab85de38-29ec-44d8-8407-77a35c935380": {
+      "id": "239fa4c8-1676-5cfd-8ad9-530d00b34911",
+      "rule_id": "grandfathered_pricing",
+      "title": "Grandfathered Pricing",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "medium",
+      "confidence": "70",
+      "customer_id": "2b590c07-0537-425c-9736-1e26a3daa3fb",
+      "subscription_id": "ab85de38-29ec-44d8-8407-77a35c935380",
+      "invoice_id": null,
+      "estimated_monthly_loss": "4135.92",
+      "estimated_arr_loss": "49631.04",
+      "recommendation": "Validate whether legacy pricing is contractually approved.",
+      "attribution": "primary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "67d6e3725a23b4f1",
+      "primary_finding_ref": null,
+      "recoverable_amount": "49631.04",
+      "evidence_records": [
+        {
+          "field": "grandfathered_price",
+          "expected": "1148.85",
+          "actual": "976.52",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "976.52",
+          "actual": "976.52",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "172.33",
+          "actual": "172.33",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "24",
+          "actual": "24",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "4135.92",
+          "actual": "4135.92",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "49631.04",
+          "actual": "49631.04",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Grandfathered Pricing",
+        "expected_value": "1148.85",
+        "actual_value": "976.52",
+        "delta": "172.33",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "primary",
+        "finding_ref": "67d6e3725a23b4f1",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "grandfathered_price",
+            "expected": "1148.85",
+            "actual": "976.52",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "976.52",
+            "actual": "976.52",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "172.33",
+            "actual": "172.33",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "24",
+            "actual": "24",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "4135.92",
+            "actual": "4135.92",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "49631.04",
+            "actual": "49631.04",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "976.5200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "172.3300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "24.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "4135.9200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "49631.0400",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "4135.9200",
+          "result_annual": "49631.0400",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "976.52",
+          "quantity": 24,
+          "billing_interval": "monthly",
+          "monthly_loss": "4135.9200",
+          "annual_loss": "49631.0400",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "976.52",
+        "quantity": 24,
+        "billing_interval": "monthly",
+        "monthly_loss": "4135.92",
+        "annual_loss": "49631.04",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "976.52",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "172.33",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "24",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "4135.92",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "49631.04",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "4135.92",
+        "result_annual": "49631.04",
+        "semantics": "recurring_run_rate"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "excessive-discount-7": {
+      "id": "daae7a47-e1d3-5b7e-b845-a07872720712",
+      "rule_id": "excessive_discount",
+      "title": "Excessive Discount",
+      "category": "discounts",
+      "category_label": "Expired Discounts",
+      "severity": "medium",
+      "confidence": "70",
+      "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c",
+      "subscription_id": null,
+      "invoice_id": "b23099fa-178f-46ac-a3bf-554ebf8822b3",
+      "estimated_monthly_loss": "3752.4",
+      "estimated_arr_loss": "45028.8",
+      "recommendation": "Review discount approval policy for this customer.",
+      "attribution": "primary",
+      "leak_family": "discount_integrity",
+      "finding_ref": "0bba61a1400ec5a3",
+      "primary_finding_ref": null,
+      "recoverable_amount": "45028.8",
+      "evidence_records": [
+        {
+          "field": "discount_frequency",
+          "expected": "<=3 in 12mo",
+          "actual": "13",
+          "reference_ids": {
+            "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c"
+          }
+        },
+        {
+          "field": "period_expected",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_actual",
+          "expected": "0",
+          "actual": "0",
+          "reference_ids": {}
+        },
+        {
+          "field": "period_difference",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3752.4",
+          "actual": "3752.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "45028.8",
+          "actual": "45028.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Excessive Discount",
+        "expected_value": "3",
+        "actual_value": "13",
+        "delta": "10",
+        "leak_family": "discount_integrity",
+        "attribution": "primary",
+        "finding_ref": "0bba61a1400ec5a3",
+        "primary_finding_ref": null,
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "discount_frequency",
+            "expected": "<=3 in 12mo",
+            "actual": "13",
+            "reference_ids": {
+              "customer_id": "6a2bb2da-5786-41df-b14b-1ca126886e0c"
+            }
+          },
+          {
+            "field": "period_expected",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_actual",
+            "expected": "0",
+            "actual": "0",
+            "reference_ids": {}
+          },
+          {
+            "field": "period_difference",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3752.4",
+            "actual": "3752.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "45028.8",
+            "actual": "45028.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "period_expected",
+              "label": "Period expected",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_actual",
+              "label": "Period actual",
+              "value": "0.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "period_difference",
+              "label": "Period difference",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3752.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "45028.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3752.4000",
+          "result_annual": "45028.8000",
+          "semantics": "per_period"
+        },
+        "leakage_computation": {
+          "semantics": "per_period",
+          "unit_expected": "3",
+          "unit_actual": "13",
+          "quantity": 1,
+          "billing_interval": "monthly",
+          "monthly_loss": "3752.4000",
+          "annual_loss": "45028.8000",
+          "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "per_period",
+        "unit_expected": "3",
+        "unit_actual": "13",
+        "quantity": 1,
+        "billing_interval": "monthly",
+        "monthly_loss": "3752.4",
+        "annual_loss": "45028.8",
+        "formula": "Period expected \u2192 Period actual \u2192 Period difference \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "per_period",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "period_expected",
+            "label": "Period expected",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_actual",
+            "label": "Period actual",
+            "value": "0",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "period_difference",
+            "label": "Period difference",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3752.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "45028.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3752.4",
+        "result_annual": "45028.8",
+        "semantics": "per_period"
+      },
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    },
+    "price-catalog-mismatch-04f15778-6083-4cd3-913b-bdf7d1c7218b": {
+      "id": "9ec446c4-0a66-5687-ad4b-5a18a8ae2396",
+      "rule_id": "price_catalog_mismatch",
+      "title": "Price Catalog Mismatch",
+      "category": "pricing",
+      "category_label": "Legacy Pricing",
+      "severity": "high",
+      "confidence": "90",
+      "customer_id": "d96d43bc-cdf5-4277-ad4b-41fe656f8815",
+      "subscription_id": "04f15778-6083-4cd3-913b-bdf7d1c7218b",
+      "invoice_id": "89ac957c-5304-4f83-8fc4-046f8bfb62a6",
+      "estimated_monthly_loss": "3676.4",
+      "estimated_arr_loss": "44116.8",
+      "recommendation": "Reconcile line item unit price with active price catalog entry.",
+      "attribution": "secondary",
+      "leak_family": "subscription_pricing_gap",
+      "finding_ref": "d1a2dbb908cac39d",
+      "primary_finding_ref": "723e54c890f8285e",
+      "recoverable_amount": "44116.8",
+      "evidence_records": [
+        {
+          "field": "unit_price",
+          "expected": "1148.85",
+          "actual": "965.03",
+          "reference_ids": {
+            "product_id": "prod_ultimate_mo",
+            "sku": "SKU-ULT"
+          }
+        },
+        {
+          "field": "expected_value",
+          "expected": "1148.85",
+          "actual": "1148.85",
+          "reference_ids": {}
+        },
+        {
+          "field": "actual_value",
+          "expected": "965.03",
+          "actual": "965.03",
+          "reference_ids": {}
+        },
+        {
+          "field": "difference",
+          "expected": "183.82",
+          "actual": "183.82",
+          "reference_ids": {}
+        },
+        {
+          "field": "quantity",
+          "expected": "20",
+          "actual": "20",
+          "reference_ids": {}
+        },
+        {
+          "field": "interval_factor",
+          "expected": "1",
+          "actual": "1",
+          "reference_ids": {}
+        },
+        {
+          "field": "monthly_leakage",
+          "expected": "3676.4",
+          "actual": "3676.4",
+          "reference_ids": {}
+        },
+        {
+          "field": "annual_leakage",
+          "expected": "44116.8",
+          "actual": "44116.8",
+          "reference_ids": {}
+        }
+      ],
+      "evidence": {
+        "rule_name": "Price Catalog Mismatch",
+        "expected_value": "1148.85",
+        "actual_value": "965.03",
+        "delta": "183.82",
+        "leak_family": "subscription_pricing_gap",
+        "attribution": "secondary",
+        "finding_ref": "d1a2dbb908cac39d",
+        "primary_finding_ref": "723e54c890f8285e",
+        "status": "open",
+        "rule_version": "2.0.0",
+        "records": [
+          {
+            "field": "unit_price",
+            "expected": "1148.85",
+            "actual": "965.03",
+            "reference_ids": {
+              "product_id": "prod_ultimate_mo",
+              "sku": "SKU-ULT"
+            }
+          },
+          {
+            "field": "expected_value",
+            "expected": "1148.85",
+            "actual": "1148.85",
+            "reference_ids": {}
+          },
+          {
+            "field": "actual_value",
+            "expected": "965.03",
+            "actual": "965.03",
+            "reference_ids": {}
+          },
+          {
+            "field": "difference",
+            "expected": "183.82",
+            "actual": "183.82",
+            "reference_ids": {}
+          },
+          {
+            "field": "quantity",
+            "expected": "20",
+            "actual": "20",
+            "reference_ids": {}
+          },
+          {
+            "field": "interval_factor",
+            "expected": "1",
+            "actual": "1",
+            "reference_ids": {}
+          },
+          {
+            "field": "monthly_leakage",
+            "expected": "3676.4",
+            "actual": "3676.4",
+            "reference_ids": {}
+          },
+          {
+            "field": "annual_leakage",
+            "expected": "44116.8",
+            "actual": "44116.8",
+            "reference_ids": {}
+          }
+        ],
+        "calculation_trace": {
+          "steps": [
+            {
+              "step_id": "expected_value",
+              "label": "Expected value",
+              "value": "1148.8500",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "actual_value",
+              "label": "Actual value",
+              "value": "965.0300",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "difference",
+              "label": "Difference",
+              "value": "183.8200",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "quantity",
+              "label": "Quantity",
+              "value": "20.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "interval_factor",
+              "label": "Interval factor",
+              "value": "1.0000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "monthly_leakage",
+              "label": "Monthly leakage",
+              "value": "3676.4000",
+              "unit": null,
+              "source_refs": {}
+            },
+            {
+              "step_id": "annual_leakage",
+              "label": "Annual leakage",
+              "value": "44116.8000",
+              "unit": null,
+              "source_refs": {}
+            }
+          ],
+          "result_monthly": "3676.4000",
+          "result_annual": "44116.8000",
+          "semantics": "recurring_run_rate"
+        },
+        "leakage_computation": {
+          "semantics": "recurring_run_rate",
+          "unit_expected": "1148.85",
+          "unit_actual": "965.03",
+          "quantity": 20,
+          "billing_interval": "monthly",
+          "monthly_loss": "3676.4000",
+          "annual_loss": "44116.8000",
+          "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+        }
+      },
+      "leakage_computation": {
+        "semantics": "recurring_run_rate",
+        "unit_expected": "1148.85",
+        "unit_actual": "965.03",
+        "quantity": 20,
+        "billing_interval": "monthly",
+        "monthly_loss": "3676.4",
+        "annual_loss": "44116.8",
+        "formula": "Expected value \u2192 Actual value \u2192 Difference \u2192 Quantity \u2192 Interval factor \u2192 Monthly leakage \u2192 Annual leakage"
+      },
+      "leakage_semantics": "recurring_run_rate",
+      "calculation_trace": {
+        "steps": [
+          {
+            "step_id": "expected_value",
+            "label": "Expected value",
+            "value": "1148.85",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "actual_value",
+            "label": "Actual value",
+            "value": "965.03",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "difference",
+            "label": "Difference",
+            "value": "183.82",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "quantity",
+            "label": "Quantity",
+            "value": "20",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "interval_factor",
+            "label": "Interval factor",
+            "value": "1",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "monthly_leakage",
+            "label": "Monthly leakage",
+            "value": "3676.4",
+            "unit": null,
+            "source_refs": {}
+          },
+          {
+            "step_id": "annual_leakage",
+            "label": "Annual leakage",
+            "value": "44116.8",
+            "unit": null,
+            "source_refs": {}
+          }
+        ],
+        "result_monthly": "3676.4",
+        "result_annual": "44116.8",
+        "semantics": "recurring_run_rate"
+      },
+      "primary_finding_title": "Price Catalog Mismatch",
+      "audit_id": "00000000-0000-4000-a000-000000000001",
+      "report_id": "00000000-0000-4000-a000-000000000002"
+    }
+  },
+  "slugs": {
+    "duplicate-discount-756aafb6-739c-4371-b43d-2220f4c6f1f5": "1456f921-724c-56cc-b886-828959c2a086",
+    "duplicate-discount-ab85de38-29ec-44d8-8407-77a35c935380": "d365ecfe-0ce8-510b-b19e-9c94a13e0649",
+    "duplicate-discount-58fd23fe-1441-493d-96ea-56205ecad32c": "da173ffd-e528-5915-9eb5-f2a2947bdfa1",
+    "duplicate-discount-ebc05219-32f7-4d2c-bde2-5dca925fe9d5": "4d37bd7e-e058-5798-902f-6036440508df",
+    "cancelled-subscription-still-billing-fa3009c0-1a41-4b85-9c74-0faf575ebbef": "306183c9-c14a-527a-ab4d-b4df65e3f263",
+    "cancelled-subscription-still-billing-9a3b764b-8fe7-4a77-96db-a5bd0704d2f9": "b6396dde-c208-5000-95ca-e269d8b19bf8",
+    "undercharged-subscriptions-ab85de38-29ec-44d8-8407-77a35c935380": "239fa4c8-1676-5cfd-8ad9-530d00b34911",
+    "excessive-discount-7": "daae7a47-e1d3-5b7e-b845-a07872720712",
+    "price-catalog-mismatch-04f15778-6083-4cd3-913b-bdf7d1c7218b": "9ec446c4-0a66-5687-ad4b-5a18a8ae2396"
+  }
+}

@@ -34,6 +34,9 @@ export function SiteFooter() {
             <Link href="/how-it-works" className="transition-colors hover:text-foreground">
               How It Works
             </Link>
+            <Link href="/demo" className="transition-colors hover:text-foreground">
+              Demo
+            </Link>
             <Link href="/pricing" className="transition-colors hover:text-foreground">
               Pricing
             </Link>

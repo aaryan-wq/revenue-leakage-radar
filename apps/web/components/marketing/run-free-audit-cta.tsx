@@ -13,6 +13,7 @@ interface RunFreeAuditCtaProps {
   className?: string;
   showArrow?: boolean;
   fromWorkspace?: boolean;
+  analyticsSource?: string;
 }
 
 const sizeClasses = {
@@ -26,12 +27,20 @@ export function RunFreeAuditCta({
   className,
   showArrow = true,
   fromWorkspace = false,
+  analyticsSource,
 }: RunFreeAuditCtaProps) {
   return (
     <Link
       href={fromWorkspace ? WORKSPACE_UPLOAD_HREF : "/upload"}
       className={cn("inline-flex", className)}
-      onClick={() => captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED)}
+      onClick={() => {
+        captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED, {
+          ...(analyticsSource ? { source: analyticsSource } : {}),
+        });
+        if (analyticsSource?.startsWith("demo")) {
+          captureEvent(AnalyticsEvents.DEMO_CTA_CLICKED, { source: analyticsSource });
+        }
+      }}
     >
       <motion.span
         whileHover={{ scale: 1.02 }}

@@ -20,6 +20,7 @@ interface FindingsTableProps {
   findings?: FindingResponse[];
   reportId?: string;
   totalCount?: number;
+  getFindingHref?: (finding: FindingResponse) => string;
 }
 
 type SortKey = "arr" | "confidence" | "category";
@@ -36,8 +37,10 @@ function findingDisplayId(finding: FindingResponse): string {
 
 const FindingRow = memo(function FindingRow({
   finding,
+  getFindingHref,
 }: {
   finding: FindingResponse;
+  getFindingHref?: (finding: FindingResponse) => string;
 }) {
   const evidence = summaryEvidencePairs(finding);
   const isSecondary = finding.attribution === "secondary";
@@ -62,7 +65,7 @@ const FindingRow = memo(function FindingRow({
           </span>
         </div>
         <Link
-          href={`/findings/${finding.id}`}
+          href={getFindingHref?.(finding) ?? `/findings/${finding.id}`}
           className="font-heading text-2xl leading-snug tracking-tight text-balance transition-colors hover:text-primary"
         >
           {finding.title}
@@ -119,7 +122,13 @@ const FindingRow = memo(function FindingRow({
   );
 });
 
-function StaticFindingsTable({ findings }: { findings: FindingResponse[] }) {
+function StaticFindingsTable({
+  findings,
+  getFindingHref,
+}: {
+  findings: FindingResponse[];
+  getFindingHref?: (finding: FindingResponse) => string;
+}) {
   const [sortKey, setSortKey] = useState<SortKey>("arr");
   const [severityFilter, setSeverityFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -177,6 +186,7 @@ function StaticFindingsTable({ findings }: { findings: FindingResponse[] }) {
       categories={categories}
       onLoadMore={() => setVisibleCount((count) => count + PAGE_SIZE)}
       findings={visible}
+      getFindingHref={getFindingHref}
     />
   );
 }
@@ -184,9 +194,11 @@ function StaticFindingsTable({ findings }: { findings: FindingResponse[] }) {
 function PaginatedFindingsTable({
   reportId,
   totalCount,
+  getFindingHref,
 }: {
   reportId: string;
   totalCount?: number;
+  getFindingHref?: (finding: FindingResponse) => string;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("arr");
   const findingsQuery = useReportFindingsQuery(reportId, {
@@ -213,6 +225,7 @@ function PaginatedFindingsTable({
       onSortChange={setSortKey}
       onLoadMore={() => void findingsQuery.fetchNextPage()}
       findings={findings}
+      getFindingHref={getFindingHref}
     />
   );
 }
@@ -234,6 +247,7 @@ function FindingsTableShell({
   categories,
   onLoadMore,
   findings,
+  getFindingHref,
 }: {
   totalCount: number;
   filteredCount: number;
@@ -251,6 +265,7 @@ function FindingsTableShell({
   categories?: string[];
   onLoadMore: () => void;
   findings: FindingResponse[];
+  getFindingHref?: (finding: FindingResponse) => string;
 }) {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading findings…</p>;
@@ -327,7 +342,11 @@ function FindingsTableShell({
 
       <div className="mt-16">
         {findings.map((finding) => (
-          <FindingRow key={finding.id} finding={finding} />
+          <FindingRow
+            key={finding.id}
+            finding={finding}
+            getFindingHref={getFindingHref}
+          />
         ))}
       </div>
 
@@ -352,12 +371,25 @@ function FindingsTableShell({
   );
 }
 
-export function FindingsTable({ findings, reportId, totalCount }: FindingsTableProps) {
+export function FindingsTable({
+  findings,
+  reportId,
+  totalCount,
+  getFindingHref,
+}: FindingsTableProps) {
   if (reportId) {
-    return <PaginatedFindingsTable reportId={reportId} totalCount={totalCount} />;
+    return (
+      <PaginatedFindingsTable
+        reportId={reportId}
+        totalCount={totalCount}
+        getFindingHref={getFindingHref}
+      />
+    );
   }
 
-  return <StaticFindingsTable findings={findings ?? []} />;
+  return (
+    <StaticFindingsTable findings={findings ?? []} getFindingHref={getFindingHref} />
+  );
 }
 
 function FilterChip({

@@ -10,6 +10,7 @@ import { AnalyticsEvents } from "@rlr/shared";
 import { captureEvent } from "@/lib/analytics/client";
 import { FreeReportPreview } from "@/components/marketing/free-report-preview";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { ViewSampleReportCta } from "@/components/marketing/view-sample-report-cta";
 import { LandingPageTracker } from "@/components/analytics/marketing-page-tracker";
 import { SiteFooter } from "@/components/site-footer";
 import { VERIFICATION_RULE_COUNT } from "@/lib/verification-rules";
@@ -159,7 +160,10 @@ function HeroUploadZone() {
         </div>
       </motion.div>
 
-      <RunFreeAuditCta size="lg" />
+      <div className="flex flex-wrap items-center gap-3">
+        <RunFreeAuditCta size="lg" />
+        <ViewSampleReportCta size="lg" analyticsSource="hero" />
+      </div>
     </motion.div>
   );
 }
