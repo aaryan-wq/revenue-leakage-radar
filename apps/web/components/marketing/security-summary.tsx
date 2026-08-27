@@ -32,10 +32,19 @@ export function SecuritySummary() {
           ))}
         </div>
 
-        <Reveal delay={0.1} className="mt-8">
+        <Reveal delay={0.1} className="mt-8 space-y-3">
+          <p className="max-w-reading text-sm leading-relaxed text-muted-foreground">
+            Names and emails are optional. You can blank them before upload if that feels better.{" "}
+            <Link
+              href="/security#anonymize-before-upload"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              How to anonymize safely
+            </Link>
+          </p>
           <Link
             href="/security"
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             Read full security overview →
           </Link>

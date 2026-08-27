@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { AnalyticsEvents } from "@rlr/shared";
 
 import { FaqPageTracker } from "@/components/analytics/marketing-page-tracker";
 import {
@@ -18,10 +18,38 @@ import { SiteFooter } from "@/components/site-footer";
 import { HairlineCard } from "@/components/ui/hairline-card";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 
-const FAQ_ITEMS = [
+const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
   {
     q: "How secure are my uploads?",
-    a: "All uploads are encrypted in transit (HTTPS/TLS). Raw CSV files are processed temporarily and automatically deleted after ingestion. Free audits do not persist raw uploads beyond what is required to produce your summary.",
+    a: (
+      <>
+        All uploads are encrypted in transit (HTTPS/TLS). Raw CSV files are processed temporarily and
+        automatically deleted after ingestion. Free audits do not persist raw uploads beyond what is
+        required to produce your summary.{" "}
+        <Link href="/security" className="font-medium text-primary underline-offset-4 hover:underline">
+          Read our security overview
+        </Link>
+        .
+      </>
+    ),
+  },
+  {
+    q: "Can I anonymize my CSVs before uploading?",
+    a: (
+      <>
+        Yes. Blank or remove customer names and emails if that feels more comfortable. Keep IDs
+        consistent across files, and leave amounts, quantities, currencies, dates, and statuses
+        unchanged so the audit still works. Prefer a local tool? Microsoft Presidio is a solid
+        open-source option for redacting names and emails.{" "}
+        <Link
+          href="/security#anonymize-before-upload"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          See the short anonymize guide
+        </Link>
+        .
+      </>
+    ),
   },
   {
     q: "What billing and CRM systems work?",
@@ -65,7 +93,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
+function FaqItem({ question, answer }: { question: string; answer: ReactNode }) {
   const [open, setOpen] = useState(false);
   const motionEnabled = useMotionEnabled();
 
@@ -85,7 +113,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
       </button>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.p
+          <motion.div
             initial={motionEnabled ? { opacity: 0, height: 0 } : false}
             animate={{ opacity: 1, height: "auto" }}
             exit={motionEnabled ? { opacity: 0, height: 0 } : { opacity: 0 }}
@@ -93,7 +121,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
             className="overflow-hidden pb-5 leading-relaxed text-muted-foreground"
           >
             {answer}
-          </motion.p>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

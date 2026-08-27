@@ -1,7 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { Check, FileText, Lock, Mail, Server, Shield, Trash2 } from "lucide-react";
+import { Check, EyeOff, FileText, Lock, Mail, Server, Shield, Trash2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -38,6 +36,12 @@ const SECTIONS: { icon: LucideIcon; title: string; body: string }[] = [
     body: "We are building toward SOC 2 Type II certification. A security questionnaire is available upon request for procurement and vendor review.",
   },
 ];
+
+const ANONYMIZE_STEPS = [
+  "Remove or blank customer and account names, and any email columns.",
+  "Keep IDs consistent across files (customer_id, subscription_id, invoice_id, product_id). If you hash IDs, use the same mapping in every export.",
+  "Leave amounts, quantities, currencies, dates, statuses, and billing intervals unchanged. Those fields power the audit.",
+] as const;
 
 export function SecurityPageClient() {
   return (
@@ -78,6 +82,37 @@ export function SecurityPageClient() {
                 Canonical normalized records and audit metadata are retained only to support purchased
                 reports and your workspace history. Raw CSV uploads are never kept longer than required
                 for processing.
+              </p>
+            </HairlineCard>
+          </StaggerItem>
+
+          <StaggerItem>
+            <HairlineCard padding="md" id="anonymize-before-upload">
+              <div className="flex items-center gap-3">
+                <EyeOff className="h-6 w-6 text-primary" strokeWidth={1.75} />
+                <h2 className="font-heading text-xl tracking-tight">Optional: anonymize before upload</h2>
+              </div>
+              <p className="mt-4 leading-relaxed text-muted-foreground">
+                Anonymizing is optional. It is not required for a valid audit. If blanking names and
+                emails helps your team feel more comfortable, that is enough for most exports.
+              </p>
+              <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+                {ANONYMIZE_STEPS.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                Prefer a local tool?{" "}
+                <a
+                  href="https://microsoft.github.io/presidio/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Microsoft Presidio
+                </a>{" "}
+                is a solid open-source option for redacting names and emails. Only redact identity
+                fields. Leave money, dates, and join keys untouched so the audit still works.
               </p>
             </HairlineCard>
           </StaggerItem>

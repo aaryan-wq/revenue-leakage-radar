@@ -10,6 +10,7 @@ import { AnalyticsEvents } from "@rlr/shared";
 import { captureEvent } from "@/lib/analytics/client";
 import { FreeReportPreview } from "@/components/marketing/free-report-preview";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { SecuritySummary } from "@/components/marketing/security-summary";
 import { ViewSampleReportCta } from "@/components/marketing/view-sample-report-cta";
 import { LandingPageTracker } from "@/components/analytics/marketing-page-tracker";
 import { SiteFooter } from "@/components/site-footer";
@@ -150,7 +151,11 @@ function HeroUploadZone() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.75rem] text-muted-foreground">
-            {["End-to-end encrypted", "No account required", "Results in minutes"].map((t) => (
+            {[
+              "Encrypted in transit",
+              "Raw CSVs deleted after processing",
+              "No account required",
+            ].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-primary/50" />
                 {t}
@@ -280,6 +285,7 @@ export function LandingPageClient() {
       </section>
 
       <MethodSection />
+      <SecuritySummary />
       <FreeReportPreview />
       <SiteFooter />
     </>
