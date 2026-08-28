@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, X } from "lucide-react";
 
@@ -24,11 +24,6 @@ interface CheckoutConfirmationModalProps {
   error?: string | null;
 }
 
-function formatUsdInput(value: number): string {
-  if (!Number.isFinite(value)) return "0";
-  return value.toFixed(2);
-}
-
 export function CheckoutConfirmationModal({
   open,
   onClose,
@@ -39,15 +34,8 @@ export function CheckoutConfirmationModal({
 }: CheckoutConfirmationModalProps) {
   const motionEnabled = useMotionEnabled();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const identifiedUsd = parseUsdAmount(identifiedRecoverableArr);
-  const [confirmedInput, setConfirmedInput] = useState(formatUsdInput(identifiedUsd));
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    setConfirmedInput(formatUsdInput(identifiedUsd));
-    setValidationError(null);
-  }, [open, identifiedUsd]);
+  const confirmedUsd = parseUsdAmount(identifiedRecoverableArr);
+  const breakdown = useMemo(() => computeCheckoutTotal(confirmedUsd), [confirmedUsd]);
 
   useEffect(() => {
     if (!open) return;
@@ -68,15 +56,7 @@ export function CheckoutConfirmationModal({
     };
   }, [open, onClose, isSubmitting]);
 
-  const confirmedUsd = parseUsdAmount(confirmedInput);
-  const breakdown = useMemo(() => computeCheckoutTotal(confirmedUsd), [confirmedUsd]);
-
   const handleConfirm = async () => {
-    if (confirmedUsd > identifiedUsd) {
-      setValidationError("Confirmed recovery cannot exceed the amount identified in your free audit.");
-      return;
-    }
-    setValidationError(null);
     await onConfirm(confirmedUsd);
   };
 
@@ -133,42 +113,16 @@ export function CheckoutConfirmationModal({
               </p>
 
               <div className="mt-8 space-y-6">
-                <div>
+                <div className="rounded-xl border border-line bg-surface-glass-subtle p-5">
                   <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    Identified recoverable ARR
+                    Confirmed recovery
                   </p>
                   <p className="mt-2 font-heading text-2xl tracking-tight tnum">
                     {formatCurrency(identifiedRecoverableArr)}
                   </p>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmed-recovery" className="text-sm font-medium text-foreground">
-                    Confirmed recovery
-                  </label>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Adjust if you expect to recover less than the full identified amount.
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Based on recoverable ARR identified in your free audit.
                   </p>
-                  <div className="relative mt-3">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      $
-                    </span>
-                    <input
-                      id="confirmed-recovery"
-                      type="text"
-                      inputMode="decimal"
-                      value={confirmedInput}
-                      onChange={(event) => setConfirmedInput(event.target.value)}
-                      className="focus-ring w-full rounded-xl border border-line bg-surface-glass-subtle px-4 py-3 pl-8 text-sm tnum text-foreground"
-                      aria-describedby="confirmed-recovery-help"
-                    />
-                  </div>
-                  <p id="confirmed-recovery-help" className="mt-2 text-xs text-muted-foreground">
-                    Maximum: {formatCurrency(identifiedRecoverableArr)}
-                  </p>
-                  {validationError && (
-                    <p className="mt-2 text-sm text-leak">{validationError}</p>
-                  )}
                 </div>
 
                 <div className="rounded-xl border border-line bg-surface-glass-subtle p-5">
@@ -196,9 +150,7 @@ export function CheckoutConfirmationModal({
                   </div>
                 </div>
 
-                {(error || validationError) && error && (
-                  <p className="text-sm text-leak">{error}</p>
-                )}
+                {error && <p className="text-sm text-leak">{error}</p>}
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                   <Button
