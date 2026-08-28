@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 import { CoverageSection } from "@/components/summary/coverage-section";
+import { DataIntegrityWarning } from "@/components/summary/data-integrity-warning";
 import { LockedPreview } from "@/components/summary/locked-preview";
 import { OpportunityBreakdown } from "@/components/summary/opportunity-breakdown";
 import { SummaryHero } from "@/components/summary/summary-hero";
@@ -23,6 +24,13 @@ export function FreeSummaryView({ summary, onUnlocked, footer }: FreeSummaryView
       <OpportunityBreakdown items={summary.opportunity_breakdown} />
       <VerificationChecklist checks={summary.verification_checks} />
       <CoverageSection coverage={summary.coverage} />
+      {!summary.purchased && (
+        <DataIntegrityWarning
+          reportId={summary.report_id}
+          recoverableArr={summary.recoverable_arr}
+          onUnlocked={onUnlocked}
+        />
+      )}
       <LockedPreview items={summary.locked_preview} />
       <UnlockCta
         reportId={summary.report_id}

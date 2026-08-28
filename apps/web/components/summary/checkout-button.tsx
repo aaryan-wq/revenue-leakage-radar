@@ -18,6 +18,7 @@ interface CheckoutButtonProps {
   reportId?: string | null;
   recoverableArr?: string | null;
   variant?: "primary" | "secondary";
+  analyticsSource?: string;
   onCreditUnlock?: () => void;
 }
 
@@ -27,6 +28,7 @@ export function CheckoutButton({
   label,
   recoverableArr,
   variant = "primary",
+  analyticsSource,
 }: CheckoutButtonProps) {
   const { getToken, isSignedIn } = useAppAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +51,7 @@ export function CheckoutButton({
         if (reportId) {
           captureAuditEvent(AnalyticsEvents.REPORT_UNLOCK_CTA_CLICKED, session.auditId, {
             checkout_type: plan,
+            ...(analyticsSource ? { source: analyticsSource } : {}),
           });
         }
         captureAuditEvent(AnalyticsEvents.CHECKOUT_STARTED, session.auditId, {
