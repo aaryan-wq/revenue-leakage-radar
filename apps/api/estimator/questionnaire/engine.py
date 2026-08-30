@@ -79,6 +79,16 @@ def visible_question_ids(answers: dict[str, Any], version: str = "2.0") -> list[
     return ordered
 
 
+def answered_question_ids(answers: dict[str, Any], version: str = "2.0") -> list[str]:
+    visible = visible_question_ids(answers, version)
+    return [qid for qid in visible if qid in answers and answers[qid] is not None]
+
+
+def pending_question_ids(answers: dict[str, Any], version: str = "2.0") -> list[str]:
+    visible = visible_question_ids(answers, version)
+    return [qid for qid in visible if qid not in answers or answers[qid] is None]
+
+
 def next_unanswered_question(answers: dict[str, Any], version: str = "2.0") -> dict[str, Any] | None:
     from estimator.questionnaire.schema import get_question_by_id
 

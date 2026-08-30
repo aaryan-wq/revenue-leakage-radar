@@ -625,6 +625,7 @@ export type {
   EstimatorProfileSummary,
   EstimatorProgress,
   EstimatorQuestion,
+  EstimatorResumeState,
   EstimatorResult,
   EstimatorVerificationPreview,
   EstimatorVerificationRule,

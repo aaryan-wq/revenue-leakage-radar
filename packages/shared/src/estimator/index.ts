@@ -217,6 +217,17 @@ export interface EstimatorNarrative {
   view?: string;
 }
 
+export interface EstimatorResumeState {
+  pending_question_ids: string[];
+  pending_count: number;
+  answered_count: number;
+  has_pending_questions: boolean;
+  requires_reanswer: boolean;
+  is_resuming: boolean;
+  questionnaire_version: string;
+  current_questionnaire_version: string;
+}
+
 export interface EstimatorAssessmentState {
   assessment_id: string;
   status: string;
@@ -225,6 +236,8 @@ export interface EstimatorAssessmentState {
   current_section: string | null;
   next_question: EstimatorQuestion | null;
   complexity_preview?: EstimatorComplexityPreview | null;
+  visible_question_ids?: string[];
+  resume?: EstimatorResumeState;
 }
 
 export const ESTIMATOR_ANALYTICS_EVENTS = {

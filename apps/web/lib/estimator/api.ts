@@ -25,6 +25,11 @@ export function storeAssessmentSession(assessmentId: string, sessionToken: strin
   localStorage.setItem(SESSION_KEY, sessionToken);
 }
 
+export function storeAssessmentId(assessmentId: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ASSESSMENT_KEY, assessmentId);
+}
+
 export function getStoredSessionToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(SESSION_KEY);

@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { LiveProfilePanel } from "@/components/estimator/live-profile-panel";
 import { ProgressRail } from "@/components/estimator/progress-rail";
 import { QuestionStep } from "@/components/estimator/question-step";
+import { AssessmentResumeNotice } from "@/components/estimator/assessment-resume-notice";
+import { AssessmentResumePrompt } from "@/components/estimator/assessment-resume-prompt";
 import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
@@ -19,12 +21,14 @@ import {
   getStoredAssessmentId,
   patchAnswers,
   storeAssessmentSession,
+  storeAssessmentId,
   validateAssessment,
 } from "@/lib/estimator/api";
-import { AnalyticsEvents, type EstimatorComplexityPreview, type EstimatorQuestion } from "@rlr/shared";
+import { AnalyticsEvents, type EstimatorComplexityPreview, type EstimatorQuestion, type EstimatorResumeState } from "@rlr/shared";
 
 export function EstimatorQuestionnaireClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [calculating, setCalculating] = useState(false);
@@ -44,6 +48,8 @@ export function EstimatorQuestionnaireClient() {
   const [complexity, setComplexity] = useState<EstimatorComplexityPreview | null>(null);
   const [draftValue, setDraftValue] = useState<unknown>(null);
   const [currency, setCurrency] = useState("USD");
+  const [resume, setResume] = useState<EstimatorResumeState | null>(null);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
 
   const sectionLabel = useMemo(() => {
     const match = sections.find((section) => section.id === currentSection);
@@ -72,16 +78,29 @@ export function EstimatorQuestionnaireClient() {
   );
 
   const refresh = useCallback(
-    async (id: string) => {
+    async (id: string, options?: { skipResumePrompt?: boolean }) => {
       const state = await fetchAssessment(id);
       setAnswers(state.answers);
       setQuestion(state.next_question);
       setProgress(state.progress);
       setCurrentSection(state.current_section);
       setComplexity(state.complexity_preview ?? null);
+      setResume(state.resume ?? null);
       if (state.next_question) {
         setDraftValue(state.answers[state.next_question.id] ?? null);
       }
+
+      const shouldPrompt =
+        !options?.skipResumePrompt &&
+        state.resume?.requires_reanswer &&
+        state.resume.pending_count > 0;
+
+      if (shouldPrompt) {
+        setShowResumePrompt(true);
+        return;
+      }
+
+      setShowResumePrompt(false);
       if (state.progress.is_complete) {
         await finishAssessment(id);
       }
@@ -94,7 +113,11 @@ export function EstimatorQuestionnaireClient() {
       try {
         const questionnaire = await fetchQuestionnaire();
         setSections(questionnaire.sections);
-        let id = getStoredAssessmentId();
+        const resumeId = searchParams.get("assessment_id");
+        let id = resumeId ?? getStoredAssessmentId();
+        if (resumeId) {
+          storeAssessmentId(resumeId);
+        }
         if (!id) {
           const created = await createAssessment();
           id = created.assessment_id;
@@ -105,7 +128,7 @@ export function EstimatorQuestionnaireClient() {
           throw new Error("Unable to create assessment session");
         }
         setAssessmentId(id);
-        await refresh(id);
+        await refresh(id, { skipResumePrompt: Boolean(resumeId) });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to start assessment");
       } finally {
@@ -113,7 +136,7 @@ export function EstimatorQuestionnaireClient() {
       }
     }
     void init();
-  }, [refresh]);
+  }, [refresh, searchParams]);
 
   const handleContinue = async () => {
     if (!assessmentId || !question) return;
@@ -151,7 +174,7 @@ export function EstimatorQuestionnaireClient() {
         return;
       }
 
-      await refresh(assessmentId);
+      await refresh(assessmentId, { skipResumePrompt: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to save answer");
     } finally {
@@ -170,11 +193,27 @@ export function EstimatorQuestionnaireClient() {
     );
   }
 
+  if (showResumePrompt && resume) {
+    return (
+      <>
+        <ProgressRail sectionLabel="Assessment" completionRate={progress.completion_rate} />
+        <div className="mx-auto min-h-[calc(100vh-8rem)] max-w-marketing px-6 py-12 md:px-10 md:py-16">
+          <AssessmentResumePrompt
+            resume={resume}
+            onContinue={() => setShowResumePrompt(false)}
+            onViewPrevious={() => assessmentId && router.push(`/saas-revenue-leakage-calculator/result/${assessmentId}`)}
+          />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <ProgressRail sectionLabel={sectionLabel} completionRate={progress.completion_rate} />
       <div className="mx-auto grid min-h-[calc(100vh-8rem)] max-w-marketing gap-10 px-6 py-12 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-16">
         <div className="min-w-0">
+          {resume ? <AssessmentResumeNotice resume={resume} /> : null}
           {question ? (
             <QuestionStep
               question={question}

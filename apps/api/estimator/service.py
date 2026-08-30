@@ -10,10 +10,12 @@ from estimator.config import MODEL_VERSION, QUESTIONNAIRE_VERSION
 from estimator.modeling.fingerprint import is_stale_result
 from estimator.modeling.pipeline import run_model
 from estimator.questionnaire.engine import (
+    answered_question_ids,
     answers_to_map,
     completion_progress,
     current_section,
     next_unanswered_question,
+    pending_question_ids,
     visible_question_ids,
 )
 from estimator.questionnaire.schema import get_question_by_id
@@ -117,6 +119,23 @@ def upsert_answer(db: Session, assessment: Assessment, payload: dict[str, Any]) 
     return existing
 
 
+def _resume_state(assessment: Assessment, answers: dict[str, Any]) -> dict[str, Any]:
+    version = assessment.questionnaire_version
+    pending = pending_question_ids(answers, version)
+    answered = answered_question_ids(answers, version)
+    requires_reanswer = assessment.status == "completed" and len(pending) > 0
+    return {
+        "pending_question_ids": pending,
+        "pending_count": len(pending),
+        "answered_count": len(answered),
+        "has_pending_questions": len(pending) > 0,
+        "requires_reanswer": requires_reanswer,
+        "is_resuming": len(answered) > 0 and len(pending) > 0,
+        "questionnaire_version": version,
+        "current_questionnaire_version": QUESTIONNAIRE_VERSION,
+    }
+
+
 def assessment_state(assessment: Assessment) -> dict[str, Any]:
     answers = _answers_dict(assessment)
     progress = completion_progress(answers, assessment.questionnaire_version)
@@ -129,6 +148,7 @@ def assessment_state(assessment: Assessment) -> dict[str, Any]:
         "current_section": current_section(answers, assessment.questionnaire_version),
         "next_question": next_q,
         "visible_question_ids": visible_question_ids(answers, assessment.questionnaire_version),
+        "resume": _resume_state(assessment, answers),
     }
 
 

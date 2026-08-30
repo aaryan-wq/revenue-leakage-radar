@@ -16,15 +16,19 @@ import {
   calculateAssessment,
   clearAssessmentSession,
   createShareLink,
+  fetchAssessment,
   fetchResult,
   saveLead,
+  storeAssessmentId,
 } from "@/lib/estimator/api";
+import { AssessmentResumeBanner } from "@/components/estimator/assessment-resume-prompt";
 import {
   AnalyticsEvents,
   formatCurrency,
   type EstimatorHypothesisBreakdown,
   type EstimatorMechanismInsight,
   type EstimatorResult,
+  type EstimatorResumeState,
   type EstimatorRuleBreakdown,
   type EstimatorVerificationCategoryPreview,
 } from "@rlr/shared";
@@ -145,15 +149,26 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const [error, setError] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [emailSaved, setEmailSaved] = useState(false);
+  const [resume, setResume] = useState<EstimatorResumeState | null>(null);
 
   const loadInitial = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      const [assessmentState, resultResponse] = await Promise.allSettled([
+        fetchAssessment(assessmentId),
+        fetchResult(assessmentId),
+      ]);
+
+      if (assessmentState.status === "fulfilled") {
+        setResume(assessmentState.value.resume ?? null);
+        storeAssessmentId(assessmentId);
+      }
+
       let data: EstimatorResult;
-      try {
-        data = await fetchResult(assessmentId);
-      } catch {
+      if (resultResponse.status === "fulfilled") {
+        data = resultResponse.value;
+      } else {
         data = await calculateAssessment(assessmentId, "central");
       }
       setScenario(data.scenario ?? "central");
@@ -214,6 +229,11 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
     setEmailSaved(true);
   };
 
+  const handleAnswerNewQuestions = () => {
+    storeAssessmentId(assessmentId);
+    router.push(`/saas-revenue-leakage-calculator/start?assessment_id=${assessmentId}`);
+  };
+
   const handleRedo = () => {
     clearAssessmentSession();
     router.push("/saas-revenue-leakage-calculator/start");
@@ -262,6 +282,9 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
+      {resume ? (
+        <AssessmentResumeBanner resume={resume} onAnswer={handleAnswerNewQuestions} />
+      ) : null}
       <Reveal>
         <HairlineCard padding="lg" className="overflow-hidden">
           <div className="space-y-8">
