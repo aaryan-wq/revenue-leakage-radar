@@ -92,6 +92,7 @@ function normalizeResult(data: EstimatorResult): EstimatorResult {
     hypothesis_breakdown: (data.hypothesis_breakdown ?? []).map(normalizeHypothesis),
     mechanism_insights: data.mechanism_insights ?? [],
     verification_preview: data.verification_preview ?? [],
+    calculation_summary: data.calculation_summary,
   };
 }
 
@@ -117,17 +118,17 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchResult(assessmentId);
+      let data: EstimatorResult;
+      try {
+        data = await fetchResult(assessmentId);
+      } catch {
+        data = await calculateAssessment(assessmentId, "central");
+      }
+      setScenario(data.scenario ?? "central");
       setResult(normalizeResult(data));
       captureEvent(AnalyticsEvents.RESULT_VIEWED, { assessment_id: assessmentId });
-    } catch {
-      try {
-        const calculated = await calculateAssessment(assessmentId, "central");
-        setResult(normalizeResult(calculated));
-        captureEvent(AnalyticsEvents.RESULT_VIEWED, { assessment_id: assessmentId });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load your estimate");
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load your estimate");
     } finally {
       setLoading(false);
     }
@@ -215,6 +216,11 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const paybackPct = result.estimate.low > 0 ? (2500 / result.estimate.low) * 100 : 0;
   const top = result.top_hypotheses[0];
   const activeScenario = SCENARIOS.find((item) => item.id === scenario);
+  const calc = result.calculation_summary;
+  const pctOfArr = calc?.pct_of_arr ?? (result.arr_usd ? (result.estimate.central / result.arr_usd) * 100 : 0);
+  const medianRun = result.estimate.median_run ?? calc?.median_run;
+  const showMedianNote =
+    medianRun !== undefined && medianRun !== result.estimate.central && result.estimate.central > 0;
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -236,15 +242,22 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                 <CountUp to={result.estimate.high} prefix="$" />
               </p>
               <p className="text-body tabular-nums text-foreground">
-                Expected: {formatCurrency(result.estimate.central)} ARR
+                Expected: {formatCurrency(result.estimate.central)} ARR ({pctOfArr.toFixed(2)}% of ARR)
               </p>
+              {showMedianNote ? (
+                <p className="text-small tabular-nums text-muted-foreground">
+                  Median simulation run: {formatCurrency(medianRun)}. Expected uses the average across all 10,000
+                  runs.
+                </p>
+              ) : null}
               <p className="mx-auto max-w-readable text-body text-muted-foreground">
-                About {formatCurrency(result.monthly.low)} to {formatCurrency(result.monthly.high)} per month.
+                About {formatCurrency(result.monthly.central)}/mo expected ({formatCurrency(result.monthly.low)} to{" "}
+                {formatCurrency(result.monthly.high)} band).
               </p>
               {activeScenario ? (
                 <p className="text-caption text-muted-foreground">
-                  {activeScenario.label} view ({activeScenario.subtitle}). Directional model only, not an audited
-                  billing finding.
+                  {activeScenario.label} band: {calc?.scenario_band_label ?? activeScenario.subtitle}. Modeled
+                  estimate, not an audited finding.
                 </p>
               ) : null}
             </div>
@@ -272,6 +285,25 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
       </Reveal>
 
       {error ? <p className="text-center text-small text-destructive">{error}</p> : null}
+
+      {calc && calc.explanation_bullets.length > 0 ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-4">
+            <div>
+              <p className="text-overline text-muted-foreground">Model calculation</p>
+              <h2 className="text-h4 mt-2">How this number was derived</h2>
+            </div>
+            <ul className="space-y-3">
+              {calc.explanation_bullets.map((bullet) => (
+                <li key={bullet} className="flex gap-3 text-small text-muted-foreground">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </HairlineCard>
+        </Reveal>
+      ) : null}
 
       {profile ? (
         <Reveal>
@@ -315,7 +347,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         <Stagger className="space-y-6">
           <div>
             <p className="text-overline text-muted-foreground">Top mechanisms</p>
-            <h2 className="text-h4 mt-2">Where leakage likely hides</h2>
+            <h2 className="text-h4 mt-2">Mechanism math</h2>
           </div>
           {mechanisms.map((item) => {
             const insight = insightForHypothesis(result.mechanism_insights ?? [], item.hypothesis_id);
@@ -323,21 +355,14 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               <StaggerItem key={item.hypothesis_id}>
                 <HairlineCard padding="lg" className="space-y-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <h3 className="text-body font-medium text-foreground">{item.name}</h3>
-                      {insight ? (
-                        <p className="max-w-readable text-small text-muted-foreground">{insight}</p>
-                      ) : null}
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-body tabular-nums text-foreground">{formatCurrency(item.expected)}</p>
-                      <p className="text-caption tabular-nums text-muted-foreground">{item.pct_of_arr}% of ARR</p>
-                    </div>
+                    <h3 className="text-body font-medium text-foreground">{item.name}</h3>
+                    <p className="shrink-0 text-body tabular-nums text-foreground">
+                      {formatCurrency(item.expected)}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="gray">{item.likelihood}% likelihood</Badge>
-                    <Badge variant="info">{item.share_of_total}% of modeled total</Badge>
-                  </div>
+                  {insight ? (
+                    <p className="max-w-readable text-small text-muted-foreground">{insight}</p>
+                  ) : null}
                   <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
                     <div
                       className="h-full rounded-full bg-primary/80 transition-all duration-300"
@@ -348,9 +373,6 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               </StaggerItem>
             );
           })}
-          <p className="text-caption text-muted-foreground">
-            Mechanism amounts overlap and are correlation-adjusted. Do not sum them independently.
-          </p>
         </Stagger>
       ) : null}
 
@@ -359,11 +381,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
           <HairlineCard padding="lg" className="space-y-6">
             <div>
               <p className="text-overline text-muted-foreground">Verification</p>
-              <h2 className="text-h4 mt-2">What a scan would check</h2>
-              <p className="mt-2 max-w-readable text-body text-muted-foreground">
-                A deterministic billing scan runs these rules against your exports to confirm or rule out each
-                mechanism.
-              </p>
+              <h2 className="text-h4 mt-2">Scan rules for top mechanisms</h2>
             </div>
             <div className="space-y-5">
               {result.verification_preview.map((entry) => (
@@ -383,22 +401,6 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         </Reveal>
       ) : null}
 
-      {result.executive_summary ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-4">
-            <p className="text-overline text-muted-foreground">Executive summary</p>
-            <p className="max-w-readable text-body text-muted-foreground">{result.executive_summary}</p>
-            {result.narrative ? (
-              <div className="space-y-2 border-t border-border/30 pt-4">
-                <p className="text-caption text-muted-foreground">Additional narrative</p>
-                <h3 className="text-h4">{result.narrative.headline}</h3>
-                <p className="max-w-readable text-small text-muted-foreground">{result.narrative.summary}</p>
-              </div>
-            ) : null}
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
       {result.detectable.high > 0 ? (
         <Reveal>
           <HairlineCard padding="lg" className="space-y-3">
@@ -408,8 +410,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               {formatCurrency(result.detectable.low)} to {formatCurrency(result.detectable.high)} ARR
             </p>
             <p className="max-w-readable text-small text-muted-foreground">
-              This is the portion of the modeled range that standard subscription and invoice exports can usually
-              surface. The remainder may require contract or CRM data.
+              Portion of the modeled range matchable from subscription and invoice exports.
             </p>
           </HairlineCard>
         </Reveal>

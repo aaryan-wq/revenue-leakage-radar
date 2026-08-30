@@ -200,13 +200,39 @@ def test_insights_include_answer_specific_content():
     result = run_model(PROFILE_B, random_seed=42)
     assert result.get("profile_summary")
     assert result["profile_summary"]["risk_flags"]
-    assert "grandfather" in " ".join(result["profile_summary"]["risk_flags"]).lower() or any(
-        "grandfather" in m["insight"].lower() for m in result.get("mechanism_insights", [])
-    )
-    assert result.get("executive_summary")
+    insights_text = " ".join(m["insight"].lower() for m in result.get("mechanism_insights", []))
+    assert "grandfather" in " ".join(result["profile_summary"]["risk_flags"]).lower() or "grandfather" in insights_text
+    assert result.get("calculation_summary")
+    assert result["calculation_summary"]["explanation_bullets"]
     assert result.get("verification_preview")
-    assert any(
-        "grandfather" in m["insight"].lower()
-        for m in result.get("mechanism_insights", [])
-    )
+    assert "grandfathering" in insights_text or "grandfather" in insights_text
+
+
+def test_clean_profile_expected_uses_simulation_mean():
+    answers = {**PROFILE_A, "profile.arr_amount": 18_000_000, "profile.customer_count": 1200}
+    result = run_model(answers, random_seed=42)
+    assert result["estimate"]["central"] > 0
+    assert result["calculation_summary"]["pct_runs_with_leakage"] > 0
+
+
+def test_calibration_fixtures_within_tolerance():
+    from tests.estimator.calibration_fixtures import CALIBRATION_CASES
+
+    errors: list[float] = []
+    for case in CALIBRATION_CASES:
+        result = run_model(case["answers"], random_seed=42)
+        model = result["estimate"]["central"]
+        justified = case["justified_leakage_usd"]
+        errors.append(abs((model - justified) / justified * 100))
+    assert sum(errors) / len(errors) <= 12.0
+    assert max(errors) <= 20.0
+
+
+def test_stale_result_detects_old_calibration_stage():
+    from estimator.modeling.fingerprint import is_stale_result
+
+    fresh = run_model(PROFILE_B, random_seed=42)
+    assert is_stale_result(fresh) is False
+    assert is_stale_result({"model_version": fresh["model_version"], "calibration_stage": 0}) is True
+    assert is_stale_result({"model_version": "0.0.0", "calibration_stage": fresh["calibration_stage"]}) is True
 

@@ -619,6 +619,7 @@ export type {
   EstimatorAssessmentState,
   EstimatorComplexityPreview,
   EstimatorHypothesisBreakdown,
+  EstimatorCalculationSummary,
   EstimatorMechanismInsight,
   EstimatorNarrative,
   EstimatorProfileSummary,

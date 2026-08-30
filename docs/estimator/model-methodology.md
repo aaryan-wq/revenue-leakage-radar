@@ -61,14 +61,18 @@ Optional AI narrative, when enabled, summarizes the result in prose. It never se
 
 | Layer | Meaning |
 |-------|---------|
-| Potential exposure | Revenue plausibly at risk under model assumptions |
-| Expected (per mechanism) | P50 when positive; otherwise P75 when the mechanism fires in fewer than half of simulations |
+| Expected value | Average across all 10,000 Monte Carlo runs (mean). This is the headline number. |
+| Median run | P50 total. Often $0 when gaps appear in fewer than half of simulations. |
+| Plausible range | Scenario percentile band (see Scenario Bands). May widen to P90 when P75 sits below the mean. |
+| Expected (per mechanism) | Mean contribution for that mechanism across all runs |
 | Detectable exposure | Portion likely identifiable from billing exports |
 | Evidence required | Actual leakage requires the Paevo deterministic scan |
 
 ## Calibration Status
 
-**Stage 0, structural model.** Not yet calibrated against a statistically representative audit dataset. As completed audits accumulate, priors will be updated with documented backtests.
+**Stage 1, fixture-calibrated model.** Monte Carlo intensity is tuned against five fictitious companies with bottom-up justified leakage (clean to very high complexity). Complexity score adjusts simulation intensity: low-complexity stacks receive a higher prior leakage rate; very high complexity stacks are dampened to respect overlap caps.
+
+Stage 1 does not replace billing evidence. As completed audits accumulate, priors will continue to be updated with documented backtests.
 
 ## Limitations
 

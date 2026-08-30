@@ -92,8 +92,28 @@ export interface EstimatorVerificationPreview {
   rules: EstimatorVerificationRule[];
 }
 
+export interface EstimatorCalculationSummary {
+  simulation_count: number;
+  expected_value: number;
+  median_run: number;
+  pct_runs_with_leakage: number;
+  conditional_mean: number;
+  pct_of_arr: number;
+  scenario: string;
+  scenario_band_label: string;
+  range_low: number;
+  range_high: number;
+  explanation_bullets: string[];
+}
+
 export interface EstimatorResult {
-  estimate: { low: number; central: number; high: number; display_range: string };
+  estimate: {
+    low: number;
+    central: number;
+    high: number;
+    median_run?: number;
+    display_range: string;
+  };
   monthly: { low: number; central: number; high: number };
   confidence: string;
   complexity: EstimatorComplexityPreview;
@@ -113,6 +133,7 @@ export interface EstimatorResult {
   profile_summary?: EstimatorProfileSummary;
   mechanism_insights?: EstimatorMechanismInsight[];
   verification_preview?: EstimatorVerificationPreview[];
+  calculation_summary?: EstimatorCalculationSummary;
   executive_summary?: string;
   model_version: string;
   calibration_stage: number;

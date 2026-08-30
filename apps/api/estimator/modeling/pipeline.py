@@ -20,18 +20,47 @@ SCENARIO_BANDS: dict[str, tuple[str, str]] = {
 }
 
 
-def _scenario_bounds(pct: dict[str, float], scenario: str) -> tuple[float, float, float]:
+def _simulation_stats(totals: np.ndarray) -> dict[str, float]:
+    nonzero = totals[totals > 0]
+    return {
+        "expected_mean": float(np.mean(totals)),
+        "median_run": float(np.percentile(totals, 50)),
+        "pct_runs_with_leakage": float(len(nonzero) / len(totals) * 100) if len(totals) else 0.0,
+        "conditional_mean": float(np.mean(nonzero)) if len(nonzero) else 0.0,
+    }
+
+
+def _scenario_bounds(
+    pct: dict[str, float],
+    scenario: str,
+    *,
+    expected_mean: float,
+) -> tuple[float, float, str]:
     low_key, high_key = SCENARIO_BANDS.get(scenario, ("p25", "p75"))
     low = pct[low_key]
     high = pct[high_key]
-    central = pct["p50"]
-    if round_display_amount(central) > 0 and round_display_amount(low) == 0:
-        low = pct["p10"]
-    if round_display_amount(high) < round_display_amount(central):
-        high = central
+    effective_high_key = high_key
+
+    expected_rounded = round_display_amount(expected_mean)
+    median_rounded = round_display_amount(pct["p50"])
+
+    if scenario == "central" and expected_rounded > 0 and round_display_amount(high) < expected_rounded:
+        high = pct["p90"]
+        effective_high_key = "p90"
+
+    if expected_rounded > 0 and round_display_amount(low) == 0:
+        if median_rounded > 0:
+            low = pct["p50"]
+        elif round_display_amount(pct["p10"]) > 0:
+            low = pct["p10"]
+
+    if round_display_amount(high) < expected_rounded:
+        high = max(high, expected_mean)
+
     if round_display_amount(low) > round_display_amount(high):
         low = high
-    return low, high, central
+
+    return low, high, effective_high_key
 
 
 def run_model(
@@ -52,11 +81,18 @@ def run_model(
     rng = np.random.default_rng(random_seed)
     arr = segments["arr"]
 
-    totals, detectable, per_hyp = simulate_totals(rng, arr, segments, posteriors, priors, sim_count)
+    totals, detectable, per_hyp = simulate_totals(
+        rng, arr, segments, posteriors, priors, sim_count, complexity["total"]
+    )
     pct = percentiles(totals)
     det_pct = percentiles(detectable)
-    estimate_low_raw, estimate_high_raw, estimate_central_raw = _scenario_bounds(pct, scenario)
-    det_low_raw, det_high_raw, _ = _scenario_bounds(det_pct, scenario)
+    sim_stats_raw = _simulation_stats(totals)
+    expected_mean = sim_stats_raw["expected_mean"]
+
+    estimate_low_raw, estimate_high_raw, high_band_key = _scenario_bounds(
+        pct, scenario, expected_mean=expected_mean
+    )
+    det_low_raw, det_high_raw, _ = _scenario_bounds(det_pct, scenario, expected_mean=float(np.mean(detectable)))
 
     hypothesis_breakdown = []
     rule_map = load_hypothesis_rule_map()["hypotheses"]
@@ -68,7 +104,9 @@ def run_model(
         if float(np.max(samples)) <= 0:
             continue
         hp = percentiles(samples)
-        expected_raw = hp["p50"] if hp["p50"] > 0 else hp["p75"]
+        expected_raw = float(np.mean(samples))
+        if expected_raw <= 0:
+            expected_raw = hp["p50"] if hp["p50"] > 0 else hp["p75"]
         if round_display_amount(expected_raw) <= 0:
             continue
         raw_p50_total += expected_raw
@@ -117,14 +155,25 @@ def run_model(
 
     estimate_low = round_display_amount(estimate_low_raw)
     estimate_high = round_display_amount(estimate_high_raw)
-    estimate_central = round_display_amount(estimate_central_raw)
+    estimate_central = round_display_amount(expected_mean)
+    median_run = round_display_amount(sim_stats_raw["median_run"])
 
     estimate = {
         "low": estimate_low,
         "central": estimate_central,
         "high": estimate_high,
+        "median_run": median_run,
         "display_range": format_currency_range(estimate_low, estimate_high),
     }
+
+    sim_stats = {
+        "expected_mean": estimate_central,
+        "median_run": median_run,
+        "pct_runs_with_leakage": round(sim_stats_raw["pct_runs_with_leakage"], 1),
+        "conditional_mean": round_display_amount(sim_stats_raw["conditional_mean"]),
+        "high_band_key": high_band_key,
+    }
+
     insights = build_insights(
         normalized=normalized,
         segments=segments,
@@ -136,6 +185,11 @@ def run_model(
             "high": round_display_amount(det_high_raw),
         },
         arr=arr,
+        priors=priors,
+        sim_stats=sim_stats,
+        scenario=scenario,
+        scenario_band=SCENARIO_BANDS.get(scenario, ("p25", "p75")),
+        simulation_count=sim_count,
     )
 
     runtime_ms = int((time.perf_counter() - started) * 1000)
@@ -144,7 +198,7 @@ def run_model(
         "estimate": estimate,
         "monthly": {
             "low": round_display_amount(estimate_low_raw / 12),
-            "central": round_display_amount(estimate_central_raw / 12),
+            "central": round_display_amount(expected_mean / 12),
             "high": round_display_amount(estimate_high_raw / 12),
         },
         "percentiles": {k: round_display_amount(v) for k, v in pct.items()},

@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from estimator.config import MODEL_VERSION, QUESTIONNAIRE_VERSION
+from estimator.modeling.fingerprint import is_stale_result
 from estimator.modeling.pipeline import run_model
 from estimator.questionnaire.engine import (
     answers_to_map,
@@ -221,13 +222,33 @@ def calculate_assessment(
     return result
 
 
-def get_result(db: Session, assessment: Assessment) -> dict[str, Any] | None:
+def get_result(
+    db: Session,
+    assessment: Assessment,
+    *,
+    refresh_if_stale: bool = True,
+) -> dict[str, Any] | None:
     row = db.query(AssessmentResult).filter(AssessmentResult.assessment_id == assessment.id).first()
     if row is None:
         return None
+
     payload = dict(row.result_json)
-    if row.narrative_json:
-        payload["narrative"] = row.narrative_json
+    narrative = row.narrative_json
+
+    if refresh_if_stale and is_stale_result(payload):
+        scenario = str(payload.get("scenario") or "central")
+        random_seed = int(payload.get("random_seed") or 42)
+        payload = calculate_assessment(
+            db,
+            assessment,
+            random_seed=random_seed,
+            scenario=scenario,
+        )
+        row = db.query(AssessmentResult).filter(AssessmentResult.assessment_id == assessment.id).first()
+        narrative = row.narrative_json if row else narrative
+
+    if narrative:
+        payload["narrative"] = narrative
     return payload
 
 

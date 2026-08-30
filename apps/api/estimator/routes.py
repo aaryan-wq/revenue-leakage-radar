@@ -126,7 +126,7 @@ def calculate_assessment(
 @router.get("/assessments/{assessment_id}/result")
 def get_result(assessment_id: uuid.UUID, db: Session = Depends(get_db)):
     assessment = _get_assessment_or_404(db, assessment_id)
-    result = service.get_result(db, assessment)
+    result = service.get_result(db, assessment, refresh_if_stale=True)
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Result not calculated yet")
     return result
@@ -139,7 +139,7 @@ def post_narrative(
     db: Session = Depends(get_db),
 ):
     assessment = _get_assessment_or_404(db, assessment_id)
-    result = service.get_result(db, assessment)
+    result = service.get_result(db, assessment, refresh_if_stale=True)
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Result not calculated yet")
     try:
@@ -171,7 +171,7 @@ def get_share(token: str, db: Session = Depends(get_db)):
     assessment = service.get_assessment_by_share_token(db, token)
     if assessment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Share link not found")
-    result = service.get_result(db, assessment)
+    result = service.get_result(db, assessment, refresh_if_stale=True)
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Result not available")
     return {

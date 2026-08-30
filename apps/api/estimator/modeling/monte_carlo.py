@@ -3,6 +3,15 @@ import numpy as np
 from estimator.modeling.hypotheses import HYPOTHESIS_IDS
 
 
+def complexity_leakage_scale(complexity_total: int, priors: dict) -> float:
+    cfg = priors.get("monte_carlo", {}).get("complexity_scale", {})
+    base = float(cfg.get("base", 1.0))
+    exponent = float(cfg.get("exponent", 0.0))
+    if base == 1.0 and exponent == 0.0:
+        return 1.0
+    return base * (max(complexity_total, 1) ** -exponent)
+
+
 def apply_correlation_adjustment(
     hypothesis_amounts: dict[str, float],
     correlations: dict[str, dict[str, float]],
@@ -38,10 +47,18 @@ def simulate_totals(
     posteriors: dict[str, float],
     priors: dict,
     simulation_count: int,
+    complexity_total: int = 1,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     hypothesis_cfg = priors["hypotheses"]
     correlations = priors.get("correlations", {})
     max_fraction = float(priors.get("max_leakage_fraction_of_arr", 0.35))
+    mc_cfg = priors.get("monte_carlo", {})
+    affected_cfg = mc_cfg.get("affected_rate", {"alpha": 2, "beta": 20})
+    affected_alpha = int(affected_cfg.get("alpha", 2))
+    affected_beta = int(affected_cfg.get("beta", 20))
+    persistence_divisor = float(mc_cfg.get("persistence_divisor", 12))
+    leakage_scale = complexity_leakage_scale(complexity_total, priors)
+
     totals = np.zeros(simulation_count)
     detectable = np.zeros(simulation_count)
     per_hypothesis: dict[str, np.ndarray] = {hid: np.zeros(simulation_count) for hid in HYPOTHESIS_IDS}
@@ -66,15 +83,16 @@ def simulate_totals(
             exposure_base = float(base_map.get(cfg.get("exposure_base", "arr"), arr))
             if exposure_base <= 0:
                 continue
-            affected = rng.beta(2, 20)
+            affected = rng.beta(affected_alpha, affected_beta)
             sev_cfg = cfg.get("severity", {})
             severity = rng.beta(sev_cfg.get("alpha", 2), sev_cfg.get("beta", 6))
             pers_cfg = cfg.get("persistence", {})
-            persistence = rng.gamma(pers_cfg.get("shape", 2), pers_cfg.get("scale", 3)) / 12.0
+            persistence = rng.gamma(pers_cfg.get("shape", 2), pers_cfg.get("scale", 3)) / persistence_divisor
             rec_cfg = cfg.get("recoverability", {})
             recoverability = rng.beta(rec_cfg.get("alpha", 3), rec_cfg.get("beta", 4))
-            detectability = float(cfg.get("detectability", 0.7))
-            leakage = exposure_base * affected * severity * persistence * recoverability
+            leakage = (
+                exposure_base * affected * severity * persistence * recoverability * leakage_scale
+            )
             amounts[hid] = leakage
             per_hypothesis[hid][sim] = leakage
 
