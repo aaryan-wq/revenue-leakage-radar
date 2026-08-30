@@ -22,6 +22,7 @@ from verification.rules.billing.billing_frequency_mismatch import rule as billin
 from verification.rules.billing.active_subscription_not_billing import rule as active_subscription_not_billing
 from verification.rules.billing.cancelled_subscription_still_billing import rule as cancelled_subscription_still_billing
 from verification.rules.billing.missing_expected_invoice import rule as missing_expected_invoice
+from verification.rules.billing.usage_billing_drift import rule as usage_billing_drift
 from verification.rules.credits.credit_leakage import rule as credit_leakage
 from verification.rules.credits.duplicate_credit import rule as duplicate_credit
 from verification.rules.data_quality.duplicate_customer import rule as duplicate_customer
@@ -50,6 +51,7 @@ ALL_RULE_MODULES: list[RuleModule] = [
     active_subscription_not_billing,
     cancelled_subscription_still_billing,
     missing_expected_invoice,
+    usage_billing_drift,
     credit_leakage,
     duplicate_credit,
     duplicate_customer,

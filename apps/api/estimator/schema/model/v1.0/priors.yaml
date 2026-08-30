@@ -1,160 +1,333 @@
-version: "1.0.0"
+version: 2.0.0
 source: model_prior
-calibration_stage: 1
+calibration_stage: 2
 simulation_count: 10000
 max_leakage_fraction_of_arr: 0.35
-
 monte_carlo:
   affected_rate:
     alpha: 2
-    beta: 10
+    beta: 9
   persistence_divisor: 12
   complexity_scale:
     base: 2.05
-    exponent: 0.30
-
+    exponent: 0.33
 fx_to_usd:
   USD: 1.0
   CAD: 0.74
   GBP: 1.27
   EUR: 1.09
   AUD: 0.66
-
 correlations:
-  H1: { H2: 0.65, H6: 0.55 }
-  H2: { H13: 0.55, H1: 0.65 }
-  H3: { H4: 0.75, H13: 0.25 }
-  H4: { H3: 0.75 }
-  H5: { H6: 0.70, H7: 0.60, H11: 0.45 }
-  H6: { H5: 0.70, H17: 0.70 }
-  H11: { H5: 0.45 }
-  H12: { H13: 0.60 }
-  H14: { H16: 0.40 }
-
+  H1:
+    H2: 0.65
+    H6: 0.55
+  H2:
+    H13: 0.55
+    H1: 0.65
+  H3:
+    H4: 0.75
+    H13: 0.25
+  H4:
+    H3: 0.75
+  H5:
+    H6: 0.7
+    H7: 0.6
+    H11: 0.45
+  H6:
+    H5: 0.7
+    H17: 0.7
+  H11:
+    H5: 0.45
+  H12:
+    H13: 0.6
+  H14:
+    H16: 0.4
 hypotheses:
   H1:
     prior: 0.06
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2.5, scale: 4 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2.5
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75
   H2:
     prior: 0.08
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2, scale: 5 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
-    detectability: 0.80
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.8
   H3:
     prior: 0.08
     exposure_base: discount_arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 4, beta: 3 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 4
+      beta: 3
     detectability: 0.85
   H4:
     prior: 0.07
     exposure_base: discount_arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2.5, scale: 4 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
-    detectability: 0.80
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2.5
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.8
   H5:
     prior: 0.05
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 7 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
-    detectability: 0.70
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 7
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
+    detectability: 0.7
   H6:
     prior: 0.06
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2, scale: 4 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75
   H7:
     prior: 0.04
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 7 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 7
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
     detectability: 0.65
   H8:
     prior: 0.04
     exposure_base: addon_arr
-    severity: { distribution: beta, alpha: 2, beta: 7 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
-    detectability: 0.70
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 7
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
+    detectability: 0.7
   H9:
     prior: 0.05
     exposure_base: addon_arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75
   H10:
     prior: 0.06
     exposure_base: seat_arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 4, beta: 3 }
-    detectability: 0.80
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 4
+      beta: 3
+    detectability: 0.8
   H11:
     prior: 0.07
     exposure_base: usage_arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2, scale: 4 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
-    detectability: 0.60
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.6
   H12:
     prior: 0.06
     exposure_base: contract_arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2.5, scale: 4 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
-    detectability: 0.70
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2.5
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.7
   H13:
     prior: 0.07
     exposure_base: contract_arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2.5, scale: 5 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2.5
+      scale: 5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75
   H14:
     prior: 0.05
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 7 }
-    persistence: { distribution: gamma, shape: 2, scale: 2 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 7
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 2
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
     detectability: 0.65
   H15:
     prior: 0.04
     exposure_base: international_arr
-    severity: { distribution: beta, alpha: 2, beta: 7 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
-    detectability: 0.70
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 7
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
+    detectability: 0.7
   H16:
     prior: 0.06
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75
   H17:
     prior: 0.05
     exposure_base: arr
-    severity: { distribution: beta, alpha: 2, beta: 6 }
-    persistence: { distribution: gamma, shape: 2, scale: 3 }
-    recoverability: { distribution: beta, alpha: 3, beta: 5 }
-    detectability: 0.70
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 5
+    detectability: 0.7
   H18:
     prior: 0.06
     exposure_base: contract_arr
-    severity: { distribution: beta, alpha: 2, beta: 5 }
-    persistence: { distribution: gamma, shape: 2.5, scale: 5 }
-    recoverability: { distribution: beta, alpha: 3, beta: 4 }
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2.5
+      scale: 5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
     detectability: 0.75

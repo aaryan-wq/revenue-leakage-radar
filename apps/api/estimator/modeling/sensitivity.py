@@ -1,15 +1,29 @@
+from __future__ import annotations
+
 from typing import Any
 
+PERTURBATIONS: dict[str, tuple[str, Any]] = {
+    "contracts.grandfathering": ("contracts.grandfathering", "very_frequently"),
+    "discounts.frequency": ("discounts.frequency", "nearly_all"),
+    "discounts.expiry_handling": ("discounts.expiry_handling", "manual_sales"),
+    "operations.manual_override_frequency": ("operations.manual_override_frequency", "very_frequently"),
+    "quote_to_bill.quote_automation": ("quote_to_bill.quote_automation", "manual"),
+    "operations.churn_billing_cutoff": ("operations.churn_billing_cutoff", "manual"),
+    "discounts.stacking_policy": ("discounts.stacking_policy", "allowed"),
+    "operations.credit_memo_process": ("operations.credit_memo_process", "ad_hoc"),
+    "controls.invoice_price_qa": ("controls.invoice_price_qa", "never"),
+}
 
 DRIVER_LABELS = {
-    "contracts.negotiated_arr_pct": "Negotiated pricing prevalence",
     "contracts.grandfathering": "Grandfathered pricing",
     "discounts.frequency": "Discount frequency",
-    "changes.pricing_changes_24mo": "Pricing change frequency",
+    "discounts.expiry_handling": "Discount expiry handling",
     "operations.manual_override_frequency": "Manual billing intervention",
-    "pricing.usage_based": "Usage-based billing",
     "quote_to_bill.quote_automation": "Quote-to-bill automation",
-    "velocity.commercial_changes_12mo": "Commercial change velocity",
+    "operations.churn_billing_cutoff": "Churn billing cutoff",
+    "discounts.stacking_policy": "Discount stacking policy",
+    "operations.credit_memo_process": "Credit memo process",
+    "controls.invoice_price_qa": "Invoice price QA",
 }
 
 
@@ -18,21 +32,50 @@ def compute_sensitivity(
     posteriors: dict[str, float],
     priors: dict,
     segments: dict[str, float],
+    answers: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    from estimator.modeling.pipeline import run_model
+
     arr = segments.get("arr", 0)
-    if arr <= 0:
-        return []
+    if arr <= 0 or not answers:
+        return _fallback_drivers(normalized)
+
+    baseline = run_model(answers, random_seed=42, include_sensitivity=False)["estimate"]["central"]
+    if baseline <= 0:
+        return _fallback_drivers(normalized)
+
+    drivers: list[dict[str, Any]] = []
+    for key, (field, stressed_value) in PERTURBATIONS.items():
+        if field not in answers and answers.get(field.split(".")[0]) is None:
+            continue
+        perturbed = dict(answers)
+        perturbed[field] = stressed_value
+        stressed = run_model(perturbed, random_seed=42, include_sensitivity=False)["estimate"]["central"]
+        delta = max(stressed - baseline, 0)
+        influence = min(delta / baseline, 1.0) if baseline > 0 else 0.0
+        if influence <= 0:
+            continue
+        drivers.append(
+            {
+                "key": key,
+                "label": DRIVER_LABELS.get(key, key),
+                "influence": round(influence, 3),
+                "delta_expected": round(delta),
+            }
+        )
+
+    if not drivers:
+        return _fallback_drivers(normalized)
+    drivers.sort(key=lambda d: d["influence"], reverse=True)
+    return drivers[:5]
+
+
+def _fallback_drivers(normalized: dict[str, Any]) -> list[dict[str, Any]]:
     drivers: list[dict[str, Any]] = []
     for key, label in DRIVER_LABELS.items():
-        if key not in normalized and key.split(".")[0] + "." + key.split(".")[1] not in normalized:
-            # check partial keys in answers-derived normalized
-            pass
-        value = normalized.get(key)
-        if value is None:
+        if normalized.get(key) is None:
             continue
-        weight = _driver_weight(key, value)
-        drivers.append({"key": key, "label": label, "influence": weight})
-
+        drivers.append({"key": key, "label": label, "influence": 0.5})
     if not drivers:
         drivers = [
             {"key": "arr", "label": "Revenue scale (ARR)", "influence": 0.9},
@@ -40,21 +83,3 @@ def compute_sensitivity(
         ]
     drivers.sort(key=lambda d: d["influence"], reverse=True)
     return drivers[:5]
-
-
-def _driver_weight(key: str, value: Any) -> float:
-    high_values = {
-        "contracts.negotiated_arr_pct": {"51_75", "76_100"},
-        "contracts.grandfathering": {"frequently", "very_frequently"},
-        "discounts.frequency": {"common", "nearly_all"},
-        "changes.pricing_changes_24mo": {"4_5", "6_plus"},
-        "operations.manual_override_frequency": {"frequently", "very_frequently"},
-        "velocity.commercial_changes_12mo": {"6_10", "10_plus"},
-    }
-    if value is True:
-        return 0.85
-    if isinstance(value, str) and value in high_values.get(key, set()):
-        return 0.9
-    if isinstance(value, str):
-        return 0.5
-    return 0.4

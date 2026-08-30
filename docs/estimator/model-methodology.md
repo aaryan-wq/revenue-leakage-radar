@@ -9,30 +9,40 @@ Structured answers about ARR, pricing architecture, contracts, discounts, billin
 ## Model Architecture
 
 ```
-Answers → Normalize → Segment → Complexity score
-       → H1–H18 posterior propensity scores
-       → Per-hypothesis exposure (B × A × S × P × R × D)
-       → Correlation overlap adjustment
-       → Monte Carlo simulation (10,000 runs, seeded)
-       → Percentiles (P10–P90)
-       → Scenario bands + answer-aware insights
+Answers → Normalize (v2 segments) → Complexity score
+       → 27 rule-native posterior scores
+       → 27-stream Monte Carlo (10,000 runs, seeded)
+       → Leak-family overlap adjustment
+       → Aggregate to H1–H18 hypothesis rollups
+       → Percentiles (P10–P90) + theoretical stack ceiling
+       → Scenario bands + rule-aware insights
 ```
 
-### Exposure Formula (per hypothesis)
+### Exposure Formula (per rule)
 
 ```
-L_h = ExposureBase × AffectedRate × Severity × Persistence × Recoverability × Detectability
+L_r = ExposureBase × AffectedRate × Severity × Persistence × Recoverability × ComplexityScale
 ```
 
-Different hypotheses use different exposure bases (full ARR, discount ARR, usage ARR, international ARR, etc.) to avoid double-counting the same revenue pool.
+Rules use dedicated exposure pools (discount ARR, usage ARR, billing execution ARR, credit ARR, etc.) to avoid double-counting the same revenue pool.
 
 ### Correlation
 
-Hypothesis totals are **not** summed independently. Overlap penalties apply between correlated mechanisms (e.g., H1 ↔ H2, H3 ↔ H4).
+Rule totals are not summed independently. Overlap penalties apply within leak families (pricing gap, discount integrity, invoice execution, usage monetization, operational). Hypothesis totals are rollups of rule streams for executive UX.
 
 ### Complexity
 
-A separate 0–40 score across pricing, contract, systems, change, and operations dimensions. Complexity modifies uncertainty and mechanism plausibility; it does not directly multiply ARR into leakage dollars.
+A separate 0–40 score across pricing, contract, systems, change, and operations dimensions. Complexity modifies simulation intensity via `complexity_scale`. Tail fattening widens severity and persistence draws when billing confidence is low and complexity is high.
+
+### Dual Headline Metrics
+
+| Metric | Meaning |
+|--------|---------|
+| Expected recoverable | Overlap-adjusted mean across all runs (headline) |
+| Stress case (P90) | Higher percentile total when mechanisms compound |
+| Full rule ceiling | Sum of per-rule P90s before family overlap (transparency) |
+| Recoverable slice | Expected weighted by rule recoverability |
+| At-risk | Expected minus recoverable slice |
 
 ### Scenario Bands
 
@@ -70,9 +80,9 @@ Optional AI narrative, when enabled, summarizes the result in prose. It never se
 
 ## Calibration Status
 
-**Stage 1, fixture-calibrated model.** Monte Carlo intensity is tuned against five fictitious companies with bottom-up justified leakage (clean to very high complexity). Complexity score adjusts simulation intensity: low-complexity stacks receive a higher prior leakage rate; very high complexity stacks are dampened to respect overlap caps.
+**Stage 2, rule-native model.** Monte Carlo uses 27 rule streams calibrated against verification fixture anchors and five fictitious audit personas. Complexity score and tail fattening adjust simulation intensity for low-confidence, high-complexity stacks.
 
-Stage 1 does not replace billing evidence. As completed audits accumulate, priors will continue to be updated with documented backtests.
+Stage 2 does not replace billing evidence. As completed audits accumulate, priors will continue to be updated with documented backtests.
 
 ## Limitations
 

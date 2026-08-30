@@ -1,6 +1,6 @@
 # Estimator Question Bank
 
-Questionnaire version: **v2.0**
+Questionnaire version: **v2.1**
 
 ## Sections
 
@@ -12,14 +12,14 @@ Questionnaire version: **v2.0**
 | seats | seat_reconciliation, true_up | `pricing.seat_based = true` |
 | product | billable_products, independent_catalogs, addons | — |
 | contracts | negotiated_arr_pct, custom_pricing, grandfathering, renewal_increases | — |
-| discounts | discount_frequency, discount_types, expiry_handling, expiry_confidence | — |
+| discounts | discount_frequency, discount_types, expiry_handling, expiry_confidence, stacking_policy | — |
 | changes | pricing_changes_24mo, migration_method, grandfathered_after_change | — |
 | systems | billing_system_count, primary_platform | — |
-| operations | manual_override_frequency, manual_change_logging | — |
+| operations | manual_override_frequency, manual_change_logging, credit_memo_process, churn_billing_cutoff, invoice_cadence, customer_dedup | — |
 | quote_to_bill | commercial_truth_source, quote_automation | — |
 | migrations | migrated_36mo | unlocks migration detail |
 | international | multi_currency | unlocks currency detail |
-| controls | finance_team_size, billing_owner, reconciliation, billing_qa | — |
+| controls | finance_team_size, billing_owner, reconciliation, billing_qa, invoice_price_qa | — |
 | velocity | commercial_changes_12mo | — |
 | confidence | billing_confidence, last_reconciliation | — |
 

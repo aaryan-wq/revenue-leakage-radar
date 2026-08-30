@@ -38,6 +38,12 @@ MERIDIAN_MODERATE = {
     "quote_to_bill.quote_automation": "partial",
     "controls.monthly_reconciliation": "quarterly",
     "controls.billing_qa": "sometimes",
+    "controls.invoice_price_qa": "sometimes",
+    "discounts.stacking_policy": "limited",
+    "operations.credit_memo_process": "manual",
+    "operations.churn_billing_cutoff": "within_week",
+    "operations.invoice_cadence": "scheduled",
+    "operations.customer_dedup": "manual",
     "confidence.billing_confidence": 3,
 }
 

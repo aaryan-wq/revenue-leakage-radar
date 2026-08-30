@@ -17,6 +17,25 @@ RULE_DISPLAY_NAMES: dict[str, str] = {
     "orphaned_records": "Orphaned billing records",
     "duplicate_subscription": "Duplicate subscription",
     "currency_mismatch": "Currency mismatch",
+    "discount_stacking": "Discount stacking",
+    "duplicate_discount": "Duplicate discount",
+    "excessive_discount": "Excessive discount",
+    "invoice_price_mismatch": "Invoice price mismatch",
+    "active_subscription_not_billing": "Active subscription not billing",
+    "cancelled_subscription_still_billing": "Cancelled subscription still billing",
+    "missing_expected_invoice": "Missing expected invoice",
+    "credit_leakage": "Credit leakage",
+    "duplicate_credit": "Duplicate credit",
+    "duplicate_customer": "Duplicate customer",
+    "usage_billing_drift": "Usage billing drift",
+}
+
+CATEGORY_LABELS = {
+    "pricing": "Pricing",
+    "discounts": "Discounts",
+    "billing": "Billing",
+    "credits": "Credits",
+    "data_quality": "Data Quality",
 }
 
 EXPOSURE_BASE_LABELS: dict[str, str] = {
@@ -27,6 +46,9 @@ EXPOSURE_BASE_LABELS: dict[str, str] = {
     "seat_arr": "seat-based ARR",
     "addon_arr": "add-on ARR",
     "international_arr": "international ARR",
+    "credit_arr": "credit/refund exposure pool",
+    "billing_execution_arr": "billing execution ARR",
+    "invoice_arr": "invoice QA exposure pool",
 }
 
 ANSWER_DRIVERS: dict[str, str] = {
@@ -83,10 +105,12 @@ def build_insights(
     segments: dict[str, float],
     complexity: dict[str, Any],
     top_hypotheses: list[dict[str, Any]],
+    rule_breakdown: list[dict[str, Any]] | None = None,
     estimate: dict[str, float],
     detectable: dict[str, float],
     arr: float,
     priors: dict[str, Any],
+    rule_priors: dict[str, Any] | None = None,
     sim_stats: dict[str, float],
     scenario: str,
     scenario_band: tuple[str, str],
@@ -94,7 +118,9 @@ def build_insights(
 ) -> dict[str, Any]:
     profile_summary = _build_profile_summary(normalized, complexity, arr)
     mechanism_insights = _build_mechanism_insights(normalized, top_hypotheses, segments, priors)
-    verification_preview = _build_verification_preview(top_hypotheses)
+    rule_insights = _build_rule_insights(rule_breakdown or [], segments, rule_priors or {})
+    verification_preview = _build_verification_preview_all(rule_breakdown or [])
+    coverage_bridge = _build_coverage_bridge(rule_breakdown or [])
     calculation_summary = _build_calculation_summary(
         estimate=estimate,
         detectable=detectable,
@@ -110,7 +136,9 @@ def build_insights(
     return {
         "profile_summary": profile_summary,
         "mechanism_insights": mechanism_insights,
+        "rule_insights": rule_insights,
         "verification_preview": verification_preview,
+        "coverage_bridge": coverage_bridge,
         "calculation_summary": calculation_summary,
         "executive_summary": calculation_summary["explanation_bullets"][0]
         if calculation_summary["explanation_bullets"]
@@ -242,6 +270,82 @@ def _build_verification_preview(top_hypotheses: list[dict[str, Any]]) -> list[di
     return preview
 
 
+def _build_verification_preview_all(rule_breakdown: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_category: dict[str, list[dict[str, Any]]] = {}
+    for row in rule_breakdown:
+        category = row.get("category", "unknown")
+        by_category.setdefault(category, []).append(
+            {
+                "rule_id": row["rule_id"],
+                "name": RULE_DISPLAY_NAMES.get(row["rule_id"], row["rule_id"].replace("_", " ").title()),
+                "expected": row.get("expected", 0),
+                "posterior_probability": row.get("posterior_probability", 0),
+                "detectability": row.get("detectability", 0),
+                "required_entities": row.get("required_entities", []),
+                "hypothesis_ids": row.get("hypothesis_ids", []),
+            }
+        )
+    preview: list[dict[str, Any]] = []
+    for category in sorted(by_category.keys()):
+        preview.append(
+            {
+                "category": category,
+                "category_label": CATEGORY_LABELS.get(category, category.replace("_", " ").title()),
+                "rules": sorted(by_category[category], key=lambda r: r["expected"], reverse=True),
+            }
+        )
+    return preview
+
+
+def _build_rule_insights(
+    rule_breakdown: list[dict[str, Any]],
+    segments: dict[str, float],
+    rule_priors: dict[str, Any],
+) -> list[dict[str, str]]:
+    rules_cfg = rule_priors.get("rules", {})
+    insights: list[dict[str, str]] = []
+    for row in rule_breakdown[:8]:
+        rule_id = row["rule_id"]
+        cfg = rules_cfg.get(rule_id, {})
+        base_key = cfg.get("exposure_base", "arr")
+        pool_label = EXPOSURE_BASE_LABELS.get(base_key, base_key)
+        pool_amount = float(segments.get(base_key, segments.get("arr", 0.0)))
+        name = RULE_DISPLAY_NAMES.get(rule_id, rule_id.replace("_", " ").title())
+        insight = (
+            f"{row['likelihood']:.0f}% rule weight × {_fmt_usd(pool_amount)} {pool_label} → "
+            f"{_fmt_usd(row['expected'])} modeled for {name}."
+        )
+        insights.append({"rule_id": rule_id, "insight": insight})
+    return insights
+
+
+def _build_coverage_bridge(rule_breakdown: list[dict[str, Any]]) -> dict[str, Any]:
+    entity_labels = {
+        "customer": "Customers",
+        "subscription": "Subscriptions",
+        "invoice": "Invoices",
+        "invoice_line_item": "Invoice Line Items",
+        "coupon": "Coupons",
+        "price": "Prices",
+        "contract": "Contracts",
+        "account": "CRM Accounts",
+    }
+    high_priority = [row for row in rule_breakdown if row.get("expected", 0) > 0][:12]
+    entity_counts: dict[str, int] = {}
+    for row in high_priority:
+        for entity in row.get("required_entities", []):
+            entity_counts[entity] = entity_counts.get(entity, 0) + 1
+    file_suggestions = [
+        f"Upload {entity_labels.get(entity, entity)}.csv to unlock {count} high-priority rules"
+        for entity, count in sorted(entity_counts.items(), key=lambda item: item[1], reverse=True)[:4]
+    ]
+    return {
+        "high_priority_rules": [row["rule_id"] for row in high_priority],
+        "file_suggestions": file_suggestions,
+        "total_rules_modeled": len(rule_breakdown),
+    }
+
+
 def _band_label(scenario_band: tuple[str, str], high_key: str) -> str:
     low_key, default_high = scenario_band
     high_label = high_key.upper().replace("P", "P")
@@ -276,20 +380,20 @@ def _build_calculation_summary(
         )
     else:
         bullets.append(
-            f"{simulation_count:,} simulations on {_fmt_usd(arr)} ARR. "
-            f"Each run randomly fires 18 leakage mechanisms using weights derived from your answers, "
-            f"then sizes exposure from ARR segments (discount pool, contract ARR, usage ARR, etc.)."
+            f"{simulation_count:,} simulations on {_fmt_usd(arr)} ARR across {27} rule-native streams. "
+            f"Each run fires rules using weights from your answers, then applies family overlap deduplication."
         )
         bullets.append(
-            f"Expected {_fmt_usd(expected)} = average across all runs ({pct_of_arr:.2f}% of ARR). "
-            f"Median run: {_fmt_usd(median_run)}. "
-            f"{pct_runs:.0f}% of runs found at least one gap"
-            + (
-                f"; when a gap appeared, the average was {_fmt_usd(conditional_mean)}."
-                if conditional_mean > 0
-                else "."
-            )
+            f"Expected recoverable {_fmt_usd(expected)} ({pct_of_arr:.2f}% of ARR). "
+            f"Stress case P90: {_fmt_usd(estimate.get('stress_p90', sim_stats.get('stress_p90', 0)))}. "
+            f"Full rule ceiling: {_fmt_usd(estimate.get('theoretical_stack_p90', sim_stats.get('theoretical_stack_p90', 0)))}."
         )
+        recoverable = estimate.get("recoverable", sim_stats.get("recoverable_expected", 0))
+        at_risk = estimate.get("at_risk", sim_stats.get("at_risk_expected", 0))
+        if recoverable > 0:
+            bullets.append(
+                f"Recoverable slice: {_fmt_usd(recoverable)}. At-risk (harder to recover): {_fmt_usd(at_risk)}."
+            )
         bullets.append(
             f"{scenario.replace('_', ' ').title()} range {_fmt_usd(estimate['low'])} to {_fmt_usd(estimate['high'])} "
             f"uses the {band_label} band from the same simulation output."
@@ -310,6 +414,11 @@ def _build_calculation_summary(
             bullets.append(
                 "Stage 0 structural priors: conservative and not yet calibrated to completed audits. "
                 "Actual billing data can confirm higher or lower recovery."
+            )
+        elif calibration_stage >= 2:
+            bullets.append(
+                "Stage 2 calibration: 27 rule-native priors tuned against verification fixtures and audit personas. "
+                f"Complexity score {complexity_score}/40 adjusts tail behavior."
             )
         elif calibration_stage >= 1:
             bullets.append(

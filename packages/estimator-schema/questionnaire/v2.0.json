@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "2.1",
   "sections": [
     { "id": "profile", "label": "Billing Profile", "estimated_seconds": 30 },
     { "id": "pricing", "label": "Pricing", "estimated_seconds": 25 },
@@ -557,6 +557,188 @@
         { "value": "unknown", "label": "Unknown" }
       ],
       "hypotheses": []
+    },
+    {
+      "id": "operations.credit_memo_process",
+      "section": "operations",
+      "type": "select",
+      "label": "How are credit memos and refunds handled?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Automated in billing system" },
+        { "value": "reviewed", "label": "Created with finance review" },
+        { "value": "manual", "label": "Manual spreadsheet or ad hoc" },
+        { "value": "ad_hoc", "label": "No consistent process" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H4"]
+    },
+    {
+      "id": "operations.churn_billing_cutoff",
+      "section": "operations",
+      "type": "select",
+      "label": "When a customer churns, how quickly is billing stopped?",
+      "required": true,
+      "options": [
+        { "value": "immediate", "label": "Immediately automated" },
+        { "value": "same_day", "label": "Same business day" },
+        { "value": "within_week", "label": "Within a week" },
+        { "value": "manual", "label": "Manual cleanup, often delayed" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H13"]
+    },
+    {
+      "id": "operations.invoice_cadence",
+      "section": "operations",
+      "type": "select",
+      "label": "How predictable is your invoice generation schedule?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Fully automated on schedule" },
+        { "value": "scheduled", "label": "Scheduled with occasional delays" },
+        { "value": "manual", "label": "Manually triggered each cycle" },
+        { "value": "ad_hoc", "label": "Ad hoc or inconsistent" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H13"]
+    },
+    {
+      "id": "operations.customer_dedup",
+      "section": "operations",
+      "type": "select",
+      "label": "How do you handle duplicate customer records?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Automated dedup rules" },
+        { "value": "quarterly", "label": "Quarterly manual review" },
+        { "value": "manual", "label": "Manual when discovered" },
+        { "value": "never", "label": "No dedup process" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H14"]
+    },
+    {
+      "id": "discounts.stacking_policy",
+      "section": "discounts",
+      "type": "select",
+      "label": "What is your discount stacking policy?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never stack discounts" },
+        { "value": "single", "label": "One discount per subscription" },
+        { "value": "limited", "label": "Limited stacking with approval" },
+        { "value": "allowed", "label": "Stacking allowed without guardrails" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "controls.invoice_price_qa",
+      "section": "controls",
+      "type": "select",
+      "label": "Do you compare invoice line prices to subscription prices before sending?",
+      "required": true,
+      "options": [
+        { "value": "always", "label": "Always" },
+        { "value": "usually", "label": "Usually" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "never", "label": "Never" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H16"]
+    },
+    {
+      "id": "operations.credit_memo_process",
+      "section": "operations",
+      "type": "select",
+      "label": "How are credit memos and refunds handled?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Automated in billing system" },
+        { "value": "reviewed", "label": "Created with finance review" },
+        { "value": "manual", "label": "Manual spreadsheet or ad hoc" },
+        { "value": "ad_hoc", "label": "No consistent process" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H4"]
+    },
+    {
+      "id": "operations.churn_billing_cutoff",
+      "section": "operations",
+      "type": "select",
+      "label": "When a customer churns, how quickly is billing stopped?",
+      "required": true,
+      "options": [
+        { "value": "immediate", "label": "Immediately automated" },
+        { "value": "same_day", "label": "Same business day" },
+        { "value": "within_week", "label": "Within a week" },
+        { "value": "manual", "label": "Manual cleanup, often delayed" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H13"]
+    },
+    {
+      "id": "operations.invoice_cadence",
+      "section": "operations",
+      "type": "select",
+      "label": "How predictable is your invoice generation schedule?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Fully automated on schedule" },
+        { "value": "scheduled", "label": "Scheduled with occasional delays" },
+        { "value": "manual", "label": "Manually triggered each cycle" },
+        { "value": "ad_hoc", "label": "Ad hoc or inconsistent" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H13"]
+    },
+    {
+      "id": "operations.customer_dedup",
+      "section": "operations",
+      "type": "select",
+      "label": "How do you handle duplicate customer records?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Automated dedup rules" },
+        { "value": "quarterly", "label": "Quarterly manual review" },
+        { "value": "manual", "label": "Manual when discovered" },
+        { "value": "never", "label": "No dedup process" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H14"]
+    },
+    {
+      "id": "discounts.stacking_policy",
+      "section": "discounts",
+      "type": "select",
+      "label": "What is your discount stacking policy?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never stack discounts" },
+        { "value": "single", "label": "One discount per subscription" },
+        { "value": "limited", "label": "Limited stacking with approval" },
+        { "value": "allowed", "label": "Stacking allowed without guardrails" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "controls.invoice_price_qa",
+      "section": "controls",
+      "type": "select",
+      "label": "Do you compare invoice line prices to subscription prices before sending?",
+      "required": true,
+      "options": [
+        { "value": "always", "label": "Always" },
+        { "value": "usually", "label": "Usually" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "never", "label": "Never" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H16"]
     },
     {
       "id": "velocity.commercial_changes_12mo",

@@ -29,6 +29,13 @@ def load_hypothesis_rule_map() -> dict[str, Any]:
         return json.load(handle)
 
 
+@lru_cache(maxsize=1)
+def load_rule_priors(version: str = "1.0") -> dict[str, Any]:
+    path = SCHEMA_ROOT / "model" / f"v{version}" / "rule-priors.yaml"
+    with path.open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle)
+
+
 def get_question_by_id(question_id: str, version: str = QUESTIONNAIRE_VERSION) -> dict[str, Any] | None:
     questionnaire = load_questionnaire(version)
     for question in questionnaire["questions"]:

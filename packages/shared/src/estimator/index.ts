@@ -54,6 +54,55 @@ export interface EstimatorComplexityPreview {
   label: string;
 }
 
+export interface EstimatorRuleBreakdown {
+  rule_id: string;
+  category: string;
+  leak_family: string;
+  hypothesis_ids: string[];
+  posterior_probability: number;
+  detectability: number;
+  required_entities: string[];
+  expected: number;
+  low: number;
+  high: number;
+  p90: number;
+  pct_of_arr: number;
+  likelihood: number;
+  share_of_total: number;
+}
+
+export interface EstimatorDisplayRollup {
+  rollup_id: string;
+  name: string;
+  rule_ids: string[];
+  expected: number;
+}
+
+export interface EstimatorCoverageBridge {
+  high_priority_rules: string[];
+  file_suggestions: string[];
+  total_rules_modeled: number;
+}
+
+export interface EstimatorRuleInsight {
+  rule_id: string;
+  insight: string;
+}
+
+export interface EstimatorVerificationCategoryPreview {
+  category: string;
+  category_label: string;
+  rules: {
+    rule_id: string;
+    name: string;
+    expected: number;
+    posterior_probability: number;
+    detectability: number;
+    required_entities: string[];
+    hypothesis_ids: string[];
+  }[];
+}
+
 export interface EstimatorHypothesisBreakdown {
   hypothesis_id: HypothesisId;
   name: string;
@@ -113,13 +162,26 @@ export interface EstimatorResult {
     high: number;
     median_run?: number;
     display_range: string;
+    stress_p90?: number;
+    theoretical_stack_p90?: number;
+    recoverable?: number;
+    at_risk?: number;
+    overlap_discount?: number;
+    arr_band_low?: number;
+    arr_band_high?: number;
   };
   monthly: { low: number; central: number; high: number };
   confidence: string;
   complexity: EstimatorComplexityPreview;
   top_hypotheses: EstimatorHypothesisBreakdown[];
   hypothesis_breakdown: EstimatorHypothesisBreakdown[];
-  drivers: { key: string; label: string; influence: number }[];
+  rule_breakdown?: EstimatorRuleBreakdown[];
+  display_rollups?: EstimatorDisplayRollup[];
+  recoverable?: { expected: number; low: number; high: number };
+  theoretical_stack?: { p90: number; overlap_discount: number };
+  rule_insights?: EstimatorRuleInsight[];
+  coverage_bridge?: EstimatorCoverageBridge;
+  drivers: { key: string; label: string; influence: number; delta_expected?: number }[];
   detectable: { low: number; high: number };
   assumptions: {
     assumption_id: string;
@@ -132,7 +194,7 @@ export interface EstimatorResult {
   what_would_need_to_be_true?: string[];
   profile_summary?: EstimatorProfileSummary;
   mechanism_insights?: EstimatorMechanismInsight[];
-  verification_preview?: EstimatorVerificationPreview[];
+  verification_preview?: EstimatorVerificationPreview[] | EstimatorVerificationCategoryPreview[];
   calculation_summary?: EstimatorCalculationSummary;
   executive_summary?: string;
   model_version: string;

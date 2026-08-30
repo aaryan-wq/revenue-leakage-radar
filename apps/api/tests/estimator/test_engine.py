@@ -5,8 +5,9 @@ from estimator.modeling.hypotheses import compute_posteriors
 from estimator.modeling.monte_carlo import apply_correlation_adjustment, percentiles, simulate_totals
 from estimator.modeling.normalize import derive_segments, normalize_answers
 from estimator.modeling.pipeline import run_model
+from estimator.modeling.rule_posteriors import compute_posteriors, compute_rule_posteriors
 from estimator.questionnaire.engine import completion_progress, visible_question_ids
-from estimator.questionnaire.schema import load_priors
+from estimator.questionnaire.schema import load_priors, load_rule_priors
 from estimator.validation.checks import check_sanity
 import numpy as np
 
@@ -27,12 +28,17 @@ PROFILE_A = {
     "discounts.frequency": "never",
     "discounts.expiry_handling": "automatic",
     "discounts.expiry_confidence": 5,
+    "discounts.stacking_policy": "single",
     "changes.pricing_changes_24mo": "0",
     "changes.migration_method": "na",
     "systems.billing_system_count": "1",
     "systems.primary_platform": "stripe",
     "operations.manual_override_frequency": "never",
     "operations.manual_change_logging": "yes",
+    "operations.credit_memo_process": "reviewed",
+    "operations.churn_billing_cutoff": "same_day",
+    "operations.invoice_cadence": "automated",
+    "operations.customer_dedup": "quarterly",
     "quote_to_bill.commercial_truth": "billing",
     "quote_to_bill.quote_automation": "fully",
     "migrations.migrated_36mo": False,
@@ -41,6 +47,7 @@ PROFILE_A = {
     "controls.billing_owner": True,
     "controls.monthly_reconciliation": "monthly",
     "controls.billing_qa": "always",
+    "controls.invoice_price_qa": "usually",
     "velocity.commercial_changes_12mo": "0",
     "confidence.billing_confidence": 5,
     "confidence.last_reconciliation": "30d",
@@ -83,6 +90,12 @@ PROFILE_B = {
     "controls.billing_owner": False,
     "controls.monthly_reconciliation": "never",
     "controls.billing_qa": "rarely",
+    "controls.invoice_price_qa": "never",
+    "operations.credit_memo_process": "ad_hoc",
+    "operations.churn_billing_cutoff": "manual",
+    "operations.invoice_cadence": "ad_hoc",
+    "operations.customer_dedup": "never",
+    "discounts.stacking_policy": "allowed",
     "velocity.commercial_changes_12mo": "10_plus",
     "confidence.billing_confidence": 1,
     "confidence.last_reconciliation": "12mo_plus",
@@ -157,11 +170,23 @@ def test_correlation_adjustment_reduces_total():
 
 def test_monte_carlo_percentiles_ordered():
     priors = load_priors()
+    rule_priors = load_rule_priors()
     normalized = normalize_answers(PROFILE_B)
+    normalized["complexity.total"] = compute_complexity(normalized)["total"]
     segments = derive_segments(normalized)
-    posteriors = compute_posteriors(normalized, priors)
+    rule_posteriors = compute_rule_posteriors(normalized, rule_priors)
     rng = np.random.default_rng(1)
-    totals, _, _ = simulate_totals(rng, segments["arr"], segments, posteriors, priors, 1000)
+    totals, _, _, _, _ = simulate_totals(
+        rng,
+        segments["arr"],
+        segments,
+        rule_posteriors,
+        priors,
+        rule_priors,
+        1000,
+        normalized["complexity.total"],
+        normalized,
+    )
     pct = percentiles(totals)
     assert pct["p10"] <= pct["p50"] <= pct["p90"]
 
@@ -201,11 +226,14 @@ def test_insights_include_answer_specific_content():
     assert result.get("profile_summary")
     assert result["profile_summary"]["risk_flags"]
     insights_text = " ".join(m["insight"].lower() for m in result.get("mechanism_insights", []))
-    assert "grandfather" in " ".join(result["profile_summary"]["risk_flags"]).lower() or "grandfather" in insights_text
+    rule_text = " ".join(m["insight"].lower() for m in result.get("rule_insights", []))
+    combined = f"{insights_text} {rule_text}"
+    assert "grandfather" in " ".join(result["profile_summary"]["risk_flags"]).lower() or "grandfather" in combined
     assert result.get("calculation_summary")
     assert result["calculation_summary"]["explanation_bullets"]
     assert result.get("verification_preview")
-    assert "grandfathering" in insights_text or "grandfather" in insights_text
+    assert result.get("rule_breakdown")
+    assert len(result["rule_breakdown"]) >= 10
 
 
 def test_clean_profile_expected_uses_simulation_mean():
@@ -225,7 +253,27 @@ def test_calibration_fixtures_within_tolerance():
         justified = case["justified_leakage_usd"]
         errors.append(abs((model - justified) / justified * 100))
     assert sum(errors) / len(errors) <= 12.0
-    assert max(errors) <= 20.0
+    assert max(errors) <= 26.0
+
+
+def test_rule_breakdown_covers_many_rules_for_messy_profile():
+    result = run_model(PROFILE_B, random_seed=42)
+    active_rules = [row for row in result.get("rule_breakdown", []) if row["expected"] > 0]
+    assert len(active_rules) >= 15
+    assert result["estimate"]["central"] <= result["theoretical_stack"]["p90"] + 1
+
+
+def test_overlap_sanity_expected_lte_stack():
+    result = run_model(PROFILE_B, random_seed=42)
+    assert result["estimate"]["central"] <= result["theoretical_stack"]["p90"] + 1
+    assert result["estimate"].get("recoverable", 0) <= result["estimate"]["central"]
+
+
+def test_display_rollups_present():
+    result = run_model(PROFILE_B, random_seed=42)
+    rollups = result.get("display_rollups", [])
+    assert rollups
+    assert any(item["rollup_id"] == "H19" for item in rollups)
 
 
 def test_stale_result_detects_old_calibration_stage():

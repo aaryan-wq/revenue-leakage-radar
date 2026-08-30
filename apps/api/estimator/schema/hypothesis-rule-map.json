@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "hypotheses": {
     "H1": {
       "name": "Grandfathered Pricing",
@@ -11,11 +11,19 @@
     },
     "H3": {
       "name": "Expired Discounts",
-      "rule_ids": ["expired_discount"]
+      "rule_ids": ["expired_discount", "discount_stacking", "duplicate_discount", "excessive_discount"]
     },
     "H4": {
       "name": "Manual Discount Persistence",
-      "rule_ids": ["permanent_promotional_discount", "manual_price_override"]
+      "rule_ids": [
+        "permanent_promotional_discount",
+        "manual_price_override",
+        "discount_stacking",
+        "duplicate_discount",
+        "excessive_discount",
+        "credit_leakage",
+        "duplicate_credit"
+      ]
     },
     "H5": {
       "name": "Product Catalog Drift",
@@ -43,7 +51,7 @@
     },
     "H11": {
       "name": "Usage Billing Drift",
-      "rule_ids": []
+      "rule_ids": ["usage_billing_drift"]
     },
     "H12": {
       "name": "Quote vs Billing",
@@ -51,11 +59,17 @@
     },
     "H13": {
       "name": "Contract Configuration",
-      "rule_ids": ["contract_billing_price_divergence", "billing_frequency_mismatch"]
+      "rule_ids": [
+        "contract_billing_price_divergence",
+        "billing_frequency_mismatch",
+        "active_subscription_not_billing",
+        "cancelled_subscription_still_billing",
+        "missing_expected_invoice"
+      ]
     },
     "H14": {
       "name": "Migration Errors",
-      "rule_ids": ["orphaned_records", "duplicate_subscription"]
+      "rule_ids": ["orphaned_records", "duplicate_subscription", "duplicate_customer"]
     },
     "H15": {
       "name": "Multi-Currency Drift",
@@ -63,7 +77,7 @@
     },
     "H16": {
       "name": "Manual Billing Overrides",
-      "rule_ids": ["manual_price_override"]
+      "rule_ids": ["manual_price_override", "invoice_price_mismatch"]
     },
     "H17": {
       "name": "AI/Product Launch Drift",
@@ -76,6 +90,24 @@
         "incorrect_seat_price",
         "expired_discount"
       ]
+    }
+  },
+  "display_rollups": {
+    "H19": {
+      "name": "Billing Execution",
+      "rule_ids": [
+        "active_subscription_not_billing",
+        "cancelled_subscription_still_billing",
+        "missing_expected_invoice"
+      ]
+    },
+    "H20": {
+      "name": "Credit Integrity",
+      "rule_ids": ["credit_leakage", "duplicate_credit"]
+    },
+    "H21": {
+      "name": "Discount Stack",
+      "rule_ids": ["discount_stacking", "duplicate_discount", "excessive_discount"]
     }
   }
 }

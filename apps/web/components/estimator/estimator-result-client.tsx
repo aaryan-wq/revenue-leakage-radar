@@ -25,6 +25,8 @@ import {
   type EstimatorHypothesisBreakdown,
   type EstimatorMechanismInsight,
   type EstimatorResult,
+  type EstimatorRuleBreakdown,
+  type EstimatorVerificationCategoryPreview,
 } from "@rlr/shared";
 
 interface EstimatorResultClientProps {
@@ -55,6 +57,27 @@ function toNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isCategoryPreview(
+  entry: EstimatorResult["verification_preview"] extends (infer T)[] | undefined ? T : never
+): entry is EstimatorVerificationCategoryPreview {
+  return Boolean(entry && typeof entry === "object" && "category" in entry);
+}
+
+function normalizeRule(row: EstimatorRuleBreakdown): EstimatorRuleBreakdown {
+  return {
+    ...row,
+    expected: toNumber(row.expected),
+    low: toNumber(row.low),
+    high: toNumber(row.high),
+    p90: toNumber(row.p90),
+    posterior_probability: toNumber(row.posterior_probability),
+    detectability: toNumber(row.detectability),
+    pct_of_arr: toNumber(row.pct_of_arr),
+    likelihood: toNumber(row.likelihood),
+    share_of_total: toNumber(row.share_of_total),
+  };
+}
+
 function normalizeHypothesis(item: EstimatorHypothesisBreakdown): EstimatorHypothesisBreakdown {
   const expected = toNumber(item.expected ?? item.mid);
   return {
@@ -78,6 +101,11 @@ function normalizeResult(data: EstimatorResult): EstimatorResult {
       low: toNumber(data.estimate.low),
       central: toNumber(data.estimate.central),
       high: toNumber(data.estimate.high),
+      stress_p90: toNumber(data.estimate.stress_p90),
+      theoretical_stack_p90: toNumber(data.estimate.theoretical_stack_p90),
+      recoverable: toNumber(data.estimate.recoverable),
+      at_risk: toNumber(data.estimate.at_risk),
+      overlap_discount: toNumber(data.estimate.overlap_discount),
     },
     monthly: {
       low: toNumber(data.monthly.low),
@@ -90,7 +118,11 @@ function normalizeResult(data: EstimatorResult): EstimatorResult {
     },
     top_hypotheses: (data.top_hypotheses ?? []).map(normalizeHypothesis),
     hypothesis_breakdown: (data.hypothesis_breakdown ?? []).map(normalizeHypothesis),
+    rule_breakdown: (data.rule_breakdown ?? []).map(normalizeRule),
+    display_rollups: data.display_rollups ?? [],
+    coverage_bridge: data.coverage_bridge,
     mechanism_insights: data.mechanism_insights ?? [],
+    rule_insights: data.rule_insights ?? [],
     verification_preview: data.verification_preview ?? [],
     calculation_summary: data.calculation_summary,
   };
@@ -221,6 +253,12 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const medianRun = result.estimate.median_run ?? calc?.median_run;
   const showMedianNote =
     medianRun !== undefined && medianRun !== result.estimate.central && result.estimate.central > 0;
+  const ruleRows = (result.rule_breakdown ?? []).slice(0, 27);
+  const rollups = result.display_rollups ?? [];
+  const stackP90 = result.theoretical_stack?.p90 ?? result.estimate.theoretical_stack_p90 ?? 0;
+  const stressP90 = result.estimate.stress_p90 ?? result.percentiles?.p90 ?? 0;
+  const recoverable = result.recoverable?.expected ?? result.estimate.recoverable ?? 0;
+  const atRisk = result.estimate.at_risk ?? Math.max(result.estimate.central - recoverable, 0);
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -242,8 +280,18 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                 <CountUp to={result.estimate.high} prefix="$" />
               </p>
               <p className="text-body tabular-nums text-foreground">
-                Expected: {formatCurrency(result.estimate.central)} ARR ({pctOfArr.toFixed(2)}% of ARR)
+                Expected recoverable: {formatCurrency(result.estimate.central)} ARR ({pctOfArr.toFixed(2)}% of ARR)
               </p>
+              {stressP90 > 0 ? (
+                <p className="text-small tabular-nums text-muted-foreground">
+                  Stress case (P90): {formatCurrency(stressP90)}. Full rule ceiling: {formatCurrency(stackP90)}.
+                </p>
+              ) : null}
+              {recoverable > 0 ? (
+                <p className="text-small tabular-nums text-muted-foreground">
+                  Recoverable slice: {formatCurrency(recoverable)}. At-risk: {formatCurrency(atRisk)}.
+                </p>
+              ) : null}
               {showMedianNote ? (
                 <p className="text-small tabular-nums text-muted-foreground">
                   Median simulation run: {formatCurrency(medianRun)}. Expected uses the average across all 10,000
@@ -376,27 +424,111 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         </Stagger>
       ) : null}
 
+      {rollups.length > 0 ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-4">
+            <div>
+              <p className="text-overline text-muted-foreground">Executive rollups</p>
+              <h2 className="text-h4 mt-2">Billing, credit, and discount clusters</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {rollups.map((rollup) => (
+                <div key={rollup.rollup_id} className="rounded-xl border border-border/40 bg-surface-glass-subtle p-4">
+                  <p className="text-caption text-muted-foreground">{rollup.rollup_id}</p>
+                  <p className="text-body font-medium text-foreground">{rollup.name}</p>
+                  <p className="mt-2 text-body tabular-nums text-foreground">{formatCurrency(rollup.expected)}</p>
+                </div>
+              ))}
+            </div>
+          </HairlineCard>
+        </Reveal>
+      ) : null}
+
+      {ruleRows.length > 0 ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-6">
+            <div>
+              <p className="text-overline text-muted-foreground">Rule command center</p>
+              <h2 className="text-h4 mt-2">All 27 verification checks modeled</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-small">
+                <thead>
+                  <tr className="border-b border-border/40 text-caption text-muted-foreground">
+                    <th className="py-3 pr-4 font-medium">Rule</th>
+                    <th className="py-3 pr-4 font-medium">Category</th>
+                    <th className="py-3 pr-4 font-medium tabular-nums">Expected</th>
+                    <th className="py-3 pr-4 font-medium tabular-nums">Likelihood</th>
+                    <th className="py-3 font-medium">Hypotheses</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ruleRows.map((row) => (
+                    <tr key={row.rule_id} className="border-b border-border/20">
+                      <td className="py-3 pr-4 text-foreground">{row.rule_id.replaceAll("_", " ")}</td>
+                      <td className="py-3 pr-4 text-muted-foreground">{row.category}</td>
+                      <td className="py-3 pr-4 tabular-nums text-foreground">{formatCurrency(row.expected)}</td>
+                      <td className="py-3 pr-4 tabular-nums text-muted-foreground">{row.likelihood.toFixed(1)}%</td>
+                      <td className="py-3 text-muted-foreground">{(row.hypothesis_ids ?? []).join(", ")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </HairlineCard>
+        </Reveal>
+      ) : null}
+
       {result.verification_preview && result.verification_preview.length > 0 ? (
         <Reveal>
           <HairlineCard padding="lg" className="space-y-6">
             <div>
               <p className="text-overline text-muted-foreground">Verification</p>
-              <h2 className="text-h4 mt-2">Scan rules for top mechanisms</h2>
+              <h2 className="text-h4 mt-2">Scan rules by category</h2>
             </div>
             <div className="space-y-5">
-              {result.verification_preview.map((entry) => (
-                <div key={entry.hypothesis_id} className="space-y-2">
-                  <p className="text-body font-medium text-foreground">{entry.hypothesis_name}</p>
-                  <ul className="flex flex-wrap gap-2">
-                    {entry.rules.map((rule) => (
-                      <Badge key={rule.rule_id} variant="gray">
-                        {rule.name}
-                      </Badge>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              {result.verification_preview.map((entry) =>
+                isCategoryPreview(entry) ? (
+                  <div key={entry.category} className="space-y-2">
+                    <p className="text-body font-medium text-foreground">{entry.category_label}</p>
+                    <ul className="flex flex-wrap gap-2">
+                      {entry.rules.slice(0, 8).map((rule) => (
+                        <Badge key={rule.rule_id} variant="gray">
+                          {rule.name} ({formatCurrency(rule.expected)})
+                        </Badge>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div key={entry.hypothesis_id} className="space-y-2">
+                    <p className="text-body font-medium text-foreground">{entry.hypothesis_name}</p>
+                    <ul className="flex flex-wrap gap-2">
+                      {entry.rules.map((rule) => (
+                        <Badge key={rule.rule_id} variant="gray">
+                          {rule.name}
+                        </Badge>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              )}
             </div>
+          </HairlineCard>
+        </Reveal>
+      ) : null}
+
+      {result.coverage_bridge?.file_suggestions?.length ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-3">
+            <p className="text-overline text-muted-foreground">Upload bridge</p>
+            <h2 className="text-h4">Files that unlock the most checks</h2>
+            <ul className="space-y-2">
+              {result.coverage_bridge.file_suggestions.map((item) => (
+                <li key={item} className="text-small text-muted-foreground">
+                  {item}
+                </li>
+              ))}
+            </ul>
           </HairlineCard>
         </Reveal>
       ) : null}

@@ -9,7 +9,6 @@ def normalize_answers(answers: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(answers)
     arr = answers.get("profile.arr_amount")
     currency = answers.get("profile.arr_currency") or "USD"
-    # Currency may be stored on arr_amount answer value_text
     if arr is not None:
         rate = float(fx.get(currency, 1.0))
         normalized["arr_usd"] = float(arr) * rate
@@ -35,7 +34,7 @@ def derive_segments(normalized: dict[str, Any]) -> dict[str, float]:
     discount_share = {
         "never": 0.05,
         "rare": 0.15,
-        "occasional": 0.30,
+        "occasional": 0.34,
         "common": 0.50,
         "nearly_all": 0.70,
     }.get(discount_freq, 0.20)
@@ -49,6 +48,28 @@ def derive_segments(normalized: dict[str, Any]) -> dict[str, float]:
     multi_currency = normalized.get("international.multi_currency") is True
     intl_share = 0.25 if multi_currency else 0.05
 
+    credit_process = normalized.get("operations.credit_memo_process", "unknown")
+    credit_share = {
+        "automated": 0.02,
+        "reviewed": 0.04,
+        "manual": 0.08,
+        "ad_hoc": 0.12,
+        "unknown": 0.06,
+    }.get(credit_process, 0.06)
+
+    churn_cutoff = normalized.get("operations.churn_billing_cutoff", "unknown")
+    billing_exec_share = {
+        "immediate": 0.08,
+        "same_day": 0.10,
+        "within_week": 0.14,
+        "manual": 0.22,
+        "unknown": 0.16,
+    }.get(churn_cutoff, 0.16)
+
+    invoice_cadence = normalized.get("operations.invoice_cadence", "unknown")
+    invoice_qa = normalized.get("controls.invoice_price_qa", "unknown")
+    invoice_weight = _invoice_weight(invoice_cadence, invoice_qa)
+
     return {
         "arr": arr,
         "contract_arr": arr * negotiated_pct,
@@ -57,9 +78,31 @@ def derive_segments(normalized: dict[str, Any]) -> dict[str, float]:
         "seat_arr": arr * seat_share,
         "addon_arr": arr * addon_share,
         "international_arr": arr * intl_share,
+        "credit_arr": arr * credit_share,
+        "billing_execution_arr": arr * billing_exec_share,
+        "invoice_arr": arr * invoice_weight,
         "negotiated_pct": negotiated_pct,
         "discount_share": discount_share,
     }
+
+
+def _invoice_weight(cadence: str, qa: str) -> float:
+    cadence_weight = {
+        "automated": 0.85,
+        "scheduled": 0.90,
+        "manual": 1.0,
+        "ad_hoc": 1.05,
+        "unknown": 0.95,
+    }.get(cadence, 0.95)
+    qa_weight = {
+        "always": 0.85,
+        "usually": 0.90,
+        "sometimes": 0.95,
+        "rarely": 1.0,
+        "never": 1.05,
+        "unknown": 0.98,
+    }.get(qa, 0.98)
+    return min(cadence_weight * qa_weight, 1.1)
 
 
 def _pct_map(value: str | None) -> float:

@@ -17,7 +17,9 @@ from verification.eligibility.schema import RuleSpec
 
 RULE_LEAK_FAMILIES: dict[str, str] = {
     "legacy_pricing": "subscription_pricing_gap",
+    "contract_billing_price_divergence": "subscription_pricing_gap",
     "price_catalog_mismatch": "subscription_pricing_gap",
+    "usage_billing_drift": "usage_monetization",
     "grandfathered_pricing": "subscription_pricing_gap",
     "missing_scheduled_increase": "subscription_pricing_gap",
     "renewal_price_drift": "renewal_event",
@@ -36,6 +38,7 @@ RULE_LEAK_FAMILIES: dict[str, str] = {
     "active_subscription_not_billing": "usage_monetization",
     "cancelled_subscription_still_billing": "invoice_execution",
     "missing_expected_invoice": "invoice_execution",
+    "usage_billing_drift": "usage_monetization",
     "credit_leakage": "operational",
     "duplicate_credit": "operational",
     "duplicate_customer": "operational",

@@ -56,7 +56,7 @@ Landing → Adaptive questionnaire → Monte Carlo model → Result → Run Free
 
 ## Model Maturity
 
-Launch at **Stage 0: Structural model**. Priors are structural assumptions, not empirically calibrated industry facts.
+Launch at **Stage 2: Rule-native model**. Priors are calibrated against verification fixture anchors and five audit personas. The estimator runs 27 rule streams with family overlap deduplication, then rolls up to 18 executive hypotheses.
 
 ## Related Docs
 

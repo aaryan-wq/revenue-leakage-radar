@@ -1,0 +1,674 @@
+version: 2.0.0
+calibration_stage: 2
+family_correlations:
+  subscription_pricing_gap: 0.48
+  discount_integrity: 0.48
+  invoice_execution: 0.48
+  usage_monetization: 0.48
+  renewal_event: 0.48
+  operational: 0.48
+tail_fattening:
+  billing_confidence_max: 2
+  complexity_min: 8
+  severity_multiplier: 1.12
+  persistence_multiplier: 1.22
+rules:
+  legacy_pricing:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H1
+    - H6
+    question_drivers: {}
+    required_entities:
+    - price
+    - subscription
+    category: pricing
+  contract_billing_price_divergence:
+    prior: 0.049
+    exposure_base: contract_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H12
+    - H13
+    - H18
+    question_drivers: {}
+    required_entities:
+    - contract
+    - subscription
+    category: pricing
+  price_catalog_mismatch:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H5
+    - H6
+    - H7
+    - H17
+    question_drivers: {}
+    required_entities:
+    - invoice_line_item
+    - price
+    category: pricing
+  grandfathered_pricing:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H1
+    question_drivers: {}
+    required_entities:
+    - price
+    - subscription
+    category: pricing
+  missing_scheduled_increase:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H2
+    question_drivers: {}
+    required_entities:
+    - contract
+    - subscription
+    category: pricing
+  renewal_price_drift:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: renewal_event
+    hypothesis_ids:
+    - H2
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: pricing
+  manual_price_override:
+    prior: 0.049
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: invoice_execution
+    hypothesis_ids:
+    - H4
+    - H16
+    question_drivers: {}
+    required_entities:
+    - invoice_line_item
+    - price
+    category: pricing
+  incorrect_seat_price:
+    prior: 0.049
+    exposure_base: seat_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: usage_monetization
+    hypothesis_ids:
+    - H10
+    - H18
+    question_drivers: {}
+    required_entities:
+    - account
+    - subscription
+    category: pricing
+  incorrect_addon_price:
+    prior: 0.049
+    exposure_base: addon_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: subscription_pricing_gap
+    hypothesis_ids:
+    - H7
+    - H8
+    - H9
+    question_drivers: {}
+    required_entities:
+    - invoice_line_item
+    - price
+    category: pricing
+  expired_discount:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H3
+    - H18
+    question_drivers: {}
+    required_entities:
+    - coupon
+    - invoice
+    - subscription
+    category: discounts
+  discount_stacking:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H3
+    - H4
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: discounts
+  duplicate_discount:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H3
+    - H4
+    question_drivers: {}
+    required_entities:
+    - coupon
+    - invoice
+    - subscription
+    category: discounts
+  permanent_promotional_discount:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H4
+    question_drivers: {}
+    required_entities:
+    - contract
+    - subscription
+    category: discounts
+  excessive_discount:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H3
+    - H4
+    question_drivers: {}
+    required_entities:
+    - invoice
+    category: discounts
+  discount_wrong_product:
+    prior: 0.055999999999999994
+    exposure_base: discount_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: discount_integrity
+    hypothesis_ids:
+    - H8
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - invoice_line_item
+    - subscription
+    category: discounts
+  invoice_price_mismatch:
+    prior: 0.0532
+    exposure_base: invoice_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: invoice_execution
+    hypothesis_ids:
+    - H16
+    question_drivers: {}
+    required_entities:
+    - invoice_line_item
+    - subscription
+    category: billing
+  duplicate_subscription:
+    prior: 0.0532
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: usage_monetization
+    hypothesis_ids:
+    - H14
+    question_drivers: {}
+    required_entities:
+    - subscription
+    category: billing
+  billing_frequency_mismatch:
+    prior: 0.0532
+    exposure_base: contract_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: invoice_execution
+    hypothesis_ids:
+    - H13
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: billing
+  active_subscription_not_billing:
+    prior: 0.0532
+    exposure_base: usage_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: usage_monetization
+    hypothesis_ids:
+    - H13
+    question_drivers: {}
+    required_entities:
+    - subscription
+    category: billing
+  cancelled_subscription_still_billing:
+    prior: 0.0532
+    exposure_base: billing_execution_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: invoice_execution
+    hypothesis_ids:
+    - H13
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: billing
+  missing_expected_invoice:
+    prior: 0.0532
+    exposure_base: billing_execution_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: invoice_execution
+    hypothesis_ids:
+    - H13
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: billing
+  credit_leakage:
+    prior: 0.041999999999999996
+    exposure_base: credit_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: operational
+    hypothesis_ids:
+    - H4
+    question_drivers: {}
+    required_entities:
+    - invoice
+    category: credits
+  duplicate_credit:
+    prior: 0.041999999999999996
+    exposure_base: credit_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: operational
+    hypothesis_ids:
+    - H4
+    question_drivers: {}
+    required_entities:
+    - invoice
+    category: credits
+  duplicate_customer:
+    prior: 0.0392
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: operational
+    hypothesis_ids:
+    - H14
+    question_drivers: {}
+    required_entities:
+    - customer
+    category: data_quality
+  currency_mismatch:
+    prior: 0.0392
+    exposure_base: international_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: operational
+    hypothesis_ids:
+    - H15
+    question_drivers: {}
+    required_entities:
+    - invoice
+    - subscription
+    category: data_quality
+  orphaned_records:
+    prior: 0.0392
+    exposure_base: arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 6
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 3.5
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.75
+    leak_family: operational
+    hypothesis_ids:
+    - H14
+    question_drivers: {}
+    required_entities:
+    - invoice_line_item
+    category: data_quality
+  usage_billing_drift:
+    prior: 0.0532
+    exposure_base: usage_arr
+    severity:
+      distribution: beta
+      alpha: 2
+      beta: 5
+    persistence:
+      distribution: gamma
+      shape: 2
+      scale: 4
+    recoverability:
+      distribution: beta
+      alpha: 3
+      beta: 4
+    detectability: 0.65
+    leak_family: usage_monetization
+    hypothesis_ids:
+    - H11
+    question_drivers: {}
+    required_entities:
+    - subscription
+    - invoice
+    - invoice_line_item
+    category: billing
