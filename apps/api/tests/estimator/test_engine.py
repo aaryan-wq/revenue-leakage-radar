@@ -7,7 +7,7 @@ from estimator.modeling.normalize import derive_segments, normalize_answers
 from estimator.modeling.pipeline import run_model
 from estimator.questionnaire.engine import completion_progress, visible_question_ids
 from estimator.questionnaire.schema import load_priors
-from estimator.validation.checks import check_contradictions, check_sanity
+from estimator.validation.checks import check_sanity
 import numpy as np
 
 
@@ -17,8 +17,6 @@ PROFILE_A = {
     "profile.arr_confidence": "exact",
     "profile.customer_count": 200,
     "pricing.models": ["flat"],
-    "pricing.usage_based": False,
-    "pricing.seat_based": False,
     "product.billable_count": "1",
     "product.independent_catalogs": "no",
     "product.addons": False,
@@ -53,8 +51,6 @@ PROFILE_B = {
     "profile.arr_amount": 25_000_000,
     "profile.customer_count": 120,
     "pricing.models": ["flat", "per_seat", "usage", "custom_enterprise", "addons"],
-    "pricing.usage_based": True,
-    "pricing.seat_based": True,
     "usage.unit_type": "api_calls",
     "usage.rating": "commit_overage",
     "usage.billing_timing": "monthly",
@@ -107,7 +103,7 @@ PROFILE_C = {
 
 
 def test_visible_questions_skip_usage_branch_when_disabled():
-    answers = {"pricing.usage_based": False, "pricing.seat_based": False}
+    answers = {"pricing.models": ["flat"]}
     visible = visible_question_ids(answers)
     assert "usage.unit_type" not in visible
     assert "profile.company_type" in visible
@@ -168,11 +164,6 @@ def test_monte_carlo_percentiles_ordered():
     totals, _, _ = simulate_totals(rng, segments["arr"], segments, posteriors, priors, 1000)
     pct = percentiles(totals)
     assert pct["p10"] <= pct["p50"] <= pct["p90"]
-
-
-def test_contradiction_detects_usage_mismatch():
-    conflicts = check_contradictions({"pricing.usage_based": False, "pricing.models": ["usage"]})
-    assert len(conflicts) == 1
 
 
 def test_complexity_separate_from_leakage():

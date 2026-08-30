@@ -23,7 +23,7 @@
       "id": "profile.company_type",
       "section": "profile",
       "type": "select",
-      "label": "What type of company are you?",
+      "label": "What best describes your business?",
       "required": true,
       "options": [
         { "value": "b2b_saas", "label": "B2B SaaS" },
@@ -39,7 +39,7 @@
       "id": "profile.arr_amount",
       "section": "profile",
       "type": "currency",
-      "label": "What is your approximate ARR?",
+      "label": "What is your annual recurring revenue (ARR)?",
       "required": true,
       "currencies": ["USD", "CAD", "GBP", "EUR", "AUD"],
       "hypotheses": []
@@ -48,7 +48,7 @@
       "id": "profile.arr_confidence",
       "section": "profile",
       "type": "select",
-      "label": "How confident are you in this ARR figure?",
+      "label": "How precise is that ARR figure?",
       "required": true,
       "options": [
         { "value": "exact", "label": "Exact" },
@@ -70,7 +70,7 @@
       "id": "pricing.models",
       "section": "pricing",
       "type": "multiselect",
-      "label": "How do customers pay you?",
+      "label": "Which pricing models do you use?",
       "required": true,
       "options": [
         { "value": "flat", "label": "Flat subscription" },
@@ -86,34 +86,12 @@
       "hypotheses": ["H5", "H10", "H11"]
     },
     {
-      "id": "pricing.usage_based",
-      "section": "pricing",
-      "type": "boolean",
-      "label": "Do you use usage-based pricing?",
-      "required": true,
-      "hypotheses": ["H11"],
-      "branches": {
-        "true": ["usage.unit_type", "usage.rating", "usage.billing_timing", "usage.reconciliation"]
-      }
-    },
-    {
-      "id": "pricing.seat_based",
-      "section": "pricing",
-      "type": "boolean",
-      "label": "Do you use seat-based pricing?",
-      "required": true,
-      "hypotheses": ["H10"],
-      "branches": {
-        "true": ["seats.reconciliation", "seats.true_up", "seats.self_service"]
-      }
-    },
-    {
       "id": "usage.unit_type",
       "section": "usage",
       "type": "select",
-      "label": "What usage unit do you primarily measure?",
+      "label": "What do you primarily meter and bill for?",
       "required": true,
-      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
         { "value": "api_calls", "label": "API calls" },
         { "value": "gb", "label": "GB / storage" },
@@ -128,9 +106,9 @@
       "id": "usage.rating",
       "section": "usage",
       "type": "select",
-      "label": "How is usage rated?",
+      "label": "How is usage priced?",
       "required": true,
-      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
         { "value": "simple", "label": "Simple unit price" },
         { "value": "tiered", "label": "Tiered usage" },
@@ -143,9 +121,9 @@
       "id": "usage.billing_timing",
       "section": "usage",
       "type": "select",
-      "label": "When is usage billed?",
+      "label": "When do customers pay for usage?",
       "required": true,
-      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
         { "value": "realtime", "label": "Real-time" },
         { "value": "monthly", "label": "Monthly" },
@@ -158,9 +136,9 @@
       "id": "usage.reconciliation",
       "section": "usage",
       "type": "select",
-      "label": "How is usage reconciled before invoicing?",
+      "label": "How do you verify usage before invoicing?",
       "required": true,
-      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
         { "value": "automated", "label": "Fully automated" },
         { "value": "partial", "label": "Partially automated" },
@@ -173,9 +151,9 @@
       "id": "seats.reconciliation",
       "section": "seats",
       "type": "select",
-      "label": "How are seat count changes reconciled?",
+      "label": "How do you track seat changes before billing?",
       "required": true,
-      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "per_seat" },
       "options": [
         { "value": "automatic", "label": "Automatic" },
         { "value": "manual", "label": "Manual" },
@@ -187,25 +165,25 @@
       "id": "seats.true_up",
       "section": "seats",
       "type": "boolean",
-      "label": "Do you perform seat true-ups?",
+      "label": "Do you reconcile seat counts against actual usage?",
       "required": true,
-      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "per_seat" },
       "hypotheses": ["H10"]
     },
     {
       "id": "seats.self_service",
       "section": "seats",
       "type": "boolean",
-      "label": "Can customers change seats self-service?",
+      "label": "Can customers add or remove seats on their own?",
       "required": true,
-      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "visibility": { "when": "pricing.models", "contains": "per_seat" },
       "hypotheses": ["H10"]
     },
     {
       "id": "product.billable_count",
       "section": "product",
       "type": "select",
-      "label": "How many separately billable products do you have?",
+      "label": "How many products or plans do you sell separately?",
       "required": true,
       "options": [
         { "value": "1", "label": "1" },
@@ -221,7 +199,7 @@
       "id": "product.independent_catalogs",
       "section": "product",
       "type": "select",
-      "label": "Do products have independent pricing catalogs?",
+      "label": "Does each product have its own price list?",
       "required": true,
       "options": [
         { "value": "yes", "label": "Yes" },
@@ -234,7 +212,7 @@
       "id": "product.addons",
       "section": "product",
       "type": "boolean",
-      "label": "Do you sell add-ons?",
+      "label": "Do you sell optional add-on products?",
       "required": true,
       "hypotheses": ["H8", "H9"]
     },
@@ -242,7 +220,7 @@
       "id": "contracts.negotiated_arr_pct",
       "section": "contracts",
       "type": "select",
-      "label": "What percentage of ARR is under negotiated contracts?",
+      "label": "What share of revenue comes from custom-negotiated deals?",
       "required": true,
       "options": [
         { "value": "0", "label": "0%" },
@@ -257,7 +235,7 @@
       "id": "contracts.custom_pricing",
       "section": "contracts",
       "type": "select",
-      "label": "Do contracts specify prices different from public pricing?",
+      "label": "Do any contracts lock in prices different from your public rates?",
       "required": true,
       "options": [
         { "value": "yes", "label": "Yes" },
@@ -270,7 +248,7 @@
       "id": "contracts.grandfathering",
       "section": "contracts",
       "type": "select",
-      "label": "Are customers grandfathered onto historical pricing?",
+      "label": "Do existing customers keep old prices when you raise rates?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -301,7 +279,7 @@
       "id": "discounts.frequency",
       "section": "discounts",
       "type": "select",
-      "label": "How common are negotiated discounts?",
+      "label": "How often do you offer negotiated discounts?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -316,7 +294,7 @@
       "id": "discounts.expiry_handling",
       "section": "discounts",
       "type": "select",
-      "label": "How are temporary discount expirations handled?",
+      "label": "What happens when a temporary discount expires?",
       "required": true,
       "options": [
         { "value": "automatic", "label": "Automatic" },
@@ -332,7 +310,7 @@
       "id": "discounts.expiry_confidence",
       "section": "discounts",
       "type": "scale",
-      "label": "How confident are you that temporary discounts always expire correctly?",
+      "label": "How confident are you that expired discounts are removed on time?",
       "required": true,
       "min": 1,
       "max": 5,
@@ -342,7 +320,7 @@
       "id": "changes.pricing_changes_24mo",
       "section": "changes",
       "type": "select",
-      "label": "How many pricing changes in the last 24 months?",
+      "label": "How many times did you change pricing in the last 2 years?",
       "required": true,
       "options": [
         { "value": "0", "label": "None" },
@@ -357,7 +335,7 @@
       "id": "changes.migration_method",
       "section": "changes",
       "type": "select",
-      "label": "How were existing customers migrated after pricing changes?",
+      "label": "When prices changed, how were existing customers moved to new rates?",
       "required": true,
       "options": [
         { "value": "automatic", "label": "Automatically" },
@@ -374,7 +352,7 @@
       "id": "systems.billing_system_count",
       "section": "systems",
       "type": "select",
-      "label": "How many billing systems do you operate?",
+      "label": "How many systems handle billing today?",
       "required": true,
       "options": [
         { "value": "1", "label": "1" },
@@ -388,7 +366,7 @@
       "id": "systems.primary_platform",
       "section": "systems",
       "type": "select",
-      "label": "Primary billing platform",
+      "label": "What is your main billing platform?",
       "required": true,
       "options": [
         { "value": "stripe", "label": "Stripe" },
@@ -407,7 +385,7 @@
       "id": "operations.manual_override_frequency",
       "section": "operations",
       "type": "select",
-      "label": "How often does someone manually change a customer's billing configuration?",
+      "label": "How often does someone manually edit a customer's bill?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -423,7 +401,7 @@
       "id": "operations.manual_change_logging",
       "section": "operations",
       "type": "select",
-      "label": "Are manual billing changes logged?",
+      "label": "Are manual billing changes tracked in a log or audit trail?",
       "required": true,
       "options": [
         { "value": "yes", "label": "Yes" },
@@ -437,7 +415,7 @@
       "id": "quote_to_bill.commercial_truth",
       "section": "quote_to_bill",
       "type": "select",
-      "label": "Where does the commercial truth live?",
+      "label": "Where does the agreed deal price live before it hits billing?",
       "required": true,
       "options": [
         { "value": "crm", "label": "CRM" },
@@ -454,7 +432,7 @@
       "id": "quote_to_bill.quote_automation",
       "section": "quote_to_bill",
       "type": "select",
-      "label": "Is there an automated path from quote to contract to billing?",
+      "label": "How much of the quote-to-billing flow is automated?",
       "required": true,
       "options": [
         { "value": "fully", "label": "Fully automated" },
@@ -481,7 +459,7 @@
       "id": "migrations.reconciliation",
       "section": "migrations",
       "type": "select",
-      "label": "Was migration reconciliation performed?",
+      "label": "Did you verify billing data after a system migration?",
       "required": true,
       "visibility": { "when": "migrations.migrated_36mo", "equals": true },
       "options": [
@@ -530,7 +508,7 @@
       "id": "controls.finance_team_size",
       "section": "controls",
       "type": "select",
-      "label": "Finance team size",
+      "label": "How large is your finance team?",
       "required": true,
       "options": [
         { "value": "1", "label": "1" },
@@ -545,7 +523,7 @@
       "id": "controls.billing_owner",
       "section": "controls",
       "type": "boolean",
-      "label": "Is there a dedicated billing owner?",
+      "label": "Is there someone clearly responsible for billing?",
       "required": true,
       "hypotheses": []
     },
@@ -553,7 +531,7 @@
       "id": "controls.monthly_reconciliation",
       "section": "controls",
       "type": "select",
-      "label": "How often do you reconcile billing against commercial terms?",
+      "label": "How often do you reconcile billing against signed agreements?",
       "required": true,
       "options": [
         { "value": "monthly", "label": "Every month" },
@@ -568,7 +546,7 @@
       "id": "controls.billing_qa",
       "section": "controls",
       "type": "select",
-      "label": "Billing QA after pricing changes?",
+      "label": "After a pricing change, do you test billing before invoices go out?",
       "required": true,
       "options": [
         { "value": "always", "label": "Always" },
@@ -584,7 +562,7 @@
       "id": "velocity.commercial_changes_12mo",
       "section": "velocity",
       "type": "select",
-      "label": "Significant commercial changes in the last 12 months",
+      "label": "How many significant deal or pricing changes happened in the last 12 months?",
       "required": true,
       "options": [
         { "value": "0", "label": "0" },
@@ -599,7 +577,7 @@
       "id": "confidence.billing_confidence",
       "section": "confidence",
       "type": "scale",
-      "label": "How confident are you that every customer is billed according to their latest commercial terms?",
+      "label": "How confident are you that every customer is billed at their current agreed price?",
       "required": true,
       "min": 1,
       "max": 5,

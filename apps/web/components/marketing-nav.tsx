@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
-import { Logo, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
+import { Logo, NAV_LOGO_CLASS } from "@/components/brand/logo";
 import { MarketingAuthActions } from "@/components/marketing-auth-actions";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Overview" },
-  { href: "/saas-revenue-leakage-calculator", label: "Leakage Calculator" },
+  { href: "/saas-revenue-leakage-calculator", label: "Calculator" },
   { href: "/demo", label: "Demo" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/pricing", label: "Pricing" },
@@ -32,22 +32,21 @@ export function MarketingNav() {
       <div className="absolute inset-0 -z-10 bg-background/70 backdrop-blur-xl" />
       <nav
         className={cn(
-          "relative mx-auto max-w-marketing justify-between gap-4 px-6 md:px-10",
-          NAV_ROW_CLASS,
+          "relative mx-auto flex h-[72px] max-w-marketing items-center justify-between gap-4 px-6 md:px-10",
         )}
       >
-        <Logo variant="full" priority className={cn("hidden sm:block", NAV_LOGO_CLASS.full)} />
-        <Logo variant="short" priority className={cn("sm:hidden", NAV_LOGO_CLASS.short)} />
+        <Logo variant="full" priority className={cn("hidden shrink-0 sm:block", NAV_LOGO_CLASS.full)} />
+        <Logo variant="short" priority className={cn("shrink-0 sm:hidden", NAV_LOGO_CLASS.short)} />
 
-        <div className="pointer-events-none absolute left-1/2 top-5 hidden -translate-x-1/2 md:block">
-          <div className="pointer-events-auto flex items-start gap-0.5">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block">
+          <div className="pointer-events-auto flex items-center gap-0.5 whitespace-nowrap">
             {links.map((link) => {
               const active = isLinkActive(pathname, link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative px-3.5 py-2 text-[0.8rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                  className="relative px-3 py-2 text-[0.8rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {active && (
                     <motion.span
@@ -65,7 +64,7 @@ export function MarketingNav() {
           </div>
         </div>
 
-        <MarketingAuthActions className="items-start" />
+        <MarketingAuthActions className="shrink-0 items-center" />
       </nav>
     </header>
   );

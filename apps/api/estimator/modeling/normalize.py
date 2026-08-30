@@ -20,6 +20,11 @@ def normalize_answers(answers: dict[str, Any]) -> dict[str, Any]:
     confidence = answers.get("profile.arr_confidence", "approximate")
     uncertainty = {"exact": 0.02, "approximate": 0.05, "rough": 0.15}.get(confidence, 0.05)
     normalized["arr_uncertainty"] = uncertainty
+
+    models = answers.get("pricing.models") or []
+    if isinstance(models, list):
+        normalized["pricing.usage_based"] = "usage" in models
+        normalized["pricing.seat_based"] = "per_seat" in models
     return normalized
 
 

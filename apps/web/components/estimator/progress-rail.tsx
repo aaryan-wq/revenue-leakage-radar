@@ -1,42 +1,33 @@
 "use client";
 
-interface SectionMeta {
-  id: string;
-  label: string;
-}
+import { motion, useReducedMotion } from "framer-motion";
+
+import { easedCompletionPercent } from "@/lib/estimator/progress";
 
 interface ProgressRailProps {
-  sections: SectionMeta[];
-  currentSection: string | null;
-  estimatedSecondsRemaining: number;
+  sectionLabel: string | null;
+  completionRate: number;
 }
 
-export function ProgressRail({ sections, currentSection, estimatedSecondsRemaining }: ProgressRailProps) {
-  const currentIndex = sections.findIndex((s) => s.id === currentSection);
+export function ProgressRail({ sectionLabel, completionRate }: ProgressRailProps) {
+  const reducedMotion = useReducedMotion();
+  const percent = easedCompletionPercent(completionRate);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-overline text-muted-foreground">Billing Profile</p>
-        <p className="text-caption text-muted-foreground">
-          About {Math.max(1, Math.ceil(estimatedSecondsRemaining / 60))} min remaining
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        {sections.map((section, index) => {
-          const complete = currentIndex > index;
-          const active = section.id === currentSection;
-          return (
-            <div key={section.id} className="flex flex-1 items-center gap-2">
-              <div
-                className={`h-2 flex-1 rounded-full transition-colors ${
-                  complete || active ? "bg-primary" : "bg-border/50"
-                }`}
-                title={section.label}
-              />
-            </div>
-          );
-        })}
+    <div className="sticky top-[72px] z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto max-w-marketing px-6 md:px-10">
+        <div className="flex h-10 items-center justify-between gap-4">
+          <p className="truncate text-caption text-muted-foreground">{sectionLabel ?? "Getting started"}</p>
+          <p className="shrink-0 text-caption tabular-nums text-muted-foreground">{Math.round(percent)}%</p>
+        </div>
+        <div className="h-1 w-full overflow-hidden rounded-full bg-border/30">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={false}
+            animate={{ width: `${percent}%` }}
+            transition={reducedMotion ? { duration: 0.15 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </div>
       </div>
     </div>
   );

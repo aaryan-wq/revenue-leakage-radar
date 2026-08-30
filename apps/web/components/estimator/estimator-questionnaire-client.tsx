@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { LiveProfilePanel } from "@/components/estimator/live-profile-panel";
 import { ProgressRail } from "@/components/estimator/progress-rail";
 import { QuestionStep } from "@/components/estimator/question-step";
+import { Button } from "@/components/ui/button";
+import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { captureEvent } from "@/lib/analytics/client";
 import {
@@ -24,6 +26,7 @@ export function EstimatorQuestionnaireClient() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [sections, setSections] = useState<{ id: string; label: string }[]>([]);
@@ -41,25 +44,49 @@ export function EstimatorQuestionnaireClient() {
   const [draftValue, setDraftValue] = useState<unknown>(null);
   const [currency, setCurrency] = useState("USD");
 
+  const sectionLabel = useMemo(() => {
+    const match = sections.find((section) => section.id === currentSection);
+    return match?.label ?? "Assessment";
+  }, [sections, currentSection]);
+
   const arrUsd = useMemo(() => {
     const arr = answers["profile.arr_amount"];
     return typeof arr === "number" ? arr : undefined;
   }, [answers]);
 
-  const refresh = useCallback(async (id: string) => {
-    const state = await fetchAssessment(id);
-    setAnswers(state.answers);
-    setQuestion(state.next_question);
-    setProgress(state.progress);
-    setCurrentSection(state.current_section);
-    setComplexity(state.complexity_preview ?? null);
-    if (state.next_question) {
-      setDraftValue(state.answers[state.next_question.id] ?? null);
-    }
-    if (state.progress.is_complete) {
-      router.push(`/saas-revenue-leakage-calculator/result/${id}`);
-    }
-  }, [router]);
+  const finishAssessment = useCallback(
+    async (id: string) => {
+      setCalculating(true);
+      setError(null);
+      try {
+        await calculateAssessment(id);
+        captureEvent(AnalyticsEvents.ESTIMATOR_COMPLETED, { assessment_id: id });
+        router.push(`/saas-revenue-leakage-calculator/result/${id}`);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to calculate your estimate");
+        setCalculating(false);
+      }
+    },
+    [router],
+  );
+
+  const refresh = useCallback(
+    async (id: string) => {
+      const state = await fetchAssessment(id);
+      setAnswers(state.answers);
+      setQuestion(state.next_question);
+      setProgress(state.progress);
+      setCurrentSection(state.current_section);
+      setComplexity(state.complexity_preview ?? null);
+      if (state.next_question) {
+        setDraftValue(state.answers[state.next_question.id] ?? null);
+      }
+      if (state.progress.is_complete) {
+        await finishAssessment(id);
+      }
+    },
+    [finishAssessment],
+  );
 
   useEffect(() => {
     async function init() {
@@ -131,54 +158,59 @@ export function EstimatorQuestionnaireClient() {
     }
   };
 
-  const handleCalculate = async () => {
-    if (!assessmentId) return;
-    setSubmitting(true);
-    try {
-      await calculateAssessment(assessmentId);
-      captureEvent(AnalyticsEvents.ESTIMATOR_COMPLETED, { assessment_id: assessmentId });
-      router.push(`/saas-revenue-leakage-calculator/result/${assessmentId}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Calculation failed");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  if (loading) return <PageLoadingSkeleton message="Preparing your assessment…" />;
 
-  if (loading) return <PageLoadingSkeleton message="Loading assessment…" />;
+  if (calculating) {
+    return (
+      <>
+        <ProgressRail sectionLabel="Calculating" completionRate={1} />
+        <PageLoadingSkeleton message="Running your estimate…" />
+      </>
+    );
+  }
 
   return (
-    <div className="mx-auto grid max-w-marketing gap-8 px-6 py-12 md:grid-cols-[1fr_320px] md:px-10">
-      <div className="space-y-8">
-        <ProgressRail
-          sections={sections}
-          currentSection={currentSection}
-          estimatedSecondsRemaining={progress.estimated_seconds_remaining}
-        />
-        {question ? (
-          <QuestionStep
-            question={question}
-            value={draftValue}
-            currency={currency}
-            onChange={(val, cur) => {
-              setDraftValue(val);
-              if (cur) setCurrency(cur);
-            }}
-            onContinue={handleContinue}
-            isSubmitting={submitting}
-            error={error}
-          />
-        ) : progress.is_complete ? (
-          <button
-            type="button"
-            onClick={() => void handleCalculate()}
-            className="rounded-xl bg-primary px-6 py-3 text-body text-primary-foreground min-h-[44px]"
-          >
-            {submitting ? "Calculating..." : "Calculate my estimate"}
-          </button>
-        ) : null}
+    <>
+      <ProgressRail sectionLabel={sectionLabel} completionRate={progress.completion_rate} />
+      <div className="mx-auto grid max-w-marketing gap-10 px-6 py-12 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-16">
+        <div className="min-w-0">
+          {question ? (
+            <QuestionStep
+              question={question}
+              sectionLabel={sectionLabel}
+              value={draftValue}
+              currency={currency}
+              onChange={(val, cur) => {
+                setDraftValue(val);
+                if (cur) setCurrency(cur);
+              }}
+              onContinue={handleContinue}
+              isSubmitting={submitting}
+              error={error}
+            />
+          ) : progress.is_complete ? (
+            <HairlineCard padding="lg" className="mx-auto max-w-readable space-y-4 text-center">
+              <p className="text-body text-muted-foreground">Your answers are complete.</p>
+              <Button
+                onClick={() => assessmentId && void finishAssessment(assessmentId)}
+                disabled={submitting}
+                className="min-h-[44px]"
+              >
+                Calculate my estimate
+              </Button>
+              {error ? <p className="text-small text-destructive">{error}</p> : null}
+            </HairlineCard>
+          ) : error ? (
+            <HairlineCard padding="lg" className="mx-auto max-w-readable space-y-4 text-center">
+              <p className="text-body text-destructive">{error}</p>
+              <Button variant="secondary" onClick={() => window.location.reload()} className="min-h-[44px]">
+                Try again
+              </Button>
+            </HairlineCard>
+          ) : null}
+        </div>
+        <LiveProfilePanel arrUsd={arrUsd} complexity={complexity} />
       </div>
-      <LiveProfilePanel arrUsd={arrUsd} complexity={complexity} />
-    </div>
+    </>
   );
 }

@@ -26,15 +26,6 @@ def check_sanity(answers: dict[str, Any]) -> list[dict[str, str]]:
 
 def check_contradictions(answers: dict[str, Any]) -> list[dict[str, str]]:
     conflicts: list[dict[str, str]] = []
-    usage = answers.get("pricing.usage_based")
-    models = answers.get("pricing.models") or []
-    if usage is False and "usage" in models:
-        conflicts.append(
-            {
-                "code": "usage_model_mismatch",
-                "message": "You selected usage pricing but indicated usage-based billing is not used.",
-            }
-        )
     manual_freq = answers.get("operations.manual_override_frequency")
     if manual_freq == "never" and answers.get("changes.migration_method") == "manual":
         conflicts.append(
