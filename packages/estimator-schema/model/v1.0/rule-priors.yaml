@@ -1,5 +1,5 @@
 version: 2.0.0
-calibration_stage: 2
+calibration_stage: 3
 family_correlations:
   subscription_pricing_gap: 0.48
   discount_integrity: 0.48

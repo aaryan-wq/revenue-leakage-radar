@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Copy, Mail, RotateCcw } from "lucide-react";
 
-import { CountUp } from "@/components/count-up";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import {
   storeAssessmentId,
 } from "@/lib/estimator/api";
 import { AssessmentResumeBanner } from "@/components/estimator/assessment-resume-prompt";
+import { EstimatorResultHero, EstimatorResultMethodology } from "@/components/estimator/estimator-result-hero";
 import {
   AnalyticsEvents,
   formatCurrency,
@@ -36,24 +36,6 @@ import {
 interface EstimatorResultClientProps {
   assessmentId: string;
 }
-
-const SCENARIOS = [
-  {
-    id: "conservative",
-    label: "Conservative",
-    subtitle: "P10 to P50 band",
-  },
-  {
-    id: "central",
-    label: "Expected",
-    subtitle: "P25 to P75 band",
-  },
-  {
-    id: "aggressive",
-    label: "Upside",
-    subtitle: "P50 to P90 band",
-  },
-] as const;
 
 function toNumber(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -142,7 +124,7 @@ function insightForHypothesis(
 export function EstimatorResultClient({ assessmentId }: EstimatorResultClientProps) {
   const router = useRouter();
   const [result, setResult] = useState<EstimatorResult | null>(null);
-  const [scenario, setScenario] = useState("central");
+  const [scenario, setScenario] = useState("aggressive");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [scenarioLoading, setScenarioLoading] = useState(false);
@@ -169,9 +151,9 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
       if (resultResponse.status === "fulfilled") {
         data = resultResponse.value;
       } else {
-        data = await calculateAssessment(assessmentId, "central");
+        data = await calculateAssessment(assessmentId, "aggressive");
       }
-      setScenario(data.scenario ?? "central");
+      setScenario(data.scenario ?? "aggressive");
       setResult(normalizeResult(data));
       captureEvent(AnalyticsEvents.RESULT_VIEWED, { assessment_id: assessmentId });
     } catch (err) {
@@ -267,18 +249,9 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const maxExpected = Math.max(...mechanisms.map((item) => item.expected), 1);
   const paybackPct = result.estimate.low > 0 ? (2500 / result.estimate.low) * 100 : 0;
   const top = result.top_hypotheses[0];
-  const activeScenario = SCENARIOS.find((item) => item.id === scenario);
   const calc = result.calculation_summary;
-  const pctOfArr = calc?.pct_of_arr ?? (result.arr_usd ? (result.estimate.central / result.arr_usd) * 100 : 0);
-  const medianRun = result.estimate.median_run ?? calc?.median_run;
-  const showMedianNote =
-    medianRun !== undefined && medianRun !== result.estimate.central && result.estimate.central > 0;
   const ruleRows = (result.rule_breakdown ?? []).slice(0, 27);
   const rollups = result.display_rollups ?? [];
-  const stackP90 = result.theoretical_stack?.p90 ?? result.estimate.theoretical_stack_p90 ?? 0;
-  const stressP90 = result.estimate.stress_p90 ?? result.percentiles?.p90 ?? 0;
-  const recoverable = result.recoverable?.expected ?? result.estimate.recoverable ?? 0;
-  const atRisk = result.estimate.at_risk ?? Math.max(result.estimate.central - recoverable, 0);
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -286,93 +259,19 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         <AssessmentResumeBanner resume={resume} onAnswer={handleAnswerNewQuestions} />
       ) : null}
       <Reveal>
-        <HairlineCard padding="lg" className="overflow-hidden">
-          <div className="space-y-8">
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Badge variant="info">Modeled estimate</Badge>
-              {result.complexity?.label ? (
-                <Badge variant="gray">{result.complexity.label} complexity</Badge>
-              ) : null}
-              {result.confidence ? <Badge variant="success">{result.confidence} confidence</Badge> : null}
-            </div>
-
-            <div className="space-y-4 text-center">
-              <h1 className="text-h2 text-foreground">Recoverable revenue opportunity</h1>
-              <p className="text-metric-xl tabular-nums text-foreground">
-                <CountUp to={result.estimate.low} prefix="$" /> to{" "}
-                <CountUp to={result.estimate.high} prefix="$" />
-              </p>
-              <p className="text-body tabular-nums text-foreground">
-                Expected recoverable: {formatCurrency(result.estimate.central)} ARR ({pctOfArr.toFixed(2)}% of ARR)
-              </p>
-              {stressP90 > 0 ? (
-                <p className="text-small tabular-nums text-muted-foreground">
-                  Stress case (P90): {formatCurrency(stressP90)}. Full rule ceiling: {formatCurrency(stackP90)}.
-                </p>
-              ) : null}
-              {recoverable > 0 ? (
-                <p className="text-small tabular-nums text-muted-foreground">
-                  Recoverable slice: {formatCurrency(recoverable)}. At-risk: {formatCurrency(atRisk)}.
-                </p>
-              ) : null}
-              {showMedianNote ? (
-                <p className="text-small tabular-nums text-muted-foreground">
-                  Median simulation run: {formatCurrency(medianRun)}. Expected uses the average across all 10,000
-                  runs.
-                </p>
-              ) : null}
-              <p className="mx-auto max-w-readable text-body text-muted-foreground">
-                About {formatCurrency(result.monthly.central)}/mo expected ({formatCurrency(result.monthly.low)} to{" "}
-                {formatCurrency(result.monthly.high)} band).
-              </p>
-              {activeScenario ? (
-                <p className="text-caption text-muted-foreground">
-                  {activeScenario.label} band: {calc?.scenario_band_label ?? activeScenario.subtitle}. Modeled
-                  estimate, not an audited finding.
-                </p>
-              ) : null}
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {SCENARIOS.map((option) => (
-                  <Button
-                    key={option.id}
-                    variant={scenario === option.id ? "primary" : "secondary"}
-                    onClick={() => void handleScenario(option.id)}
-                    disabled={scenarioLoading}
-                    className="min-h-[44px]"
-                  >
-                    {option.label}
-                  </Button>
-                ))}
-              </div>
-              <p className="text-center text-caption text-muted-foreground">
-                Scenarios change the percentile band, not your answers.
-              </p>
-            </div>
-          </div>
-        </HairlineCard>
+        <EstimatorResultHero
+          result={result}
+          scenario={scenario}
+          scenarioLoading={scenarioLoading}
+          onScenarioChange={(next) => void handleScenario(next)}
+        />
       </Reveal>
 
       {error ? <p className="text-center text-small text-destructive">{error}</p> : null}
 
       {calc && calc.explanation_bullets.length > 0 ? (
         <Reveal>
-          <HairlineCard padding="lg" className="space-y-4">
-            <div>
-              <p className="text-overline text-muted-foreground">Model calculation</p>
-              <h2 className="text-h4 mt-2">How this number was derived</h2>
-            </div>
-            <ul className="space-y-3">
-              {calc.explanation_bullets.map((bullet) => (
-                <li key={bullet} className="flex gap-3 text-small text-muted-foreground">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          </HairlineCard>
+          <EstimatorResultMethodology result={result} calc={calc} />
         </Reveal>
       ) : null}
 

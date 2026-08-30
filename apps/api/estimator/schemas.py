@@ -22,7 +22,7 @@ class PatchAnswersRequest(BaseModel):
 
 class CalculateRequest(BaseModel):
     random_seed: int | None = 42
-    scenario: str = Field(default="central", pattern="^(conservative|central|aggressive)$")
+    scenario: str = Field(default="aggressive", pattern="^(conservative|central|aggressive)$")
 
 
 class LeadRequest(BaseModel):

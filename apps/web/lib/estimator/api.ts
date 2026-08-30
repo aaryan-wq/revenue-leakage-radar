@@ -80,7 +80,7 @@ export async function validateAssessment(assessmentId: string) {
   );
 }
 
-export async function calculateAssessment(assessmentId: string, scenario = "central") {
+export async function calculateAssessment(assessmentId: string, scenario = "aggressive") {
   return apiFetch<EstimatorResult>(`/estimator/assessments/${assessmentId}/calculate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

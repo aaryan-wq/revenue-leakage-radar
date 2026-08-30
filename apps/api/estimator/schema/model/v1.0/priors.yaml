@@ -1,6 +1,6 @@
 version: 2.0.0
 source: model_prior
-calibration_stage: 2
+calibration_stage: 3
 simulation_count: 10000
 max_leakage_fraction_of_arr: 0.35
 monte_carlo:

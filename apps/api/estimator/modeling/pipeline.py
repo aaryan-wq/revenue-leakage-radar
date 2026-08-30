@@ -22,7 +22,7 @@ from estimator.questionnaire.schema import load_hypothesis_rule_map, load_priors
 SCENARIO_BANDS: dict[str, tuple[str, str]] = {
     "conservative": ("p10", "p50"),
     "central": ("p25", "p75"),
-    "aggressive": ("p50", "p90"),
+    "aggressive": ("p75", "p90"),
 }
 
 
@@ -296,6 +296,9 @@ def run_model(
     stress_p90 = round_display_amount(pct["p90"])
     stack_p90_rounded = round_display_amount(stack_p90)
     overlap_discount = max(stack_p90_rounded - estimate_central, 0)
+    headline_low = round_display_amount(max(pct["p50"], estimate_low))
+    headline_high = stress_p90
+    headline_pct = round((headline_high / arr) * 100, 2) if arr > 0 else 0.0
     arr_uncertainty = float(normalized.get("arr_uncertainty", 0.05))
     arr_band_low = round_display_amount(expected_mean * (1 - arr_uncertainty))
     arr_band_high = round_display_amount(expected_mean * (1 + arr_uncertainty))
@@ -311,6 +314,9 @@ def run_model(
         "recoverable": recoverable_expected,
         "at_risk": at_risk_expected,
         "overlap_discount": overlap_discount,
+        "headline_low": headline_low,
+        "headline_high": headline_high,
+        "headline_pct": headline_pct,
         "arr_band_low": arr_band_low,
         "arr_band_high": arr_band_high,
     }
