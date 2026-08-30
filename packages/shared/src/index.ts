@@ -618,6 +618,8 @@ export {
 export type {
   EstimatorAssessmentState,
   EstimatorComplexityPreview,
+  EstimatorCoverageBridge,
+  EstimatorDisplayRollup,
   EstimatorHypothesisBreakdown,
   EstimatorCalculationSummary,
   EstimatorMechanismInsight,
@@ -627,6 +629,9 @@ export type {
   EstimatorQuestion,
   EstimatorResumeState,
   EstimatorResult,
+  EstimatorRuleBreakdown,
+  EstimatorRuleInsight,
+  EstimatorVerificationCategoryPreview,
   EstimatorVerificationPreview,
   EstimatorVerificationRule,
   HypothesisId,
