@@ -9,6 +9,12 @@ import { apiFetch } from "@/lib/api";
 const SESSION_KEY = "rlr_estimator_session";
 const ASSESSMENT_KEY = "rlr_estimator_assessment_id";
 
+export function clearAssessmentSession(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(ASSESSMENT_KEY);
+  localStorage.removeItem(SESSION_KEY);
+}
+
 export function getStoredAssessmentId(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(ASSESSMENT_KEY);

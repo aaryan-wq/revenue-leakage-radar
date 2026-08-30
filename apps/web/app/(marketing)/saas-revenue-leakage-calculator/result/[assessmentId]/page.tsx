@@ -17,7 +17,7 @@ export default async function EstimatorResultPage({
   return (
     <>
       <EstimatorResultClient assessmentId={assessmentId} />
-      <SiteFooter />
+      <SiteFooter variant="minimal" />
     </>
   );
 }

@@ -5,10 +5,46 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Reveal } from "@/components/motion";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { cn } from "@/lib/utils";
 
-export function SiteFooter() {
+type SiteFooterProps = {
+  variant?: "default" | "minimal";
+  className?: string;
+};
+
+export function SiteFooter({ variant = "default", className }: SiteFooterProps) {
+  if (variant === "minimal") {
+    return (
+      <footer className={cn("border-t border-line", className)}>
+        <div className="mx-auto flex max-w-marketing flex-col gap-4 px-6 py-8 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:px-10">
+          <span>© {new Date().getFullYear()} Paevo.</span>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link href="/how-it-works" className="transition-colors hover:text-foreground">
+              How It Works
+            </Link>
+            <Link href="/pricing" className="transition-colors hover:text-foreground">
+              Pricing
+            </Link>
+            <Link href="/security" className="transition-colors hover:text-foreground">
+              Security
+            </Link>
+            <Link href="/faq" className="transition-colors hover:text-foreground">
+              FAQ
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
-    <footer className="border-t border-line">
+    <footer className={cn("border-t border-line", className)}>
       <div className="mx-auto max-w-marketing px-6 py-24 md:px-10">
         <Reveal>
           <div className="flex flex-col items-start justify-between gap-12 md:flex-row md:items-end">

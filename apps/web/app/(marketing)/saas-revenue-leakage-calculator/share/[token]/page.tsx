@@ -13,7 +13,7 @@ export default async function EstimatorSharePage({ params }: { params: Promise<{
   return (
     <>
       <EstimatorShareClient token={token} />
-      <SiteFooter />
+      <SiteFooter variant="minimal" />
     </>
   );
 }

@@ -12,7 +12,7 @@ export default function EstimatorStartPage() {
   return (
     <>
       <EstimatorQuestionnaireClient />
-      <SiteFooter />
+      <SiteFooter variant="minimal" />
     </>
   );
 }

@@ -12,6 +12,7 @@ import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { captureEvent } from "@/lib/analytics/client";
 import {
   calculateAssessment,
+  clearAssessmentSession,
   createAssessment,
   fetchAssessment,
   fetchQuestionnaire,
@@ -172,7 +173,7 @@ export function EstimatorQuestionnaireClient() {
   return (
     <>
       <ProgressRail sectionLabel={sectionLabel} completionRate={progress.completion_rate} />
-      <div className="mx-auto grid max-w-marketing gap-10 px-6 py-12 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-16">
+      <div className="mx-auto grid min-h-[calc(100vh-8rem)] max-w-marketing gap-10 px-6 py-12 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-16">
         <div className="min-w-0">
           {question ? (
             <QuestionStep
@@ -203,9 +204,21 @@ export function EstimatorQuestionnaireClient() {
           ) : error ? (
             <HairlineCard padding="lg" className="mx-auto max-w-readable space-y-4 text-center">
               <p className="text-body text-destructive">{error}</p>
-              <Button variant="secondary" onClick={() => window.location.reload()} className="min-h-[44px]">
-                Try again
-              </Button>
+              <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button variant="secondary" onClick={() => window.location.reload()} className="min-h-[44px]">
+                  Try again
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    clearAssessmentSession();
+                    window.location.href = "/saas-revenue-leakage-calculator/start";
+                  }}
+                  className="min-h-[44px]"
+                >
+                  Start over
+                </Button>
+              </div>
             </HairlineCard>
           ) : null}
         </div>
