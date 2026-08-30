@@ -19,16 +19,34 @@ import {
   fetchResult,
   saveLead,
 } from "@/lib/estimator/api";
-import { AnalyticsEvents, formatCurrency, type EstimatorHypothesisBreakdown, type EstimatorResult } from "@rlr/shared";
+import {
+  AnalyticsEvents,
+  formatCurrency,
+  type EstimatorHypothesisBreakdown,
+  type EstimatorMechanismInsight,
+  type EstimatorResult,
+} from "@rlr/shared";
 
 interface EstimatorResultClientProps {
   assessmentId: string;
 }
 
 const SCENARIOS = [
-  { id: "conservative", label: "Conservative" },
-  { id: "central", label: "Expected" },
-  { id: "aggressive", label: "Upside" },
+  {
+    id: "conservative",
+    label: "Conservative",
+    subtitle: "P10 to P50 band",
+  },
+  {
+    id: "central",
+    label: "Expected",
+    subtitle: "P25 to P75 band",
+  },
+  {
+    id: "aggressive",
+    label: "Upside",
+    subtitle: "P50 to P90 band",
+  },
 ] as const;
 
 function toNumber(value: unknown): number {
@@ -37,15 +55,22 @@ function toNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function normalizeResult(data: EstimatorResult): EstimatorResult {
-  const normalizeHypothesis = (item: EstimatorHypothesisBreakdown): EstimatorHypothesisBreakdown => ({
+function normalizeHypothesis(item: EstimatorHypothesisBreakdown): EstimatorHypothesisBreakdown {
+  const expected = toNumber(item.expected ?? item.mid);
+  return {
     ...item,
     posterior_probability: toNumber(item.posterior_probability),
+    expected,
     low: toNumber(item.low),
-    mid: toNumber(item.mid),
+    mid: toNumber(item.mid ?? expected),
     high: toNumber(item.high),
-  });
+    pct_of_arr: toNumber(item.pct_of_arr),
+    likelihood: toNumber(item.likelihood),
+    share_of_total: toNumber(item.share_of_total),
+  };
+}
 
+function normalizeResult(data: EstimatorResult): EstimatorResult {
   return {
     ...data,
     estimate: {
@@ -59,10 +84,22 @@ function normalizeResult(data: EstimatorResult): EstimatorResult {
       central: toNumber(data.monthly.central),
       high: toNumber(data.monthly.high),
     },
+    detectable: {
+      low: toNumber(data.detectable?.low),
+      high: toNumber(data.detectable?.high),
+    },
     top_hypotheses: (data.top_hypotheses ?? []).map(normalizeHypothesis),
     hypothesis_breakdown: (data.hypothesis_breakdown ?? []).map(normalizeHypothesis),
-    what_would_need_to_be_true: data.what_would_need_to_be_true ?? [],
+    mechanism_insights: data.mechanism_insights ?? [],
+    verification_preview: data.verification_preview ?? [],
   };
+}
+
+function insightForHypothesis(
+  insights: EstimatorMechanismInsight[],
+  hypothesisId: string
+): string | undefined {
+  return insights.find((item) => item.hypothesis_id === hypothesisId)?.insight;
 }
 
 export function EstimatorResultClient({ assessmentId }: EstimatorResultClientProps) {
@@ -172,11 +209,12 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
   if (!result) return null;
 
+  const profile = result.profile_summary;
+  const mechanisms = result.top_hypotheses.slice(0, 5);
+  const maxExpected = Math.max(...mechanisms.map((item) => item.expected), 1);
   const paybackPct = result.estimate.low > 0 ? (2500 / result.estimate.low) * 100 : 0;
   const top = result.top_hypotheses[0];
-  const drivers = result.hypothesis_breakdown.slice(0, 5);
-  const maxBreakdown = Math.max(...drivers.map((item) => item.high), 1);
-  const assumptions = result.what_would_need_to_be_true;
+  const activeScenario = SCENARIOS.find((item) => item.id === scenario);
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -197,27 +235,37 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                 <CountUp to={result.estimate.low} prefix="$" /> to{" "}
                 <CountUp to={result.estimate.high} prefix="$" />
               </p>
+              <p className="text-body tabular-nums text-foreground">
+                Expected: {formatCurrency(result.estimate.central)} ARR
+              </p>
               <p className="mx-auto max-w-readable text-body text-muted-foreground">
                 About {formatCurrency(result.monthly.low)} to {formatCurrency(result.monthly.high)} per month.
-                Expected midpoint: {formatCurrency(result.estimate.central)} ARR.
               </p>
-              <p className="text-caption text-muted-foreground">
-                Directional model only. Not an audited billing finding.
-              </p>
+              {activeScenario ? (
+                <p className="text-caption text-muted-foreground">
+                  {activeScenario.label} view ({activeScenario.subtitle}). Directional model only, not an audited
+                  billing finding.
+                </p>
+              ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {SCENARIOS.map((option) => (
-                <Button
-                  key={option.id}
-                  variant={scenario === option.id ? "primary" : "secondary"}
-                  onClick={() => void handleScenario(option.id)}
-                  disabled={scenarioLoading}
-                  className="min-h-[44px]"
-                >
-                  {option.label}
-                </Button>
-              ))}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {SCENARIOS.map((option) => (
+                  <Button
+                    key={option.id}
+                    variant={scenario === option.id ? "primary" : "secondary"}
+                    onClick={() => void handleScenario(option.id)}
+                    disabled={scenarioLoading}
+                    className="min-h-[44px]"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-center text-caption text-muted-foreground">
+                Scenarios change the percentile band, not your answers.
+              </p>
             </div>
           </div>
         </HairlineCard>
@@ -225,71 +273,144 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
       {error ? <p className="text-center text-small text-destructive">{error}</p> : null}
 
-      <Stagger className="grid gap-6 md:grid-cols-2">
-        <StaggerItem>
-          <HairlineCard padding="lg" className="h-full space-y-6">
+      {profile ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-6">
             <div>
-              <p className="text-overline text-muted-foreground">Exposure drivers</p>
-              <h2 className="text-h4 mt-2">Where leakage likely hides</h2>
+              <p className="text-overline text-muted-foreground">Your profile</p>
+              <h2 className="text-h4 mt-2">What you told us</h2>
             </div>
-            {drivers.length > 0 ? (
-              <div className="space-y-5">
-                {drivers.map((item) => (
-                  <div key={item.hypothesis_id} className="space-y-2">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-body text-foreground">{item.name}</span>
-                      <span className="shrink-0 text-small tabular-nums text-muted-foreground">
-                        {formatCurrency(item.low)} to {formatCurrency(item.high)}
-                      </span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
-                      <div
-                        className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                        style={{ width: `${Math.max(8, (item.high / maxBreakdown) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
+            <dl className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <dt className="text-caption text-muted-foreground">ARR</dt>
+                <dd className="text-body tabular-nums text-foreground">{formatCurrency(profile.arr_usd)}</dd>
+              </div>
+              {profile.customer_count ? (
+                <div>
+                  <dt className="text-caption text-muted-foreground">Customers</dt>
+                  <dd className="text-body tabular-nums text-foreground">
+                    {profile.customer_count.toLocaleString()}
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt className="text-caption text-muted-foreground">Complexity</dt>
+                <dd className="text-body text-foreground">{profile.complexity_label}</dd>
+              </div>
+            </dl>
+            {profile.risk_flags.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {profile.risk_flags.map((flag) => (
+                  <Badge key={flag} variant="warning">
+                    {flag}
+                  </Badge>
                 ))}
               </div>
-            ) : (
-              <p className="text-body text-muted-foreground">No driver breakdown available for this scenario.</p>
-            )}
-            <p className="text-caption text-muted-foreground">
-              Ranges overlap and are correlation-adjusted. Do not sum them independently.
-            </p>
+            ) : null}
           </HairlineCard>
-        </StaggerItem>
+        </Reveal>
+      ) : null}
 
-        <StaggerItem>
-          <HairlineCard padding="lg" className="h-full space-y-6">
+      {mechanisms.length > 0 ? (
+        <Stagger className="space-y-6">
+          <div>
+            <p className="text-overline text-muted-foreground">Top mechanisms</p>
+            <h2 className="text-h4 mt-2">Where leakage likely hides</h2>
+          </div>
+          {mechanisms.map((item) => {
+            const insight = insightForHypothesis(result.mechanism_insights ?? [], item.hypothesis_id);
+            return (
+              <StaggerItem key={item.hypothesis_id}>
+                <HairlineCard padding="lg" className="space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <h3 className="text-body font-medium text-foreground">{item.name}</h3>
+                      {insight ? (
+                        <p className="max-w-readable text-small text-muted-foreground">{insight}</p>
+                      ) : null}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-body tabular-nums text-foreground">{formatCurrency(item.expected)}</p>
+                      <p className="text-caption tabular-nums text-muted-foreground">{item.pct_of_arr}% of ARR</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="gray">{item.likelihood}% likelihood</Badge>
+                    <Badge variant="info">{item.share_of_total}% of modeled total</Badge>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
+                    <div
+                      className="h-full rounded-full bg-primary/80 transition-all duration-300"
+                      style={{ width: `${Math.max(8, (item.expected / maxExpected) * 100)}%` }}
+                    />
+                  </div>
+                </HairlineCard>
+              </StaggerItem>
+            );
+          })}
+          <p className="text-caption text-muted-foreground">
+            Mechanism amounts overlap and are correlation-adjusted. Do not sum them independently.
+          </p>
+        </Stagger>
+      ) : null}
+
+      {result.verification_preview && result.verification_preview.length > 0 ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-6">
             <div>
-              <p className="text-overline text-muted-foreground">Assumptions</p>
-              <h2 className="text-h4 mt-2">What would need to be true</h2>
-            </div>
-            {assumptions.length > 0 ? (
-              <ul className="space-y-3 text-body text-muted-foreground">
-                {assumptions.map((line) => (
-                  <li key={line} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-body text-muted-foreground">
-                No assumption summary was generated for this run.
+              <p className="text-overline text-muted-foreground">Verification</p>
+              <h2 className="text-h4 mt-2">What a scan would check</h2>
+              <p className="mt-2 max-w-readable text-body text-muted-foreground">
+                A deterministic billing scan runs these rules against your exports to confirm or rule out each
+                mechanism.
               </p>
-            )}
+            </div>
+            <div className="space-y-5">
+              {result.verification_preview.map((entry) => (
+                <div key={entry.hypothesis_id} className="space-y-2">
+                  <p className="text-body font-medium text-foreground">{entry.hypothesis_name}</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {entry.rules.map((rule) => (
+                      <Badge key={rule.rule_id} variant="gray">
+                        {rule.name}
+                      </Badge>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </HairlineCard>
-        </StaggerItem>
-      </Stagger>
+        </Reveal>
+      ) : null}
 
-      {result.narrative ? (
+      {result.executive_summary ? (
+        <Reveal>
+          <HairlineCard padding="lg" className="space-y-4">
+            <p className="text-overline text-muted-foreground">Executive summary</p>
+            <p className="max-w-readable text-body text-muted-foreground">{result.executive_summary}</p>
+            {result.narrative ? (
+              <div className="space-y-2 border-t border-border/30 pt-4">
+                <p className="text-caption text-muted-foreground">Additional narrative</p>
+                <h3 className="text-h4">{result.narrative.headline}</h3>
+                <p className="max-w-readable text-small text-muted-foreground">{result.narrative.summary}</p>
+              </div>
+            ) : null}
+          </HairlineCard>
+        </Reveal>
+      ) : null}
+
+      {result.detectable.high > 0 ? (
         <Reveal>
           <HairlineCard padding="lg" className="space-y-3">
-            <p className="text-overline text-muted-foreground">Summary</p>
-            <h2 className="text-h4">{result.narrative.headline}</h2>
-            <p className="max-w-readable text-body text-muted-foreground">{result.narrative.summary}</p>
+            <p className="text-overline text-muted-foreground">Detectable range</p>
+            <h2 className="text-h4">Likely identifiable from billing exports</h2>
+            <p className="text-body tabular-nums text-foreground">
+              {formatCurrency(result.detectable.low)} to {formatCurrency(result.detectable.high)} ARR
+            </p>
+            <p className="max-w-readable text-small text-muted-foreground">
+              This is the portion of the modeled range that standard subscription and invoice exports can usually
+              surface. The remainder may require contract or CRM data.
+            </p>
           </HairlineCard>
         </Reveal>
       ) : null}

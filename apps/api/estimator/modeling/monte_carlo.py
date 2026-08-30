@@ -38,7 +38,6 @@ def simulate_totals(
     posteriors: dict[str, float],
     priors: dict,
     simulation_count: int,
-    scenario_multiplier: float = 1.0,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     hypothesis_cfg = priors["hypotheses"]
     correlations = priors.get("correlations", {})
@@ -62,12 +61,12 @@ def simulate_totals(
         for hid in HYPOTHESIS_IDS:
             cfg = hypothesis_cfg.get(hid, {})
             posterior = posteriors.get(hid, 0.05)
-            if rng.random() > posterior * scenario_multiplier:
+            if rng.random() > posterior:
                 continue
             exposure_base = float(base_map.get(cfg.get("exposure_base", "arr"), arr))
             if exposure_base <= 0:
                 continue
-            affected = rng.beta(2, 20) * scenario_multiplier
+            affected = rng.beta(2, 20)
             sev_cfg = cfg.get("severity", {})
             severity = rng.beta(sev_cfg.get("alpha", 2), sev_cfg.get("beta", 6))
             pers_cfg = cfg.get("persistence", {})

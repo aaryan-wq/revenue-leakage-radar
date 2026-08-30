@@ -59,9 +59,37 @@ export interface EstimatorHypothesisBreakdown {
   name: string;
   rule_ids: string[];
   posterior_probability: number;
+  expected: number;
   low: number;
   mid: number;
   high: number;
+  pct_of_arr: number;
+  likelihood: number;
+  share_of_total: number;
+}
+
+export interface EstimatorProfileSummary {
+  arr_usd: number;
+  customer_count?: number;
+  complexity_label: string;
+  complexity_score: number;
+  risk_flags: string[];
+}
+
+export interface EstimatorMechanismInsight {
+  hypothesis_id: HypothesisId;
+  insight: string;
+}
+
+export interface EstimatorVerificationRule {
+  rule_id: string;
+  name: string;
+}
+
+export interface EstimatorVerificationPreview {
+  hypothesis_id: HypothesisId;
+  hypothesis_name: string;
+  rules: EstimatorVerificationRule[];
 }
 
 export interface EstimatorResult {
@@ -80,9 +108,16 @@ export interface EstimatorResult {
     source: string;
     confidence: string;
   }[];
-  what_would_need_to_be_true: string[];
+  /** @deprecated Use executive_summary instead */
+  what_would_need_to_be_true?: string[];
+  profile_summary?: EstimatorProfileSummary;
+  mechanism_insights?: EstimatorMechanismInsight[];
+  verification_preview?: EstimatorVerificationPreview[];
+  executive_summary?: string;
   model_version: string;
   calibration_stage: number;
+  scenario?: string;
+  scenario_band?: [string, string];
   narrative?: EstimatorNarrative;
   arr_usd?: number;
   percentiles?: Record<string, number>;

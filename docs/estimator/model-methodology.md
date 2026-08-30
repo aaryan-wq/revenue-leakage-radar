@@ -14,7 +14,8 @@ Answers → Normalize → Segment → Complexity score
        → Per-hypothesis exposure (B × A × S × P × R × D)
        → Correlation overlap adjustment
        → Monte Carlo simulation (10,000 runs, seeded)
-       → Percentiles (P10–P90; headline P25–P75)
+       → Percentiles (P10–P90)
+       → Scenario bands + answer-aware insights
 ```
 
 ### Exposure Formula (per hypothesis)
@@ -33,17 +34,41 @@ Hypothesis totals are **not** summed independently. Overlap penalties apply betw
 
 A separate 0–40 score across pricing, contract, systems, change, and operations dimensions. Complexity modifies uncertainty and mechanism plausibility; it does not directly multiply ARR into leakage dollars.
 
+### Scenario Bands
+
+Monte Carlo runs once per calculation. Scenarios select different percentile bands from the same simulation output:
+
+| Scenario | Band | Use |
+|----------|------|-----|
+| Conservative | P10 to P50 | Lower plausible range |
+| Expected (central) | P25 to P75 | Canonical headline range |
+| Upside (aggressive) | P50 to P90 | Higher plausible range |
+
+When the expected midpoint is positive but the lower band rounds to zero, the lower bound uses P10 so the headline does not read as "$0 to $X" without context.
+
+### Insight Engine
+
+After the model runs, a deterministic insight layer (no LLM math) produces:
+
+- **Profile summary:** ARR, customer count, complexity label, and risk flags from your answers
+- **Mechanism insights:** One sentence per top mechanism tying your specific answers to why it ranked
+- **Verification preview:** Deterministic scan rules that would validate each top mechanism
+- **Executive summary:** A short narrative using your numbers and top mechanisms
+
+Optional AI narrative, when enabled, summarizes the result in prose. It never sets the numbers.
+
 ## What the Output Means
 
 | Layer | Meaning |
 |-------|---------|
 | Potential exposure | Revenue plausibly at risk under model assumptions |
+| Expected (per mechanism) | P50 when positive; otherwise P75 when the mechanism fires in fewer than half of simulations |
 | Detectable exposure | Portion likely identifiable from billing exports |
 | Evidence required | Actual leakage requires the Paevo deterministic scan |
 
 ## Calibration Status
 
-**Stage 0 — Structural model.** Not yet calibrated against a statistically representative audit dataset. As completed audits accumulate, priors will be updated with documented backtests.
+**Stage 0, structural model.** Not yet calibrated against a statistically representative audit dataset. As completed audits accumulate, priors will be updated with documented backtests.
 
 ## Limitations
 

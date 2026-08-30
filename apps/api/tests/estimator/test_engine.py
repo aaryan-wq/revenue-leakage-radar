@@ -169,3 +169,44 @@ def test_monte_carlo_percentiles_ordered():
 def test_complexity_separate_from_leakage():
     complexity = compute_complexity(normalize_answers(PROFILE_B))
     assert complexity["total"] > compute_complexity(normalize_answers(PROFILE_A))["total"]
+
+
+def test_profile_b_headline_low_nonzero_when_central_positive():
+    result = run_model(PROFILE_B, random_seed=42, scenario="central")
+    assert result["estimate"]["central"] > 0
+    assert result["estimate"]["low"] > 0
+
+
+def test_scenario_bands_produce_different_ranges():
+    conservative = run_model(PROFILE_B, random_seed=42, scenario="conservative")
+    central = run_model(PROFILE_B, random_seed=42, scenario="central")
+    aggressive = run_model(PROFILE_B, random_seed=42, scenario="aggressive")
+    assert conservative["estimate"]["low"] <= central["estimate"]["low"]
+    assert central["estimate"]["high"] <= aggressive["estimate"]["high"]
+    assert conservative["estimate"]["high"] < aggressive["estimate"]["high"]
+
+
+def test_hypothesis_rows_have_expected_and_pct_arr():
+    result = run_model(PROFILE_B, random_seed=42)
+    assert result["top_hypotheses"]
+    for item in result["top_hypotheses"]:
+        assert item["expected"] > 0
+        assert item["pct_of_arr"] > 0
+        assert item["likelihood"] > 0
+        assert not (item["low"] == 0 and item["high"] == 0 and item["expected"] > 0)
+
+
+def test_insights_include_answer_specific_content():
+    result = run_model(PROFILE_B, random_seed=42)
+    assert result.get("profile_summary")
+    assert result["profile_summary"]["risk_flags"]
+    assert "grandfather" in " ".join(result["profile_summary"]["risk_flags"]).lower() or any(
+        "grandfather" in m["insight"].lower() for m in result.get("mechanism_insights", [])
+    )
+    assert result.get("executive_summary")
+    assert result.get("verification_preview")
+    assert any(
+        "grandfather" in m["insight"].lower()
+        for m in result.get("mechanism_insights", [])
+    )
+

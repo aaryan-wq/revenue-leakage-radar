@@ -619,10 +619,14 @@ export type {
   EstimatorAssessmentState,
   EstimatorComplexityPreview,
   EstimatorHypothesisBreakdown,
+  EstimatorMechanismInsight,
   EstimatorNarrative,
+  EstimatorProfileSummary,
   EstimatorProgress,
   EstimatorQuestion,
   EstimatorResult,
+  EstimatorVerificationPreview,
+  EstimatorVerificationRule,
   HypothesisId,
 } from "./estimator";
 export { ESTIMATOR_ANALYTICS_EVENTS } from "./estimator";
