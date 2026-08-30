@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { FreeSummaryView } from "@/components/summary/free-summary-view";
+import { EstimatorVerificationComparison } from "@/components/estimator/estimator-verification-comparison";
 import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -25,6 +26,8 @@ import { AnalyticsEvents } from "@rlr/shared";
 
 export function SummaryPageClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const assessmentId = searchParams.get("assessment_id");
   const queryClient = useQueryClient();
   const { getToken, isSignedIn } = useAppAuth();
   const [summary, setSummary] = useState<FreeSummaryResponse | null>(null);
@@ -146,7 +149,17 @@ export function SummaryPageClient() {
   return (
     <PageShell isLoading={isLoading} message="Loading free audit…" variant="report">
       {summary && (
-        <FreeSummaryView summary={summary} onUnlocked={() => void loadSummary()} />
+        <>
+          {assessmentId ? (
+            <div className="mx-auto max-w-report px-6 md:px-10 pb-8">
+              <EstimatorVerificationComparison
+                assessmentId={assessmentId}
+                verifiedArr={parseFloat(summary.recoverable_arr) || 0}
+              />
+            </div>
+          ) : null}
+          <FreeSummaryView summary={summary} onUnlocked={() => void loadSummary()} />
+        </>
       )}
     </PageShell>
   );

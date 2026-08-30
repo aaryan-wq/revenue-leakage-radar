@@ -1,0 +1,626 @@
+{
+  "version": "2.0",
+  "sections": [
+    { "id": "profile", "label": "Billing Profile", "estimated_seconds": 30 },
+    { "id": "pricing", "label": "Pricing", "estimated_seconds": 25 },
+    { "id": "usage", "label": "Usage Billing", "estimated_seconds": 20 },
+    { "id": "seats", "label": "Seat Pricing", "estimated_seconds": 15 },
+    { "id": "product", "label": "Product Catalog", "estimated_seconds": 15 },
+    { "id": "contracts", "label": "Contracts", "estimated_seconds": 20 },
+    { "id": "discounts", "label": "Discounts", "estimated_seconds": 20 },
+    { "id": "changes", "label": "Pricing Changes", "estimated_seconds": 15 },
+    { "id": "systems", "label": "Billing Systems", "estimated_seconds": 10 },
+    { "id": "operations", "label": "Operations", "estimated_seconds": 15 },
+    { "id": "quote_to_bill", "label": "Quote to Bill", "estimated_seconds": 10 },
+    { "id": "migrations", "label": "Migrations", "estimated_seconds": 10 },
+    { "id": "international", "label": "International", "estimated_seconds": 10 },
+    { "id": "controls", "label": "Controls", "estimated_seconds": 15 },
+    { "id": "velocity", "label": "Change Velocity", "estimated_seconds": 10 },
+    { "id": "confidence", "label": "Confidence", "estimated_seconds": 10 }
+  ],
+  "questions": [
+    {
+      "id": "profile.company_type",
+      "section": "profile",
+      "type": "select",
+      "label": "What type of company are you?",
+      "required": true,
+      "options": [
+        { "value": "b2b_saas", "label": "B2B SaaS" },
+        { "value": "b2b_b2c", "label": "B2B + B2C" },
+        { "value": "b2c_saas", "label": "B2C SaaS" },
+        { "value": "marketplace", "label": "Marketplace" },
+        { "value": "services_saas", "label": "Services + SaaS" },
+        { "value": "other", "label": "Other" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "profile.arr_amount",
+      "section": "profile",
+      "type": "currency",
+      "label": "What is your approximate ARR?",
+      "required": true,
+      "currencies": ["USD", "CAD", "GBP", "EUR", "AUD"],
+      "hypotheses": []
+    },
+    {
+      "id": "profile.arr_confidence",
+      "section": "profile",
+      "type": "select",
+      "label": "How confident are you in this ARR figure?",
+      "required": true,
+      "options": [
+        { "value": "exact", "label": "Exact" },
+        { "value": "approximate", "label": "Approximate" },
+        { "value": "rough", "label": "Very rough estimate" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "profile.customer_count",
+      "section": "profile",
+      "type": "number",
+      "label": "How many paying customers do you have?",
+      "required": true,
+      "min": 1,
+      "hypotheses": []
+    },
+    {
+      "id": "pricing.models",
+      "section": "pricing",
+      "type": "multiselect",
+      "label": "How do customers pay you?",
+      "required": true,
+      "options": [
+        { "value": "flat", "label": "Flat subscription" },
+        { "value": "per_seat", "label": "Per seat" },
+        { "value": "usage", "label": "Usage-based" },
+        { "value": "tiered", "label": "Tiered" },
+        { "value": "custom_enterprise", "label": "Custom enterprise" },
+        { "value": "addons", "label": "Add-ons" },
+        { "value": "bundles", "label": "Bundles" },
+        { "value": "minimum_commit", "label": "Minimum commitments" },
+        { "value": "hybrid", "label": "Hybrid pricing" }
+      ],
+      "hypotheses": ["H5", "H10", "H11"]
+    },
+    {
+      "id": "pricing.usage_based",
+      "section": "pricing",
+      "type": "boolean",
+      "label": "Do you use usage-based pricing?",
+      "required": true,
+      "hypotheses": ["H11"],
+      "branches": {
+        "true": ["usage.unit_type", "usage.rating", "usage.billing_timing", "usage.reconciliation"]
+      }
+    },
+    {
+      "id": "pricing.seat_based",
+      "section": "pricing",
+      "type": "boolean",
+      "label": "Do you use seat-based pricing?",
+      "required": true,
+      "hypotheses": ["H10"],
+      "branches": {
+        "true": ["seats.reconciliation", "seats.true_up", "seats.self_service"]
+      }
+    },
+    {
+      "id": "usage.unit_type",
+      "section": "usage",
+      "type": "select",
+      "label": "What usage unit do you primarily measure?",
+      "required": true,
+      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "options": [
+        { "value": "api_calls", "label": "API calls" },
+        { "value": "gb", "label": "GB / storage" },
+        { "value": "minutes", "label": "Minutes" },
+        { "value": "tokens", "label": "Tokens" },
+        { "value": "transactions", "label": "Transactions" },
+        { "value": "other", "label": "Other" }
+      ],
+      "hypotheses": ["H11"]
+    },
+    {
+      "id": "usage.rating",
+      "section": "usage",
+      "type": "select",
+      "label": "How is usage rated?",
+      "required": true,
+      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "options": [
+        { "value": "simple", "label": "Simple unit price" },
+        { "value": "tiered", "label": "Tiered usage" },
+        { "value": "commit_overage", "label": "Commit + overage" },
+        { "value": "custom", "label": "Custom enterprise rate" }
+      ],
+      "hypotheses": ["H11"]
+    },
+    {
+      "id": "usage.billing_timing",
+      "section": "usage",
+      "type": "select",
+      "label": "When is usage billed?",
+      "required": true,
+      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "options": [
+        { "value": "realtime", "label": "Real-time" },
+        { "value": "monthly", "label": "Monthly" },
+        { "value": "postpaid", "label": "Postpaid" },
+        { "value": "hybrid", "label": "Hybrid" }
+      ],
+      "hypotheses": ["H11"]
+    },
+    {
+      "id": "usage.reconciliation",
+      "section": "usage",
+      "type": "select",
+      "label": "How is usage reconciled before invoicing?",
+      "required": true,
+      "visibility": { "when": "pricing.usage_based", "equals": true },
+      "options": [
+        { "value": "automated", "label": "Fully automated" },
+        { "value": "partial", "label": "Partially automated" },
+        { "value": "manual", "label": "Manual" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H11"]
+    },
+    {
+      "id": "seats.reconciliation",
+      "section": "seats",
+      "type": "select",
+      "label": "How are seat count changes reconciled?",
+      "required": true,
+      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "options": [
+        { "value": "automatic", "label": "Automatic" },
+        { "value": "manual", "label": "Manual" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H10"]
+    },
+    {
+      "id": "seats.true_up",
+      "section": "seats",
+      "type": "boolean",
+      "label": "Do you perform seat true-ups?",
+      "required": true,
+      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "hypotheses": ["H10"]
+    },
+    {
+      "id": "seats.self_service",
+      "section": "seats",
+      "type": "boolean",
+      "label": "Can customers change seats self-service?",
+      "required": true,
+      "visibility": { "when": "pricing.seat_based", "equals": true },
+      "hypotheses": ["H10"]
+    },
+    {
+      "id": "product.billable_count",
+      "section": "product",
+      "type": "select",
+      "label": "How many separately billable products do you have?",
+      "required": true,
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3_5", "label": "3 to 5" },
+        { "value": "6_10", "label": "6 to 10" },
+        { "value": "11_25", "label": "11 to 25" },
+        { "value": "25_plus", "label": "25+" }
+      ],
+      "hypotheses": ["H5", "H7", "H8", "H9"]
+    },
+    {
+      "id": "product.independent_catalogs",
+      "section": "product",
+      "type": "select",
+      "label": "Do products have independent pricing catalogs?",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "some", "label": "Some" }
+      ],
+      "hypotheses": ["H5", "H6"]
+    },
+    {
+      "id": "product.addons",
+      "section": "product",
+      "type": "boolean",
+      "label": "Do you sell add-ons?",
+      "required": true,
+      "hypotheses": ["H8", "H9"]
+    },
+    {
+      "id": "contracts.negotiated_arr_pct",
+      "section": "contracts",
+      "type": "select",
+      "label": "What percentage of ARR is under negotiated contracts?",
+      "required": true,
+      "options": [
+        { "value": "0", "label": "0%" },
+        { "value": "1_25", "label": "1 to 25%" },
+        { "value": "26_50", "label": "26 to 50%" },
+        { "value": "51_75", "label": "51 to 75%" },
+        { "value": "76_100", "label": "76 to 100%" }
+      ],
+      "hypotheses": ["H12", "H13", "H18"]
+    },
+    {
+      "id": "contracts.custom_pricing",
+      "section": "contracts",
+      "type": "select",
+      "label": "Do contracts specify prices different from public pricing?",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "some", "label": "Some" }
+      ],
+      "hypotheses": ["H12", "H13"]
+    },
+    {
+      "id": "contracts.grandfathering",
+      "section": "contracts",
+      "type": "select",
+      "label": "Are customers grandfathered onto historical pricing?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "frequently", "label": "Frequently" },
+        { "value": "very_frequently", "label": "Very frequently" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H1", "H2"]
+    },
+    {
+      "id": "contracts.renewal_increases",
+      "section": "contracts",
+      "type": "select",
+      "label": "Are price increases applied automatically at renewal?",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "partially", "label": "Partially" },
+        { "value": "manual", "label": "Manually" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H2"]
+    },
+    {
+      "id": "discounts.frequency",
+      "section": "discounts",
+      "type": "select",
+      "label": "How common are negotiated discounts?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never" },
+        { "value": "rare", "label": "Rare" },
+        { "value": "occasional", "label": "Occasional" },
+        { "value": "common", "label": "Common" },
+        { "value": "nearly_all", "label": "Nearly every enterprise deal" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "discounts.expiry_handling",
+      "section": "discounts",
+      "type": "select",
+      "label": "How are temporary discount expirations handled?",
+      "required": true,
+      "options": [
+        { "value": "automatic", "label": "Automatic" },
+        { "value": "manual_finance", "label": "Manual (Finance)" },
+        { "value": "manual_revops", "label": "Manual (RevOps)" },
+        { "value": "manual_sales", "label": "Manual (Sales)" },
+        { "value": "contract_driven", "label": "Contract-driven" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "discounts.expiry_confidence",
+      "section": "discounts",
+      "type": "scale",
+      "label": "How confident are you that temporary discounts always expire correctly?",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "changes.pricing_changes_24mo",
+      "section": "changes",
+      "type": "select",
+      "label": "How many pricing changes in the last 24 months?",
+      "required": true,
+      "options": [
+        { "value": "0", "label": "None" },
+        { "value": "1", "label": "1 change" },
+        { "value": "2_3", "label": "2 to 3" },
+        { "value": "4_5", "label": "4 to 5" },
+        { "value": "6_plus", "label": "6+" }
+      ],
+      "hypotheses": ["H1", "H2", "H6", "H17"]
+    },
+    {
+      "id": "changes.migration_method",
+      "section": "changes",
+      "type": "select",
+      "label": "How were existing customers migrated after pricing changes?",
+      "required": true,
+      "options": [
+        { "value": "automatic", "label": "Automatically" },
+        { "value": "renewal", "label": "At renewal" },
+        { "value": "manual", "label": "Manually" },
+        { "value": "case_by_case", "label": "Case-by-case" },
+        { "value": "not_standardized", "label": "Not standardized" },
+        { "value": "unknown", "label": "Unknown" },
+        { "value": "na", "label": "No pricing changes" }
+      ],
+      "hypotheses": ["H1", "H6", "H17"]
+    },
+    {
+      "id": "systems.billing_system_count",
+      "section": "systems",
+      "type": "select",
+      "label": "How many billing systems do you operate?",
+      "required": true,
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" },
+        { "value": "3_plus", "label": "3+" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H14", "H16"]
+    },
+    {
+      "id": "systems.primary_platform",
+      "section": "systems",
+      "type": "select",
+      "label": "Primary billing platform",
+      "required": true,
+      "options": [
+        { "value": "stripe", "label": "Stripe" },
+        { "value": "chargebee", "label": "Chargebee" },
+        { "value": "zuora", "label": "Zuora" },
+        { "value": "maxio", "label": "Maxio" },
+        { "value": "recurly", "label": "Recurly" },
+        { "value": "custom", "label": "Custom" },
+        { "value": "erp", "label": "ERP" },
+        { "value": "multiple", "label": "Multiple" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "operations.manual_override_frequency",
+      "section": "operations",
+      "type": "select",
+      "label": "How often does someone manually change a customer's billing configuration?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "frequently", "label": "Frequently" },
+        { "value": "very_frequently", "label": "Very frequently" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H16"]
+    },
+    {
+      "id": "operations.manual_change_logging",
+      "section": "operations",
+      "type": "select",
+      "label": "Are manual billing changes logged?",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "partially", "label": "Partially" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H16"]
+    },
+    {
+      "id": "quote_to_bill.commercial_truth",
+      "section": "quote_to_bill",
+      "type": "select",
+      "label": "Where does the commercial truth live?",
+      "required": true,
+      "options": [
+        { "value": "crm", "label": "CRM" },
+        { "value": "billing", "label": "Billing system" },
+        { "value": "cpq", "label": "CPQ" },
+        { "value": "contracts", "label": "Contracts" },
+        { "value": "spreadsheet", "label": "Spreadsheet" },
+        { "value": "multiple", "label": "Multiple systems" },
+        { "value": "undefined", "label": "Not clearly defined" }
+      ],
+      "hypotheses": ["H12", "H13"]
+    },
+    {
+      "id": "quote_to_bill.quote_automation",
+      "section": "quote_to_bill",
+      "type": "select",
+      "label": "Is there an automated path from quote to contract to billing?",
+      "required": true,
+      "options": [
+        { "value": "fully", "label": "Fully automated" },
+        { "value": "mostly", "label": "Mostly automated" },
+        { "value": "partial", "label": "Partially automated" },
+        { "value": "mostly_manual", "label": "Mostly manual" },
+        { "value": "manual", "label": "Manual" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H12", "H13"]
+    },
+    {
+      "id": "migrations.migrated_36mo",
+      "section": "migrations",
+      "type": "boolean",
+      "label": "Have you migrated billing systems in the last 36 months?",
+      "required": true,
+      "hypotheses": ["H14"],
+      "branches": {
+        "true": ["migrations.reconciliation", "migrations.parallel_systems"]
+      }
+    },
+    {
+      "id": "migrations.reconciliation",
+      "section": "migrations",
+      "type": "select",
+      "label": "Was migration reconciliation performed?",
+      "required": true,
+      "visibility": { "when": "migrations.migrated_36mo", "equals": true },
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "partial", "label": "Partially" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H14"]
+    },
+    {
+      "id": "migrations.parallel_systems",
+      "section": "migrations",
+      "type": "boolean",
+      "label": "Did you run parallel billing systems during migration?",
+      "required": true,
+      "visibility": { "when": "migrations.migrated_36mo", "equals": true },
+      "hypotheses": ["H14"]
+    },
+    {
+      "id": "international.multi_currency",
+      "section": "international",
+      "type": "boolean",
+      "label": "Do you bill in multiple currencies?",
+      "required": true,
+      "hypotheses": ["H15"],
+      "branches": {
+        "true": ["international.currency_count"]
+      }
+    },
+    {
+      "id": "international.currency_count",
+      "section": "international",
+      "type": "select",
+      "label": "How many currencies do you bill in?",
+      "required": true,
+      "visibility": { "when": "international.multi_currency", "equals": true },
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3_5", "label": "3 to 5" },
+        { "value": "6_plus", "label": "6+" }
+      ],
+      "hypotheses": ["H15"]
+    },
+    {
+      "id": "controls.finance_team_size",
+      "section": "controls",
+      "type": "select",
+      "label": "Finance team size",
+      "required": true,
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2_3", "label": "2 to 3" },
+        { "value": "4_10", "label": "4 to 10" },
+        { "value": "11_25", "label": "11 to 25" },
+        { "value": "25_plus", "label": "25+" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "controls.billing_owner",
+      "section": "controls",
+      "type": "boolean",
+      "label": "Is there a dedicated billing owner?",
+      "required": true,
+      "hypotheses": []
+    },
+    {
+      "id": "controls.monthly_reconciliation",
+      "section": "controls",
+      "type": "select",
+      "label": "How often do you reconcile billing against commercial terms?",
+      "required": true,
+      "options": [
+        { "value": "monthly", "label": "Every month" },
+        { "value": "quarterly", "label": "Quarterly" },
+        { "value": "occasionally", "label": "Occasionally" },
+        { "value": "never", "label": "Never" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "controls.billing_qa",
+      "section": "controls",
+      "type": "select",
+      "label": "Billing QA after pricing changes?",
+      "required": true,
+      "options": [
+        { "value": "always", "label": "Always" },
+        { "value": "usually", "label": "Usually" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "never", "label": "Never" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": []
+    },
+    {
+      "id": "velocity.commercial_changes_12mo",
+      "section": "velocity",
+      "type": "select",
+      "label": "Significant commercial changes in the last 12 months",
+      "required": true,
+      "options": [
+        { "value": "0", "label": "0" },
+        { "value": "1_2", "label": "1 to 2" },
+        { "value": "3_5", "label": "3 to 5" },
+        { "value": "6_10", "label": "6 to 10" },
+        { "value": "10_plus", "label": "10+" }
+      ],
+      "hypotheses": ["H17"]
+    },
+    {
+      "id": "confidence.billing_confidence",
+      "section": "confidence",
+      "type": "scale",
+      "label": "How confident are you that every customer is billed according to their latest commercial terms?",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "hypotheses": []
+    },
+    {
+      "id": "confidence.last_reconciliation",
+      "section": "confidence",
+      "type": "select",
+      "label": "When was your last full billing reconciliation?",
+      "required": true,
+      "options": [
+        { "value": "30d", "label": "Less than 30 days" },
+        { "value": "1_3mo", "label": "1 to 3 months" },
+        { "value": "3_6mo", "label": "3 to 6 months" },
+        { "value": "6_12mo", "label": "6 to 12 months" },
+        { "value": "12mo_plus", "label": "12+ months" },
+        { "value": "never", "label": "Never" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": []
+    }
+  ]
+}

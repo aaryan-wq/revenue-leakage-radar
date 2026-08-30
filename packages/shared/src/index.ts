@@ -614,3 +614,15 @@ export {
   type AuditType,
   type CheckoutType,
 } from "./analytics";
+
+export type {
+  EstimatorAssessmentState,
+  EstimatorComplexityPreview,
+  EstimatorHypothesisBreakdown,
+  EstimatorNarrative,
+  EstimatorProgress,
+  EstimatorQuestion,
+  EstimatorResult,
+  HypothesisId,
+} from "./estimator";
+export { ESTIMATOR_ANALYTICS_EVENTS } from "./estimator";

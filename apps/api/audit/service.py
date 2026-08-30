@@ -34,12 +34,13 @@ from models import Audit, Company
 logger = logging.getLogger(__name__)
 
 
-def create_audit(db: Session) -> Audit:
+def create_audit(db: Session, assessment_id: uuid.UUID | None = None) -> Audit:
     audit = Audit(
         session_token=secrets.token_urlsafe(32),
         status=AuditStatus.CREATED.value,
         audit_type="free",
         is_anonymous=True,
+        assessment_id=assessment_id,
     )
     db.add(audit)
     db.commit()

@@ -12,6 +12,9 @@ celery==5.4.0
 redis==5.2.1
 pandas==2.2.3
 polars==1.19.0
+numpy==2.2.1
+scipy==1.15.1
+PyYAML==6.0.2
 pytest==8.3.4
 pytest-asyncio==0.25.0
 reportlab==4.2.5

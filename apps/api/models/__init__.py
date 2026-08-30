@@ -87,6 +87,9 @@ class Audit(Base):
     price_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     coupon_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     credit_data_present: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    assessment_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -371,3 +374,17 @@ class ReportPurchase(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     report: Mapped["Report | None"] = relationship(back_populates="purchases")
+
+
+from models.estimator import (  # noqa: E402, F401
+    Assessment,
+    AssessmentAnswer,
+    AssessmentAssumption,
+    AssessmentEvent,
+    AssessmentHypothesis,
+    AssessmentModelRun,
+    AssessmentResult,
+    CalibrationObservation,
+    LeadProfile,
+    ModelVersion,
+)

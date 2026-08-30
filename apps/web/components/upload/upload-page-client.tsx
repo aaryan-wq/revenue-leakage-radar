@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
 
+import { AssessmentContextBanner } from "@/components/estimator/assessment-context-banner";
 import { useRegisterFunnelAction } from "@/components/audit/audit-funnel-actions";
 import { DataTierFilesChecklist } from "@/components/upload/data-tier-files-checklist";
 import { LegalConsent } from "@/components/legal/legal-consent";
@@ -105,6 +106,8 @@ export function UploadPageClient() {
     }
   }, []);
 
+  const assessmentId = searchParams.get("assessment_id");
+
   useEffect(() => {
     captureAuditOriginFromSearch(searchParams);
   }, [searchParams]);
@@ -128,7 +131,7 @@ export function UploadPageClient() {
           }
         }
         if (!session) {
-          session = await createAuditSession();
+          session = await createAuditSession(assessmentId ?? undefined);
         }
         await syncAuditStatus();
         setAuditReady(true);
@@ -143,7 +146,7 @@ export function UploadPageClient() {
       }
     }
     void init();
-  }, [router, syncAuditStatus]);
+  }, [router, syncAuditStatus, assessmentId]);
 
   const scheduleUpload = useCallback(
     (items: UploadFileItem[]) => {
@@ -388,6 +391,7 @@ export function UploadPageClient() {
 
   return (
     <section className="mx-auto max-w-upload px-6 pt-16 pb-28 md:px-10 md:pt-24">
+      {assessmentId ? <AssessmentContextBanner assessmentId={assessmentId} /> : null}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

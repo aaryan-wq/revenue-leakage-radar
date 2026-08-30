@@ -37,7 +37,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@rlr/shared"],
   env: {
     NEXT_PUBLIC_POSTHOG_KEY: posthogKey,
-    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://d.paevo.co",
+    NEXT_PUBLIC_POSTHOG_UI_HOST: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST ?? "https://us.posthog.com",
   },
   // Monorepo + ESLint 9 flat config breaks @rushstack/eslint-patch during `next build` on Vercel.
   // Run `npm run lint` locally / in CI instead.
@@ -46,6 +47,30 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion", "@clerk/nextjs"],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/saas-billing-leakage-calculator",
+        destination: "/saas-revenue-leakage-calculator",
+        permanent: true,
+      },
+      {
+        source: "/saas-underbilling-calculator",
+        destination: "/saas-revenue-leakage-calculator",
+        permanent: true,
+      },
+      {
+        source: "/revenue-leakage-estimator",
+        destination: "/saas-revenue-leakage-calculator",
+        permanent: true,
+      },
+      {
+        source: "/saas-pricing-leakage-calculator",
+        destination: "/saas-revenue-leakage-calculator",
+        permanent: true,
+      },
+    ];
   },
 };
 

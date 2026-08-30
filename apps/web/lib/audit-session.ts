@@ -211,8 +211,9 @@ export function captureAuditOriginFromSearch(search: string | URLSearchParams): 
   }
 }
 
-export async function createAuditSession(): Promise<AuditSession> {
-  const response = await auditApiFetch<AuditCreateResponse>("/audit", {
+export async function createAuditSession(assessmentId?: string): Promise<AuditSession> {
+  const query = assessmentId ? `?assessment_id=${encodeURIComponent(assessmentId)}` : "";
+  const response = await auditApiFetch<AuditCreateResponse>(`/audit${query}`, {
     method: "POST",
   });
 

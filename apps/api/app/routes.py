@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from audit.service import (
@@ -69,10 +69,13 @@ def _can_proceed_to_scan(audit: Audit) -> bool:
 
 
 @router.post("/audit", response_model=AuditCreateResponse, status_code=status.HTTP_201_CREATED)
-def create_audit_session(db: Session = Depends(get_db)) -> AuditCreateResponse:
+def create_audit_session(
+    db: Session = Depends(get_db),
+    assessment_id: UUID | None = Query(default=None),
+) -> AuditCreateResponse:
     from analytics.tracking import track_audit_created
 
-    audit = create_audit(db)
+    audit = create_audit(db, assessment_id=assessment_id)
     track_audit_created(audit)
     logger.info("Created audit session %s", audit.id)
     return AuditCreateResponse(

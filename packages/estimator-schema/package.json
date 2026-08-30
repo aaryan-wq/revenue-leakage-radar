@@ -1,0 +1,6 @@
+{
+  "name": "@rlr/estimator-schema",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Question bank, branching rules, and model config for the revenue leakage estimator microtool"
+}

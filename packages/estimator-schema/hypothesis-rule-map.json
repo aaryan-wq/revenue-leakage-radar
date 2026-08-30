@@ -1,0 +1,81 @@
+{
+  "version": "1.0",
+  "hypotheses": {
+    "H1": {
+      "name": "Grandfathered Pricing",
+      "rule_ids": ["grandfathered_pricing", "legacy_pricing"]
+    },
+    "H2": {
+      "name": "Renewal Pricing Drift",
+      "rule_ids": ["renewal_price_drift", "missing_scheduled_increase"]
+    },
+    "H3": {
+      "name": "Expired Discounts",
+      "rule_ids": ["expired_discount"]
+    },
+    "H4": {
+      "name": "Manual Discount Persistence",
+      "rule_ids": ["permanent_promotional_discount", "manual_price_override"]
+    },
+    "H5": {
+      "name": "Product Catalog Drift",
+      "rule_ids": ["price_catalog_mismatch"]
+    },
+    "H6": {
+      "name": "Price Version Mismatch",
+      "rule_ids": ["legacy_pricing", "price_catalog_mismatch"]
+    },
+    "H7": {
+      "name": "Product/SKU Mapping",
+      "rule_ids": ["incorrect_addon_price", "price_catalog_mismatch"]
+    },
+    "H8": {
+      "name": "Bundle Drift",
+      "rule_ids": ["incorrect_addon_price", "discount_wrong_product"]
+    },
+    "H9": {
+      "name": "Add-on Drift",
+      "rule_ids": ["incorrect_addon_price"]
+    },
+    "H10": {
+      "name": "Seat Pricing Drift",
+      "rule_ids": ["incorrect_seat_price"]
+    },
+    "H11": {
+      "name": "Usage Billing Drift",
+      "rule_ids": []
+    },
+    "H12": {
+      "name": "Quote vs Billing",
+      "rule_ids": ["contract_billing_price_divergence"]
+    },
+    "H13": {
+      "name": "Contract Configuration",
+      "rule_ids": ["contract_billing_price_divergence", "billing_frequency_mismatch"]
+    },
+    "H14": {
+      "name": "Migration Errors",
+      "rule_ids": ["orphaned_records", "duplicate_subscription"]
+    },
+    "H15": {
+      "name": "Multi-Currency Drift",
+      "rule_ids": ["currency_mismatch"]
+    },
+    "H16": {
+      "name": "Manual Billing Overrides",
+      "rule_ids": ["manual_price_override"]
+    },
+    "H17": {
+      "name": "AI/Product Launch Drift",
+      "rule_ids": ["price_catalog_mismatch", "legacy_pricing"]
+    },
+    "H18": {
+      "name": "Enterprise Scaling",
+      "rule_ids": [
+        "contract_billing_price_divergence",
+        "incorrect_seat_price",
+        "expired_discount"
+      ]
+    }
+  }
+}

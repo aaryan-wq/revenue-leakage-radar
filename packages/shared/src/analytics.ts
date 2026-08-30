@@ -69,6 +69,20 @@ export const AnalyticsEvents = {
   REPORT_EXPORTED_PDF: "report_exported_pdf",
   REPORT_EXPORTED_CSV: "report_exported_csv",
   REMEDIATION_VIEWED: "remediation_viewed",
+
+  // Estimator microtool funnel
+  ESTIMATOR_VIEWED: "estimator_viewed",
+  ESTIMATOR_STARTED: "estimator_started",
+  SECTION_COMPLETED: "section_completed",
+  QUESTION_ANSWERED: "question_answered",
+  BRANCH_TRIGGERED: "branch_triggered",
+  ESTIMATOR_COMPLETED: "estimator_completed",
+  RESULT_VIEWED: "result_viewed",
+  METHODOLOGY_VIEWED: "methodology_viewed",
+  SCENARIO_CHANGED: "scenario_changed",
+  RESULT_SHARED: "result_shared",
+  FREE_SCAN_CLICKED: "free_scan_clicked",
+  ASSESSMENT_EMAIL_SAVED: "assessment_email_saved",
 } as const;
 
 export type AnalyticsEventName = (typeof AnalyticsEvents)[keyof typeof AnalyticsEvents];
