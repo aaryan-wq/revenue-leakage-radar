@@ -48,6 +48,46 @@ function flushPendingCaptures(): void {
   }
 }
 
+function markAnalyticsReady(): void {
+  ready = true;
+  if (process.env.NODE_ENV === "development") {
+    posthog.debug(true);
+  }
+  identifyAnonymous();
+  flushPendingCaptures();
+}
+
+function isHeadInitQueued(): boolean {
+  const queued = posthog as typeof posthog & { _i?: unknown[] };
+  return Array.isArray(queued._i) && queued._i.length > 0;
+}
+
+function waitForHeadInit(): void {
+  if (posthog.__loaded) {
+    markAnalyticsReady();
+    return;
+  }
+
+  const startedAt = Date.now();
+  const poll = () => {
+    if (posthog.__loaded) {
+      markAnalyticsReady();
+      return;
+    }
+
+    if (Date.now() - startedAt > 10_000) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[analytics] PostHog head script did not finish loading within 10s.");
+      }
+      return;
+    }
+
+    window.setTimeout(poll, 50);
+  };
+
+  poll();
+}
+
 export function initAnalytics(): void {
   if (initStarted || typeof window === "undefined") return;
 
@@ -70,22 +110,23 @@ export function initAnalytics(): void {
     console.info(`[analytics] PostHog project key loaded: ${apiKey.slice(0, 12)}…`);
   }
 
+  if (posthog.__loaded || isHeadInitQueued()) {
+    waitForHeadInit();
+    return;
+  }
+
   posthog.init(apiKey, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
-    defaults: "2025-05-24",
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://d.paevo.co",
+    ui_host: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST ?? "https://us.posthog.com",
+    defaults: "2026-05-30",
     capture_pageview: false,
     capture_pageleave: false,
     persistence: "localStorage+cookie",
-    person_profiles: "always",
+    person_profiles: "identified_only",
     advanced_disable_flags: true,
     disable_surveys: true,
-    loaded: (ph) => {
-      ready = true;
-      if (process.env.NODE_ENV === "development") {
-        ph.debug(true);
-      }
-      identifyAnonymous();
-      flushPendingCaptures();
+    loaded: () => {
+      markAnalyticsReady();
     },
   });
 }

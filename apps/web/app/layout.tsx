@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 
+import { PostHogHeadScript } from "@/components/analytics/posthog-head-script";
 import { AppProviders } from "@/components/providers/app-providers";
 import { ClerkProviderWrapper } from "@/components/providers/clerk-provider";
 
@@ -38,6 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} bg-background`}
     >
+      <head>
+        <PostHogHeadScript />
+      </head>
       <body className="font-sans antialiased">
         <ClerkProviderWrapper>
           <AppProviders>{children}</AppProviders>
