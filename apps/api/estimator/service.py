@@ -101,7 +101,7 @@ def upsert_answer(db: Session, assessment: Assessment, payload: dict[str, Any]) 
     existing.value_enum = payload.get("value_enum")
     existing.value_json = payload.get("value_json")
 
-  if payload["question_id"] == "profile.arr_amount" and payload.get("value_numeric") is not None:
+    if payload["question_id"] == "profile.arr_amount" and payload.get("value_numeric") is not None:
         assessment.arr_amount = Decimal(str(payload["value_numeric"]))
         if payload.get("value_text"):
             assessment.arr_currency = payload["value_text"]
