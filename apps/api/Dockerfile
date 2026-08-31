@@ -14,6 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Fail the image build if domain modules are missing (wrong Railway root directory / context).
-RUN python -c "import ingestion.pipeline; import verification.engine.pipeline; import workers.celery_app; from estimator.config import SCHEMA_ROOT; assert SCHEMA_ROOT.exists()"
+RUN python -c "import ingestion.pipeline; import verification.engine.pipeline; import workers.celery_app; from estimator.config import SCHEMA_ROOT; from estimator.schemas import LeadRequest; assert SCHEMA_ROOT.exists()"
 
 CMD ["sh", "worker.sh"]
