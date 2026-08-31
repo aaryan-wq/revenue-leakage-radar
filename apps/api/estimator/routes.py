@@ -178,6 +178,7 @@ def get_share(token: str, db: Session = Depends(get_db)):
         "disclaimer": "Estimate based on answers, not billing records.",
         "arr_usd": result.get("arr_usd"),
         "estimate": result.get("estimate"),
+        "benchmark_context": result.get("benchmark_context"),
         "top_hypotheses": result.get("top_hypotheses", [])[:3],
         "confidence": result.get("confidence"),
     }

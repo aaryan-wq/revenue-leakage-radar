@@ -145,8 +145,10 @@ export interface EstimatorBenchmarkContext {
   source: string;
   pct_arr_low: number;
   pct_arr_high: number;
+  pct_arr_average: number;
   low_usd: number;
   high_usd: number;
+  average_usd: number;
   model_pct_of_arr: number;
   may_understate: boolean;
 }
@@ -269,3 +271,18 @@ export const ESTIMATOR_ANALYTICS_EVENTS = {
   FREE_SCAN_CLICKED: "free_scan_clicked",
   ASSESSMENT_EMAIL_SAVED: "assessment_email_saved",
 } as const;
+
+/** Published SaaS billing leakage survey band (landing slider + industry context). */
+export const INDUSTRY_LEAKAGE_PCT_LOW = 0.03;
+export const INDUSTRY_LEAKAGE_PCT_HIGH = 0.05;
+export const INDUSTRY_LEAKAGE_PCT_AVERAGE = 0.042;
+
+/** Headline for calculator results: model output, not the industry average. */
+export function getEstimatorHeadlineUsd(result: EstimatorResult): number {
+  return result.estimate.high;
+}
+
+export function getIndustryLeakageHeadlineUsd(arrUsd: number): number {
+  if (arrUsd <= 0) return 0;
+  return Math.round(arrUsd * INDUSTRY_LEAKAGE_PCT_AVERAGE);
+}

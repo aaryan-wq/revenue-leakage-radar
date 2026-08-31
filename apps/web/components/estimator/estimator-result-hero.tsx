@@ -4,7 +4,7 @@ import { CountUp } from "@/components/count-up";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
-import { formatCurrency, type EstimatorBenchmarkContext, type EstimatorResult } from "@rlr/shared";
+import { formatCurrency, getEstimatorHeadlineUsd, type EstimatorBenchmarkContext, type EstimatorResult } from "@rlr/shared";
 
 interface EstimatorResultHeroProps {
   result: EstimatorResult;
@@ -12,8 +12,8 @@ interface EstimatorResultHeroProps {
 
 export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
   const arr = result.arr_usd ?? result.profile_summary?.arr_usd ?? 0;
-  const high = result.estimate.high;
-  const pctOfArr = arr > 0 ? (high / arr) * 100 : 0;
+  const headline = getEstimatorHeadlineUsd(result);
+  const pctOfArr = arr > 0 ? (headline / arr) * 100 : 0;
 
   return (
     <HairlineCard padding="lg" className="overflow-hidden">
@@ -27,7 +27,7 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
         <div className="space-y-4 text-center">
           <h1 className="text-h2 text-foreground">Estimated recoverable revenue</h1>
           <p className="text-metric-xl tabular-nums text-foreground">
-            <CountUp to={high} prefix="~$" />
+            <CountUp to={headline} prefix="~$" />
             <span className="text-h4 text-muted-foreground"> /year</span>
           </p>
           {arr > 0 ? (
@@ -41,7 +41,7 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
         </div>
 
         {result.benchmark_context ? (
-          <BenchmarkContextLine context={result.benchmark_context} high={high} arr={arr} />
+          <BenchmarkContextLine context={result.benchmark_context} headline={headline} arr={arr} />
         ) : null}
       </div>
     </HairlineCard>
@@ -50,22 +50,24 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
 
 function BenchmarkContextLine({
   context,
-  high,
+  headline,
   arr,
 }: {
   context: EstimatorBenchmarkContext;
-  high: number;
+  headline: number;
   arr: number;
 }) {
-  const pct = arr > 0 ? (high / arr) * 100 : context.model_pct_of_arr;
+  const pct = arr > 0 ? (headline / arr) * 100 : context.model_pct_of_arr;
+  const avgPct = (context.pct_arr_average * 100).toFixed(1);
   return (
     <p className="text-center text-small text-muted-foreground">
-      Similar SaaS companies often see {(context.pct_arr_low * 100).toFixed(1)}% to{" "}
+      Industry surveys cite {(context.pct_arr_low * 100).toFixed(1)}% to{" "}
       {(context.pct_arr_high * 100).toFixed(1)}% of ARR ({formatCurrency(context.low_usd)} to{" "}
-      {formatCurrency(context.high_usd)}). Your estimate is {pct.toFixed(1)}% of ARR.
+      {formatCurrency(context.high_usd)}), about {avgPct}% on average. Your estimate from answers is{" "}
+      {pct.toFixed(1)}% of ARR.
       {context.may_understate
         ? " A billing scan can confirm whether leakage is higher in practice."
-        : null}
+        : " A billing scan validates this against your billing records."}
     </p>
   );
 }

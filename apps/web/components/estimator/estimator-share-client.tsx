@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { fetchShare } from "@/lib/estimator/api";
-import { formatCurrency } from "@rlr/shared";
+import { formatCurrency, getEstimatorHeadlineUsd, type EstimatorResult } from "@rlr/shared";
 
 export function EstimatorShareClient({ token }: { token: string }) {
   const [data, setData] = useState<Awaited<ReturnType<typeof fetchShare>> | null>(null);
@@ -38,12 +38,17 @@ export function EstimatorShareClient({ token }: { token: string }) {
 
   if (!data) return <PageLoadingSkeleton message="Loading shared estimate…" />;
 
-  const { estimate, top_hypotheses: topHypotheses, confidence, disclaimer, arr_usd: arrUsd } = data;
+  const { estimate, top_hypotheses: topHypotheses, confidence, disclaimer, arr_usd: arrUsd, benchmark_context: benchmarkContext } = data;
+  const headlineResult = {
+    estimate,
+    benchmark_context: benchmarkContext ?? null,
+  } as EstimatorResult;
+  const headline = getEstimatorHeadlineUsd(headlineResult);
   const topThree = topHypotheses.slice(0, 3);
   const mechanismAmount = (item: (typeof topThree)[number]) =>
     Math.max(item.expected ?? 0, item.high ?? 0, item.mid ?? 0);
   const maxMechanism = Math.max(...topThree.map(mechanismAmount), 1);
-  const pctOfArr = arrUsd && arrUsd > 0 ? (estimate.high / arrUsd) * 100 : null;
+  const pctOfArr = arrUsd && arrUsd > 0 ? (headline / arrUsd) * 100 : null;
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -65,7 +70,7 @@ export function EstimatorShareClient({ token }: { token: string }) {
 
             <div className="space-y-4 text-center">
               <p className="text-metric-xl tabular-nums text-foreground">
-                ~{formatCurrency(estimate.high)}
+                ~{formatCurrency(headline)}
                 <span className="text-h4 text-muted-foreground"> /year</span>
               </p>
 

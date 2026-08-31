@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 
 import { CountUp } from "@/components/count-up";
 import { glide, Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { ArrLeakageHero } from "@/components/marketing/arr-leakage-hero";
 import { AnalyticsEvents } from "@rlr/shared";
 import { captureEvent } from "@/lib/analytics/client";
 import { FreeReportPreview } from "@/components/marketing/free-report-preview";
@@ -15,12 +16,6 @@ import { ViewSampleReportCta } from "@/components/marketing/view-sample-report-c
 import { LandingPageTracker } from "@/components/analytics/marketing-page-tracker";
 import { SiteFooter } from "@/components/site-footer";
 import { VERIFICATION_RULE_COUNT } from "@/lib/verification-rules";
-
-const HERO_STATS = [
-  [String(VERIFICATION_RULE_COUNT), "verification checks"],
-  ["9", "CSV export types"],
-  ["< 90 s", "average runtime"],
-] as const;
 
 const STATS = [
   { value: 8, prefix: "", suffix: "", decimals: 0, label: "Billing & CRM platforms supported" },
@@ -53,7 +48,7 @@ function HeroUploadZone() {
   const [dragActive, setDragActive] = useState(false);
 
   const goToUpload = useCallback(() => {
-    captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED, { source: "hero_upload_zone" });
+    captureEvent(AnalyticsEvents.FREE_AUDIT_CTA_CLICKED, { source: "landing_upload_zone" });
     router.push("/upload");
   }, [router]);
 
@@ -71,7 +66,7 @@ function HeroUploadZone() {
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, ease: glide, delay: 0.4 }}
+      transition={{ duration: 1, ease: glide, delay: 0.2 }}
       className="flex flex-col gap-4"
     >
       <motion.div
@@ -165,9 +160,9 @@ function HeroUploadZone() {
         </div>
       </motion.div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <RunFreeAuditCta size="lg" />
-        <ViewSampleReportCta size="lg" analyticsSource="hero" />
+        <ViewSampleReportCta size="lg" analyticsSource="landing_upload" />
       </div>
     </motion.div>
   );
@@ -188,7 +183,7 @@ function MethodSection() {
       <Stagger className="mt-20 grid gap-x-12 gap-y-16 md:grid-cols-3">
         {METHOD_STEPS.map((s) => (
           <StaggerItem key={s.n}>
-            <div className="group">
+            <div>
               <div className="mb-6 flex items-baseline gap-4 border-t border-line pt-5">
                 <span className="font-heading text-sm text-primary tnum">{s.n}</span>
                 <span className="font-heading text-2xl tracking-tight">{s.title}</span>
@@ -206,65 +201,43 @@ export function LandingPageClient() {
   return (
     <>
       <LandingPageTracker />
-      <section className="relative mx-auto max-w-marketing px-6 pt-20 pb-16 md:px-10 md:pt-28 md:pb-24">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: glide }}
-              className="mb-7 inline-flex items-center gap-2.5 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground"
-            >
-              <span className="h-px w-8 bg-primary/50" />
-              Free instant audit
-            </motion.p>
+      <ArrLeakageHero />
 
-            <h1 className="font-heading text-[clamp(2.6rem,5.5vw,4.4rem)] leading-[0.95] tracking-tight text-balance">
-              {["Drop billing and CRM CSVs.", "See exactly where", "revenue is leaking."].map((line, i) => (
-                <span key={line} className="block overflow-hidden">
-                  <motion.span
-                    className="block"
-                    initial={{ y: "110%" }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 1.1, ease: glide, delay: 0.08 + i * 0.12 }}
-                  >
-                    {i === 1 ? <span className="italic text-primary">{line}</span> : line}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: glide, delay: 0.5 }}
-              className="mt-7 text-pretty text-[1.05rem] leading-relaxed text-muted-foreground"
-            >
+      <section className="border-t border-line">
+        <div className="mx-auto max-w-marketing px-6 py-20 md:px-10 md:py-28">
+          <Reveal className="mx-auto max-w-readable text-center">
+            <p className="text-overline text-muted-foreground">Free deterministic audit</p>
+            <h2 className="mt-4 font-heading text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] tracking-tight text-balance">
+              Ready to find the exact dollars?
+            </h2>
+            <p className="mt-6 text-pretty text-body leading-relaxed text-muted-foreground">
               Upload billing and CRM CSV exports. Our engine reconciles every row and surfaces missed
-              revenue, duplicate charges, and pricing drift in minutes. Deterministic checks.
-              CFO-grade evidence.
-            </motion.p>
+              revenue, duplicate charges, and pricing drift in minutes.
+            </p>
+          </Reveal>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: glide, delay: 0.65 }}
-              className="mt-10 flex flex-wrap gap-x-8 gap-y-3"
-            >
-              {HERO_STATS.map(([val, label]) => (
-                <div key={label}>
-                  <p className="font-heading text-2xl tracking-tight text-foreground tnum">{val}</p>
-                  <p className="text-[0.78rem] text-muted-foreground">{label}</p>
-                </div>
-              ))}
-            </motion.div>
+          <div className="mx-auto mt-12 max-w-2xl">
+            <HeroUploadZone />
           </div>
 
-          <HeroUploadZone />
+          <Reveal delay={0.1} className="mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4">
+            {[
+              [String(VERIFICATION_RULE_COUNT), "verification checks"],
+              ["9", "CSV export types"],
+              ["< 90 s", "average runtime"],
+            ].map(([val, label]) => (
+              <div key={label} className="text-center">
+                <p className="font-heading text-xl tracking-tight text-foreground tnum md:text-2xl">
+                  {val}
+                </p>
+                <p className="mt-1 text-[0.78rem] text-muted-foreground">{label}</p>
+              </div>
+            ))}
+          </Reveal>
         </div>
       </section>
 
-      <section className="border-y border-line">
+      <section className="border-b border-line">
         <div className="mx-auto grid max-w-marketing grid-cols-2 gap-px bg-line md:grid-cols-4">
           {STATS.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08} className="bg-background px-6 py-10 md:px-10">

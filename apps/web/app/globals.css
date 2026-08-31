@@ -88,4 +88,29 @@
       opacity: 0;
     }
   }
+
+  .landing-arr-slider {
+    accent-color: var(--primary);
+  }
+
+  .landing-arr-slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    border: 2px solid var(--background);
+    background: var(--primary);
+    box-shadow: 0 4px 16px -4px color-mix(in oklch, var(--primary) 45%, transparent);
+    cursor: pointer;
+  }
+
+  .landing-arr-slider::-moz-range-thumb {
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    border: 2px solid var(--background);
+    background: var(--primary);
+    box-shadow: 0 4px 16px -4px color-mix(in oklch, var(--primary) 45%, transparent);
+    cursor: pointer;
+  }
 }

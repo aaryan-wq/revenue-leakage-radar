@@ -40,17 +40,22 @@ def compute_benchmark_context(
 
     pct_low = float(match.get("pct_arr_low", 0))
     pct_high = float(match.get("pct_arr_high", 0))
+    pct_average = float(match.get("pct_arr_average", (pct_low + pct_high) / 2))
     low_usd = round_display_amount(arr * pct_low)
     high_usd = round_display_amount(arr * pct_high)
-    model_pct = (model_central / arr) * 100 if arr > 0 else 0.0
-    may_understate = model_pct < pct_low
+    average_usd = round_display_amount(arr * pct_average)
+    model_fraction = model_central / arr if arr > 0 else 0.0
+    model_pct = model_fraction * 100
+    may_understate = model_fraction < pct_low
 
     return {
         "source": str(match.get("source", "industry_context")),
         "pct_arr_low": pct_low,
         "pct_arr_high": pct_high,
+        "pct_arr_average": pct_average,
         "low_usd": low_usd,
         "high_usd": high_usd,
+        "average_usd": average_usd,
         "model_pct_of_arr": round(model_pct, 2),
         "may_understate": may_understate,
     }

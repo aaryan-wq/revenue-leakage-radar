@@ -33,6 +33,7 @@ import {
   AnalyticsEvents,
   computeAuditRoi,
   formatCurrency,
+  getEstimatorHeadlineUsd,
   VERIFICATION_REPORT_BASE_FEE_USD,
   type EstimatorHypothesisBreakdown,
   type EstimatorMechanismInsight,
@@ -245,7 +246,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const profile = result.profile_summary;
   const mechanisms = result.top_hypotheses.slice(0, 5);
   const maxMechanism = Math.max(...mechanisms.map(mechanismAmount), 1);
-  const ctaHigh = result.estimate.high;
+  const ctaHigh = getEstimatorHeadlineUsd(result);
   const roiMetrics = computeAuditRoi(ctaHigh);
   const ctaPaybackLine = roiMetrics ? buildEstimatorCtaPaybackLine(roiMetrics) : null;
   const top = result.top_hypotheses[0];
@@ -279,7 +280,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               <div>
                 <dt className="text-caption text-muted-foreground">Estimated recoverable</dt>
                 <dd className="text-metric-xl tabular-nums text-foreground">
-                  ~{formatCurrency(result.estimate.high)}
+                  ~{formatCurrency(ctaHigh)}
                 </dd>
               </div>
               <div>
@@ -435,7 +436,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         assessmentId={assessmentId}
-        estimateHigh={result.estimate.high}
+        estimateHigh={ctaHigh}
       />
     </div>
   );

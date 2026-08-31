@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { HairlineCard } from "@/components/ui/glass-card";
 import { fetchResult } from "@/lib/estimator/api";
-import { formatCurrency, type EstimatorResult } from "@rlr/shared";
+import { formatCurrency, getEstimatorHeadlineUsd, type EstimatorResult } from "@rlr/shared";
 
 export function AssessmentContextBanner({ assessmentId }: { assessmentId: string }) {
   const [result, setResult] = useState<EstimatorResult | null>(null);
@@ -23,7 +23,7 @@ export function AssessmentContextBanner({ assessmentId }: { assessmentId: string
     <HairlineCard padding="md" className="mb-8 border-primary/20 bg-surface-glass-subtle">
       <p className="text-overline text-muted-foreground">From your leakage assessment</p>
       <p className="text-body mt-2 text-foreground">
-        Based on your assessment (~{formatCurrency(result.estimate.high)} modeled exposure), we will prioritize
+        Based on your assessment (~{formatCurrency(getEstimatorHeadlineUsd(result))} modeled exposure), we will prioritize
         checks related to {names || "your top billing risk areas"} during the scan presentation.
       </p>
       <p className="text-caption mt-2 text-muted-foreground">

@@ -649,4 +649,11 @@ export type {
   EstimatorVerificationRule,
   HypothesisId,
 } from "./estimator";
-export { ESTIMATOR_ANALYTICS_EVENTS } from "./estimator";
+export {
+  ESTIMATOR_ANALYTICS_EVENTS,
+  getEstimatorHeadlineUsd,
+  getIndustryLeakageHeadlineUsd,
+  INDUSTRY_LEAKAGE_PCT_AVERAGE,
+  INDUSTRY_LEAKAGE_PCT_HIGH,
+  INDUSTRY_LEAKAGE_PCT_LOW,
+} from "./estimator";
