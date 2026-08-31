@@ -1,5 +1,6 @@
 import type {
   EstimatorAssessmentState,
+  EstimatorBenchmarkContext,
   EstimatorQuestion,
   EstimatorResult,
 } from "@rlr/shared";
@@ -119,6 +120,7 @@ export async function fetchShare(token: string) {
     disclaimer: string;
     arr_usd: number | null;
     estimate: EstimatorResult["estimate"];
+    benchmark_context: EstimatorBenchmarkContext | null;
     top_hypotheses: EstimatorResult["top_hypotheses"];
     confidence: string;
   }>(`/estimator/share/${token}`);
