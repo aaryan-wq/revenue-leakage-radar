@@ -214,6 +214,14 @@ def test_scenario_bands_produce_different_ranges():
     assert conservative["estimate"]["high"] < aggressive["estimate"]["high"]
 
 
+def test_default_scenario_is_aggressive():
+    default_result = run_model(PROFILE_B, random_seed=42)
+    aggressive = run_model(PROFILE_B, random_seed=42, scenario="aggressive")
+    assert default_result["estimate"]["low"] == aggressive["estimate"]["low"]
+    assert default_result["estimate"]["high"] == aggressive["estimate"]["high"]
+    assert default_result["scenario"] == "aggressive"
+
+
 def test_hypothesis_rows_have_expected_and_pct_arr():
     result = run_model(PROFILE_B, random_seed=42)
     assert result["top_hypotheses"]

@@ -175,7 +175,7 @@ def get_share(token: str, db: Session = Depends(get_db)):
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Result not available")
     return {
-        "disclaimer": "Estimate, not audited leakage.",
+        "disclaimer": "Estimate based on answers, not billing records.",
         "arr_usd": result.get("arr_usd"),
         "estimate": result.get("estimate"),
         "top_hypotheses": result.get("top_hypotheses", [])[:3],

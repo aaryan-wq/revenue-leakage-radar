@@ -375,61 +375,33 @@ def _build_calculation_summary(
     bullets: list[str] = []
     if expected <= 0:
         bullets.append(
-            f"{simulation_count:,} Monte Carlo runs on {_fmt_usd(arr)} ARR did not produce a positive expected value. "
-            "Try the Upside scenario or run a billing scan on actual records."
+            f"No positive recoverable revenue was estimated for {_fmt_usd(arr)} ARR based on your answers. "
+            "A billing scan on actual records may surface leakage."
         )
     else:
         bullets.append(
-            f"{simulation_count:,} simulations on {_fmt_usd(arr)} ARR across {27} rule-native streams. "
-            f"Each run fires rules using weights from your answers, then applies family overlap deduplication."
+            f"Based on {_fmt_usd(arr)} ARR and your questionnaire answers, "
+            f"estimated recoverable revenue is {_fmt_usd(estimate['low'])} to {_fmt_usd(estimate['high'])} per year "
+            f"({band_label} band)."
         )
         bullets.append(
-            f"Expected recoverable {_fmt_usd(expected)} ({pct_of_arr:.2f}% of ARR). "
-            f"Stress case P90: {_fmt_usd(estimate.get('stress_p90', sim_stats.get('stress_p90', 0)))}. "
-            f"Full rule ceiling: {_fmt_usd(estimate.get('theoretical_stack_p90', sim_stats.get('theoretical_stack_p90', 0)))}."
-        )
-        recoverable = estimate.get("recoverable", sim_stats.get("recoverable_expected", 0))
-        at_risk = estimate.get("at_risk", sim_stats.get("at_risk_expected", 0))
-        if recoverable > 0:
-            bullets.append(
-                f"Recoverable slice: {_fmt_usd(recoverable)}. At-risk (harder to recover): {_fmt_usd(at_risk)}."
-            )
-        bullets.append(
-            f"{scenario.replace('_', ' ').title()} range {_fmt_usd(estimate['low'])} to {_fmt_usd(estimate['high'])} "
-            f"uses the {band_label} band from the same simulation output."
+            f"Midpoint estimate: {_fmt_usd(expected)} ({pct_of_arr:.1f}% of ARR). "
+            "This is directional guidance, not an audited finding."
         )
         if top_hypotheses:
             top_line = ", ".join(
-                f"{item['name']} ({_fmt_usd(item['expected'])}, {item['share_of_total']:.0f}%)"
+                f"{item['name']} (up to {_fmt_usd(item['high'])})"
                 for item in top_hypotheses[:3]
             )
-            bullets.append(f"Largest modeled mechanisms: {top_line}. Totals are overlap-adjusted, not additive.")
+            bullets.append(f"Largest likely sources: {top_line}. Categories overlap and are not additive.")
         det_high = detectable.get("high", 0)
         if det_high > 0:
             bullets.append(
-                f"Detectable slice: {_fmt_usd(detectable.get('low', 0))} to {_fmt_usd(det_high)} "
-                f"likely matchable from standard billing exports."
+                f"Up to {_fmt_usd(det_high)} may be confirmable from standard billing exports."
             )
-        if calibration_stage == 0:
+        if calibration_stage >= 1:
             bullets.append(
-                "Stage 0 structural priors: conservative and not yet calibrated to completed audits. "
-                "Actual billing data can confirm higher or lower recovery."
-            )
-        elif calibration_stage >= 3:
-            bullets.append(
-                "Stage 3 calibration: rule-native priors, questionnaire drivers, and industry context bands. "
-                f"Complexity score {complexity_score}/40 adjusts tail behavior. "
-                "Benchmark context is disclosed separately and never overwrites the model central estimate."
-            )
-        elif calibration_stage >= 2:
-            bullets.append(
-                "Stage 2 calibration: 27 rule-native priors tuned against verification fixtures and audit personas. "
-                f"Complexity score {complexity_score}/40 adjusts tail behavior."
-            )
-        elif calibration_stage >= 1:
-            bullets.append(
-                "Stage 1 calibration: simulation intensity scales with billing complexity score "
-                f"({complexity_score}/40). Tuned against justified audit-style fixtures."
+                "A free billing scan can replace this estimate with evidence-backed findings."
             )
 
     return {

@@ -34,20 +34,27 @@ export function EstimatorShareClient({ token }: { token: string }) {
 
   if (!data) return <PageLoadingSkeleton message="Loading shared estimate…" />;
 
+  const topThree = data.top_hypotheses.slice(0, 3);
+
   return (
     <div className="mx-auto max-w-readable px-6 py-16 md:px-10">
       <HairlineCard padding="lg" className="space-y-6 text-center">
-        <p className="text-overline text-muted-foreground">Shared estimate</p>
-        <h1 className="text-h2">Revenue leakage assessment</h1>
-        <p className="text-metric-xl tabular-nums">
+        <h1 className="text-h2 text-foreground">Estimated recoverable revenue</h1>
+        <p className="text-metric-xl tabular-nums text-foreground">
           {formatCurrency(data.estimate.low)} to {formatCurrency(data.estimate.high)}
+          <span className="text-h4 text-muted-foreground"> /year</span>
         </p>
-        <p className="text-caption text-muted-foreground">{data.disclaimer}</p>
-        <ul className="space-y-2 text-body text-muted-foreground">
-          {data.top_hypotheses.map((h: { hypothesis_id: string; name: string }) => (
-            <li key={h.hypothesis_id}>{h.name}</li>
-          ))}
-        </ul>
+        <p className="text-small text-muted-foreground">{data.disclaimer}</p>
+        {topThree.length > 0 ? (
+          <div className="space-y-2 text-left">
+            <p className="text-caption text-muted-foreground">Top likely sources</p>
+            <ul className="space-y-1 text-body text-foreground">
+              {topThree.map((h: { hypothesis_id: string; name: string }) => (
+                <li key={h.hypothesis_id}>{h.name}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         <Link href="/saas-revenue-leakage-calculator/start">
           <Button className="min-h-[44px]">Run your own assessment</Button>
         </Link>
@@ -55,4 +62,3 @@ export function EstimatorShareClient({ token }: { token: string }) {
     </div>
   );
 }
-

@@ -237,7 +237,7 @@ def run_model(
     *,
     random_seed: int = 42,
     simulation_count: int | None = None,
-    scenario: str = "central",
+    scenario: str = "aggressive",
     include_sensitivity: bool = True,
     completion_rate: float | None = None,
 ) -> dict[str, Any]:

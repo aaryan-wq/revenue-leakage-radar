@@ -34,7 +34,6 @@ import {
   type EstimatorResult,
   type EstimatorResumeState,
   type EstimatorRuleBreakdown,
-  type EstimatorVerificationCategoryPreview,
 } from "@rlr/shared";
 
 interface EstimatorResultClientProps {
@@ -42,17 +41,12 @@ interface EstimatorResultClientProps {
 }
 
 const AUDIT_PRICE_USD = 2500;
+const DISPLAY_SCENARIO = "aggressive";
 
 function toNumber(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function isCategoryPreview(
-  entry: EstimatorResult["verification_preview"] extends (infer T)[] | undefined ? T : never
-): entry is EstimatorVerificationCategoryPreview {
-  return Boolean(entry && typeof entry === "object" && "category" in entry);
 }
 
 function normalizeRule(row: EstimatorRuleBreakdown): EstimatorRuleBreakdown {
@@ -131,10 +125,8 @@ function insightForHypothesis(
 export function EstimatorResultClient({ assessmentId }: EstimatorResultClientProps) {
   const router = useRouter();
   const [result, setResult] = useState<EstimatorResult | null>(null);
-  const [scenario, setScenario] = useState("central");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const [scenarioLoading, setScenarioLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [emailSaved, setEmailSaved] = useState(false);
@@ -155,12 +147,11 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
       }
 
       let data: EstimatorResult;
-      if (resultResponse.status === "fulfilled") {
+      if (resultResponse.status === "fulfilled" && resultResponse.value.scenario === DISPLAY_SCENARIO) {
         data = resultResponse.value;
       } else {
-        data = await calculateAssessment(assessmentId, "central");
+        data = await calculateAssessment(assessmentId, DISPLAY_SCENARIO);
       }
-      setScenario(data.scenario ?? "central");
       setResult(normalizeResult(data));
       captureEvent(AnalyticsEvents.RESULT_VIEWED, { assessment_id: assessmentId });
     } catch (err) {
@@ -173,21 +164,6 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   useEffect(() => {
     void loadInitial();
   }, [loadInitial]);
-
-  const handleScenario = async (next: string) => {
-    setScenario(next);
-    setScenarioLoading(true);
-    setError(null);
-    try {
-      captureEvent(AnalyticsEvents.SCENARIO_CHANGED, { assessment_id: assessmentId, scenario: next });
-      const calculated = await calculateAssessment(assessmentId, next);
-      setResult(normalizeResult(calculated));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update scenario");
-    } finally {
-      setScenarioLoading(false);
-    }
-  };
 
   const handleScanClick = () => {
     if (!result) return;
@@ -253,14 +229,10 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
   const profile = result.profile_summary;
   const mechanisms = result.top_hypotheses.slice(0, 5);
-  const maxExpected = Math.max(...mechanisms.map((item) => item.expected), 1);
-  const paybackBase = Math.max(result.estimate.central, result.estimate.low);
-  const paybackPct = paybackBase > 0 ? (AUDIT_PRICE_USD / paybackBase) * 100 : 0;
+  const maxHigh = Math.max(...mechanisms.map((item) => item.high), 1);
+  const ctaHigh = result.estimate.high;
+  const paybackPct = ctaHigh > 0 ? (AUDIT_PRICE_USD / ctaHigh) * 100 : 0;
   const top = result.top_hypotheses[0];
-  const calc = result.calculation_summary;
-  const ruleRows = (result.rule_breakdown ?? []).slice(0, 27);
-  const rollups = result.display_rollups ?? [];
-  const ctaCentral = result.estimate.central;
 
   return (
     <div className="mx-auto max-w-marketing space-y-10 px-6 py-12 md:px-10 md:py-16">
@@ -274,44 +246,17 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         />
       ) : null}
       <Reveal>
-        <EstimatorResultHero
-          result={result}
-          scenario={scenario}
-          scenarioLoading={scenarioLoading}
-          onScenarioChange={(next) => void handleScenario(next)}
-        />
+        <EstimatorResultHero result={result} />
       </Reveal>
 
       <EstimatorSensitivityUpsell drivers={result.drivers} />
 
       {error ? <p className="text-center text-small text-destructive">{error}</p> : null}
 
-      {calc && calc.explanation_bullets.length > 0 ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-4">
-            <div>
-              <p className="text-overline text-muted-foreground">Model calculation</p>
-              <h2 className="text-h4 mt-2">How this number was derived</h2>
-            </div>
-            <ul className="space-y-3">
-              {calc.explanation_bullets.map((bullet) => (
-                <li key={bullet} className="flex gap-3 text-small text-muted-foreground">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
       {profile ? (
         <Reveal>
-          <HairlineCard padding="lg" className="space-y-6">
-            <div>
-              <p className="text-overline text-muted-foreground">Your profile</p>
-              <h2 className="text-h4 mt-2">What you told us</h2>
-            </div>
+          <HairlineCard padding="lg" className="space-y-4">
+            <h2 className="text-h4 text-foreground">Your profile</h2>
             <dl className="grid gap-4 sm:grid-cols-3">
               <div>
                 <dt className="text-caption text-muted-foreground">ARR</dt>
@@ -326,7 +271,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                 </div>
               ) : null}
               <div>
-                <dt className="text-caption text-muted-foreground">Complexity</dt>
+                <dt className="text-caption text-muted-foreground">Billing complexity</dt>
                 <dd className="text-body text-foreground">{profile.complexity_label}</dd>
               </div>
             </dl>
@@ -346,8 +291,10 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
       {mechanisms.length > 0 ? (
         <Stagger className="space-y-6">
           <div>
-            <p className="text-overline text-muted-foreground">Top mechanisms</p>
-            <h2 className="text-h4 mt-2">Mechanism math</h2>
+            <h2 className="text-h4 text-foreground">Where it likely comes from</h2>
+            <p className="text-small mt-2 text-muted-foreground">
+              These categories overlap and are not additive.
+            </p>
           </div>
           {mechanisms.map((item) => {
             const insight = insightForHypothesis(result.mechanism_insights ?? [], item.hypothesis_id);
@@ -357,7 +304,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <h3 className="text-body font-medium text-foreground">{item.name}</h3>
                     <p className="shrink-0 text-body tabular-nums text-foreground">
-                      {formatCurrency(item.expected)}
+                      up to {formatCurrency(item.high)}
                     </p>
                   </div>
                   {insight ? (
@@ -366,7 +313,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                   <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
                     <div
                       className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                      style={{ width: `${Math.max(8, (item.expected / maxExpected) * 100)}%` }}
+                      style={{ width: `${Math.max(8, (item.high / maxHigh) * 100)}%` }}
                     />
                   </div>
                 </HairlineCard>
@@ -376,145 +323,20 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         </Stagger>
       ) : null}
 
-      {rollups.length > 0 ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-4">
-            <div>
-              <p className="text-overline text-muted-foreground">Executive rollups</p>
-              <h2 className="text-h4 mt-2">Billing, credit, and discount clusters</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {rollups.map((rollup) => (
-                <div key={rollup.rollup_id} className="rounded-xl border border-border/40 bg-surface-glass-subtle p-4">
-                  <p className="text-caption text-muted-foreground">{rollup.rollup_id}</p>
-                  <p className="text-body font-medium text-foreground">{rollup.name}</p>
-                  <p className="mt-2 text-body tabular-nums text-foreground">{formatCurrency(rollup.expected)}</p>
-                </div>
-              ))}
-            </div>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
-      {ruleRows.length > 0 ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-6">
-            <div>
-              <p className="text-overline text-muted-foreground">Rule command center</p>
-              <h2 className="text-h4 mt-2">All 27 verification checks modeled</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-small">
-                <thead>
-                  <tr className="border-b border-border/40 text-caption text-muted-foreground">
-                    <th className="py-3 pr-4 font-medium">Rule</th>
-                    <th className="py-3 pr-4 font-medium">Category</th>
-                    <th className="py-3 pr-4 font-medium tabular-nums">Expected</th>
-                    <th className="py-3 pr-4 font-medium tabular-nums">Likelihood</th>
-                    <th className="py-3 font-medium">Hypotheses</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ruleRows.map((row) => (
-                    <tr key={row.rule_id} className="border-b border-border/20">
-                      <td className="py-3 pr-4 text-foreground">{row.rule_id.replaceAll("_", " ")}</td>
-                      <td className="py-3 pr-4 text-muted-foreground">{row.category}</td>
-                      <td className="py-3 pr-4 tabular-nums text-foreground">{formatCurrency(row.expected)}</td>
-                      <td className="py-3 pr-4 tabular-nums text-muted-foreground">{row.likelihood.toFixed(1)}%</td>
-                      <td className="py-3 text-muted-foreground">{(row.hypothesis_ids ?? []).join(", ")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
-      {result.verification_preview && result.verification_preview.length > 0 ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-6">
-            <div>
-              <p className="text-overline text-muted-foreground">Verification</p>
-              <h2 className="text-h4 mt-2">Scan rules by category</h2>
-            </div>
-            <div className="space-y-5">
-              {result.verification_preview.map((entry) =>
-                isCategoryPreview(entry) ? (
-                  <div key={entry.category} className="space-y-2">
-                    <p className="text-body font-medium text-foreground">{entry.category_label}</p>
-                    <ul className="flex flex-wrap gap-2">
-                      {entry.rules.slice(0, 8).map((rule) => (
-                        <Badge key={rule.rule_id} variant="gray">
-                          {rule.name} ({formatCurrency(rule.expected)})
-                        </Badge>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div key={entry.hypothesis_id} className="space-y-2">
-                    <p className="text-body font-medium text-foreground">{entry.hypothesis_name}</p>
-                    <ul className="flex flex-wrap gap-2">
-                      {entry.rules.map((rule) => (
-                        <Badge key={rule.rule_id} variant="gray">
-                          {rule.name}
-                        </Badge>
-                      ))}
-                    </ul>
-                  </div>
-                )
-              )}
-            </div>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
-      {result.coverage_bridge?.file_suggestions?.length ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-3">
-            <p className="text-overline text-muted-foreground">Upload bridge</p>
-            <h2 className="text-h4">Files that unlock the most checks</h2>
-            <ul className="space-y-2">
-              {result.coverage_bridge.file_suggestions.map((item) => (
-                <li key={item} className="text-small text-muted-foreground">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
-      {result.detectable.high > 0 ? (
-        <Reveal>
-          <HairlineCard padding="lg" className="space-y-3">
-            <p className="text-overline text-muted-foreground">Detectable range</p>
-            <h2 className="text-h4">Likely identifiable from billing exports</h2>
-            <p className="text-body tabular-nums text-foreground">
-              {formatCurrency(result.detectable.low)} to {formatCurrency(result.detectable.high)} ARR
-            </p>
-            <p className="max-w-readable text-small text-muted-foreground">
-              Portion of the modeled range matchable from subscription and invoice exports.
-            </p>
-          </HairlineCard>
-        </Reveal>
-      ) : null}
-
       <Reveal>
         <HairlineCard padding="lg" className="space-y-6 border-primary/20">
           <div className="space-y-3">
-            <p className="text-overline text-muted-foreground">Next step</p>
-            <h2 className="text-h3">Verify with billing records</h2>
+            <h2 className="text-h3 text-foreground">Confirm with a free billing scan</h2>
             <p className="max-w-readable text-body text-muted-foreground">
               {top
-                ? `Your largest modeled exposure is ${top.name.toLowerCase()}. Upload exports to replace the estimate with evidence-backed findings.`
-                : "Upload billing exports to replace the estimate with evidence-backed findings."}
+                ? `Your largest likely source is ${top.name.toLowerCase()}. Upload billing exports to replace this estimate with evidence-backed findings.`
+                : "Upload billing exports to replace this estimate with evidence-backed findings."}
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button onClick={handleScanClick} className="min-h-[44px]">
-              {ctaCentral >= 100_000
-                ? `Confirm ${formatCurrency(ctaCentral)}+ with a free billing scan`
+              {ctaHigh >= 100_000
+                ? `Confirm ${formatCurrency(ctaHigh)}+ with a free billing scan`
                 : "Run free billing scan"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -529,8 +351,8 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
             </Link>
           </div>
           <p className="text-small text-muted-foreground">
-            A {formatCurrency(AUDIT_PRICE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}% of
-            the expected recoverable estimate.
+            A {formatCurrency(AUDIT_PRICE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}%
+            of the upper end of this estimate.
           </p>
         </HairlineCard>
       </Reveal>

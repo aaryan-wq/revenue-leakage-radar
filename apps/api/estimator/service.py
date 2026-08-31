@@ -166,7 +166,7 @@ def calculate_assessment(
     assessment: Assessment,
     *,
     random_seed: int = 42,
-    scenario: str = "central",
+    scenario: str = "aggressive",
 ) -> dict[str, Any]:
     answers = _answers_dict(assessment)
     progress = completion_progress(answers, assessment.questionnaire_version)
@@ -263,7 +263,7 @@ def get_result(
     narrative = row.narrative_json
 
     if refresh_if_stale and is_stale_result(payload):
-        scenario = str(payload.get("scenario") or "central")
+        scenario = str(payload.get("scenario") or "aggressive")
         random_seed = int(payload.get("random_seed") or 42)
         payload = calculate_assessment(
             db,
