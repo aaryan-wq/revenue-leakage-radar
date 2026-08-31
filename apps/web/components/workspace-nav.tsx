@@ -7,12 +7,13 @@ import { motion } from "framer-motion";
 
 import { Logo, NAV_GREETING_CLASS, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
+import { isAdminUser } from "@/lib/admin-access";
 import { formatGreeting } from "@/lib/greeting";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { isClerkConfigured } from "@/lib/clerk";
 import { cn } from "@/lib/utils";
 
-const links = [
+const baseLinks = [
   { href: "/dashboard", label: "Home", prefetch: true },
   { href: "/audits", label: "Audits", prefetch: true },
   { href: "/billing", label: "Billing", prefetch: false },
@@ -34,6 +35,9 @@ function isLinkActive(pathname: string, href: string): boolean {
       pathname.startsWith("/findings/")
     );
   }
+  if (href === "/developer") {
+    return pathname.startsWith("/developer");
+  }
   return pathname.startsWith(href);
 }
 
@@ -51,6 +55,14 @@ function WorkspaceGreeting() {
 export function WorkspaceNav() {
   const pathname = usePathname();
   const clerkReady = isClerkConfigured();
+  const { user, isLoaded } = useUser();
+  const links = isLoaded && isAdminUser(user)
+    ? [
+        ...baseLinks.slice(0, 2),
+        { href: "/developer", label: "Developer", prefetch: false as const },
+        ...baseLinks.slice(2),
+      ]
+    : [...baseLinks];
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/60">

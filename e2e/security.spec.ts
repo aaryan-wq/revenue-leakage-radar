@@ -8,6 +8,16 @@ test.describe("Security", () => {
     expect([401, 403]).toContain(response.status());
   });
 
+  test("API rejects unauthenticated admin overview access", async ({ request }) => {
+    const response = await request.get(`${apiBaseUrl()}/admin/overview`);
+    expect(response.status()).toBe(401);
+  });
+
+  test("API rejects unauthenticated admin me access", async ({ request }) => {
+    const response = await request.get(`${apiBaseUrl()}/admin/me`);
+    expect(response.status()).toBe(401);
+  });
+
   test("API rejects forged report export without entitlement", async ({ request }) => {
     const fakeReportId = "00000000-0000-0000-0000-000000000099";
     const response = await request.get(`${apiBaseUrl()}/exports/pdf/${fakeReportId}`);

@@ -376,6 +376,20 @@ class ReportPurchase(Base):
     report: Mapped["Report | None"] = relationship(back_populates="purchases")
 
 
+class SupportNote(Base):
+    __tablename__ = "support_notes"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_type: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    entity_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    author_clerk_user_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 from models.estimator import (  # noqa: E402, F401
     Assessment,
     AssessmentAnswer,

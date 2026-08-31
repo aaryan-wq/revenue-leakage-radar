@@ -569,6 +569,165 @@ export interface UnlockCreditResponse {
   message: string;
 }
 
+export interface AdminMeResponse {
+  is_admin: boolean;
+  email: string | null;
+}
+
+export interface AdminOverviewResponse {
+  total_audits: number;
+  linked_users: number;
+  total_reports: number;
+  purchased_reports: number;
+  total_purchases: number;
+  total_recoverable_arr: string;
+  audits_last_7_days: number;
+  purchases_last_7_days: number;
+}
+
+export interface AdminCompanyItem {
+  id: string;
+  name: string;
+  audit_count: number;
+  created_at: string | null;
+}
+
+export interface PaginatedCompaniesResponse {
+  items: AdminCompanyItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AdminAuditListItem {
+  audit_id: string;
+  report_id: string | null;
+  company_name: string | null;
+  clerk_user_id: string | null;
+  status: string;
+  recoverable_arr: string | null;
+  finding_count: number | null;
+  purchased: boolean;
+  created_at: string | null;
+  verification_completed_at: string | null;
+}
+
+export interface PaginatedAuditsResponse {
+  items: AdminAuditListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AdminUploadItem {
+  id: string;
+  file_type: string;
+  original_filename: string;
+  file_size: number;
+  status: string;
+  created_at: string | null;
+}
+
+export interface AdminPurchaseItem {
+  id: string;
+  plan: string;
+  amount_cents: number | null;
+  currency: string | null;
+  status: string;
+  stripe_payment_intent_id: string | null;
+  created_at: string | null;
+}
+
+export interface AdminAuditDetailResponse {
+  audit_id: string;
+  report_id: string | null;
+  company_name: string | null;
+  company_id: string | null;
+  clerk_user_id: string | null;
+  status: string;
+  platform: string | null;
+  recoverable_arr: string | null;
+  finding_count: number | null;
+  purchased: boolean;
+  ingestion_error: string | null;
+  scan_error: string | null;
+  created_at: string | null;
+  verification_completed_at: string | null;
+  uploads: AdminUploadItem[];
+  purchases: AdminPurchaseItem[];
+}
+
+export interface AdminReportListItem {
+  report_id: string;
+  audit_id: string;
+  company_name: string | null;
+  clerk_user_id: string | null;
+  recoverable_arr: string;
+  finding_count: number;
+  purchased: boolean;
+  status: string;
+  generated_at: string | null;
+}
+
+export interface PaginatedReportsResponse {
+  items: AdminReportListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AdminLogEntry {
+  id: string;
+  timestamp: string;
+  log_type: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  message: string;
+  metadata?: Record<string, unknown> | null;
+}
+
+export interface PaginatedLogsResponse {
+  items: AdminLogEntry[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AdminReprocessResponse {
+  audit_id: string;
+  status: string;
+  message: string;
+}
+
+export interface AdminRefundResponse {
+  purchase_id: string;
+  status: string;
+  message: string;
+}
+
+export interface SupportNote {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  author_clerk_user_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginatedSupportNotesResponse {
+  items: SupportNote[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface SupportNoteCreateRequest {
+  entity_type: string;
+  entity_id: string;
+  body: string;
+}
+
 export function formatDecimal(
   value: string | number | null | undefined,
   maxFractionDigits = 2,

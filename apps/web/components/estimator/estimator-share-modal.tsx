@@ -10,12 +10,13 @@ import { captureEvent } from "@/lib/analytics/client";
 import { createShareLink } from "@/lib/estimator/api";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 import {
+  buildSocialSharePost,
   canNativeShare,
   openShareChannel,
   shareNative,
   type ShareChannel,
 } from "@/lib/share";
-import { AnalyticsEvents, formatCurrency } from "@rlr/shared";
+import { AnalyticsEvents } from "@rlr/shared";
 
 interface EstimatorShareModalProps {
   open: boolean;
@@ -32,10 +33,9 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-const SOCIAL_CHANNELS: { id: ShareChannel; label: string; icon: ReactNode }[] = [
+const SOCIAL_CHANNELS: { id: Extract<ShareChannel, "linkedin" | "x">; label: string; icon: ReactNode }[] = [
   { id: "linkedin", label: "LinkedIn", icon: <Linkedin className="h-5 w-5" strokeWidth={1.75} /> },
   { id: "x", label: "X", icon: <XIcon className="h-4 w-4" /> },
-  { id: "email", label: "Email", icon: <Mail className="h-5 w-5" strokeWidth={1.75} /> },
 ];
 
 export function EstimatorShareModal({
@@ -112,8 +112,14 @@ export function EstimatorShareModal({
   };
 
   const handleChannel = (channel: ShareChannel) => {
-    if (!shareUrl) return;
-    openShareChannel(channel, shareUrl, estimateHigh);
+    if (channel === "email" && !shareUrl) return;
+
+    openShareChannel(
+      channel,
+      window.location.origin,
+      estimateHigh,
+      channel === "email" ? (shareUrl ?? undefined) : undefined,
+    );
     captureEvent(AnalyticsEvents.RESULT_SHARED, {
       assessment_id: assessmentId,
       channel,
@@ -121,8 +127,7 @@ export function EstimatorShareModal({
   };
 
   const handleNativeShare = async () => {
-    if (!shareUrl) return;
-    const shared = await shareNative(shareUrl, estimateHigh);
+    const shared = await shareNative(window.location.origin, estimateHigh);
     if (shared) {
       captureEvent(AnalyticsEvents.RESULT_SHARED, {
         assessment_id: assessmentId,
@@ -172,77 +177,107 @@ export function EstimatorShareModal({
                 Share with your team
               </h2>
               <p className="mt-2 text-small text-muted-foreground">
-                Send a read-only link showing ~{formatCurrency(estimateHigh)}/year in estimated
-                recoverable revenue.
+                Copy a read-only link for your team, or post on LinkedIn and X to point colleagues
+                to Paevo.
               </p>
 
-              <div className="mt-8 space-y-6">
-                {loading ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
-                    <p className="text-small text-muted-foreground">Creating share link…</p>
+              <div className="mt-8 space-y-8">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-caption text-muted-foreground">Team link</p>
+                    <p className="mt-1 text-small text-muted-foreground">
+                      Read-only link to this estimate for finance or RevOps.
+                    </p>
                   </div>
-                ) : error ? (
-                  <div className="space-y-3">
-                    <p className="text-small text-destructive">{error}</p>
-                    <Button variant="secondary" onClick={() => void loadShareUrl()} className="min-h-[44px]">
-                      Try again
-                    </Button>
-                  </div>
-                ) : shareUrl ? (
-                  <>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={shareUrl}
-                        aria-label="Share link"
-                        className="min-h-[44px] flex-1 truncate rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3 text-small text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        onFocus={(e) => e.target.select()}
-                      />
-                      <Button
-                        variant="secondary"
-                        onClick={() => void handleCopy()}
-                        className="min-h-[44px] shrink-0 px-4"
-                        aria-label={copied ? "Copied" : "Copy link"}
-                      >
-                        {copied ? (
-                          <Check className="h-4 w-4 text-success" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                        <span className="ml-2 hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
+
+                  {loading ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+                      <p className="text-small text-muted-foreground">Creating share link…</p>
+                    </div>
+                  ) : error ? (
+                    <div className="space-y-3">
+                      <p className="text-small text-destructive">{error}</p>
+                      <Button variant="secondary" onClick={() => void loadShareUrl()} className="min-h-[44px]">
+                        Try again
                       </Button>
                     </div>
-
-                    <div className="space-y-4">
-                      <p className="text-caption text-muted-foreground">Share via</p>
-                      <div className="flex flex-wrap gap-3">
-                        {SOCIAL_CHANNELS.map((channel) => (
-                          <button
-                            key={channel.id}
-                            type="button"
-                            onClick={() => handleChannel(channel.id)}
-                            className="focus-ring flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-xl border border-border/50 bg-surface-glass-subtle px-5 py-3 transition-colors hover:bg-secondary"
-                          >
-                            {channel.icon}
-                            <span className="text-caption text-muted-foreground">{channel.label}</span>
-                          </button>
-                        ))}
-                        {nativeAvailable ? (
-                          <button
-                            type="button"
-                            onClick={() => void handleNativeShare()}
-                            className="focus-ring flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-xl border border-border/50 bg-surface-glass-subtle px-5 py-3 transition-colors hover:bg-secondary"
-                          >
-                            <Share2 className="h-5 w-5" strokeWidth={1.75} />
-                            <span className="text-caption text-muted-foreground">More</span>
-                          </button>
-                        ) : null}
+                  ) : shareUrl ? (
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex min-w-0 flex-1 gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={shareUrl}
+                          aria-label="Share link"
+                          className="min-h-[44px] flex-1 truncate rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3 text-small text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          onFocus={(e) => e.target.select()}
+                        />
+                        <Button
+                          variant="secondary"
+                          onClick={() => void handleCopy()}
+                          className="min-h-[44px] shrink-0 px-4"
+                          aria-label={copied ? "Copied" : "Copy link"}
+                        >
+                          {copied ? (
+                            <Check className="h-4 w-4 text-success" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                          <span className="ml-2 hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
+                        </Button>
                       </div>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleChannel("email")}
+                        className="min-h-[44px] shrink-0"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Email team
+                      </Button>
                     </div>
-                  </>
-                ) : null}
+                  ) : null}
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-caption text-muted-foreground">LinkedIn and X</p>
+                    <p className="mt-1 text-small text-muted-foreground">
+                      Posts link to paevo.co so others can find their own estimate.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3">
+                    <p className="text-caption text-muted-foreground">Preview</p>
+                    <p className="mt-2 whitespace-pre-line text-small text-foreground">
+                      {buildSocialSharePost(estimateHigh, window.location.origin)}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {SOCIAL_CHANNELS.map((channel) => (
+                      <button
+                        key={channel.id}
+                        type="button"
+                        onClick={() => handleChannel(channel.id)}
+                        className="focus-ring flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-xl border border-border/50 bg-surface-glass-subtle px-5 py-3 transition-colors hover:bg-secondary"
+                      >
+                        {channel.icon}
+                        <span className="text-caption text-muted-foreground">{channel.label}</span>
+                      </button>
+                    ))}
+                    {nativeAvailable ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleNativeShare()}
+                        className="focus-ring flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-1 rounded-xl border border-border/50 bg-surface-glass-subtle px-5 py-3 transition-colors hover:bg-secondary"
+                      >
+                        <Share2 className="h-5 w-5" strokeWidth={1.75} />
+                        <span className="text-caption text-muted-foreground">More</span>
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </HairlineCard>
           </motion.div>

@@ -418,7 +418,8 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               <h3 className="text-h4">Share with your team</h3>
             </div>
             <p className="text-small text-muted-foreground">
-              Send a read-only link to finance or RevOps, or share on LinkedIn and email.
+              Copy a read-only link for finance or RevOps, or post on LinkedIn and X to help others
+              find their estimate on Paevo.
             </p>
             <Button
               variant="secondary"

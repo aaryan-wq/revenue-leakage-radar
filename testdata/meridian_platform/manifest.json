@@ -1,0 +1,28 @@
+{
+  "company": "Meridian Platform",
+  "profile": {
+    "arr_target_usd": 25000000,
+    "customer_count": 450
+  },
+  "estimated_billed_arr_usd": 24334708.16,
+  "counts": {
+    "customers": 450,
+    "subscriptions": 470,
+    "invoices": 5036,
+    "invoice_line_items": 5036,
+    "price_catalog_entries": 20,
+    "coupons": 2,
+    "crm_accounts": 450,
+    "crm_contracts": 6
+  },
+  "injected_scenarios": {
+    "expired_discount": 6,
+    "legacy_pricing": 3,
+    "duplicate_discount": 3,
+    "undercharged": 6,
+    "cancelled_still_billing": 2,
+    "invoice_mismatch": 5,
+    "manual_override": 4,
+    "migration_duplicate_customers": 17
+  }
+}

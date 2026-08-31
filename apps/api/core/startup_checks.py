@@ -1,6 +1,10 @@
 """Production startup validation — fail fast when required config is missing."""
 
+import logging
+
 from core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class StartupConfigurationError(RuntimeError):
@@ -38,6 +42,9 @@ def validate_production_settings() -> None:
 
     if settings.celery_task_always_eager:
         raise StartupConfigurationError("CELERY_TASK_ALWAYS_EAGER must be false in production")
+
+    if not settings.admin_email_list:
+        logger.warning("ADMIN_EMAILS is empty in production. Email-based admin access is disabled.")
 
     if settings.storage_backend == "r2":
         _require(settings.r2_account_id, "R2_ACCOUNT_ID")

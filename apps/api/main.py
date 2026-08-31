@@ -10,6 +10,7 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 from sqlalchemy import text
 
+from admin.routes import router as admin_router
 from app.routes import router as audit_router
 from auth.clerk_jwt import resolve_clerk_issuer
 from core.config import settings
@@ -109,6 +110,7 @@ app.include_router(reports_router)
 app.include_router(payments_router)
 app.include_router(feedback_router)
 app.include_router(estimator_router)
+app.include_router(admin_router)
 
 
 def _check_database() -> bool:

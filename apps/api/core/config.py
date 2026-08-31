@@ -52,6 +52,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("WEB_URL", "FRONTEND_URL", "APP_BASE_URL"),
     )
     support_email: str = "aaryan@paevo.co"
+    admin_emails: str = Field(default="aaryan@paevo.co", validation_alias="ADMIN_EMAILS")
     feedback_email: str = Field(default="aaryan@paevo.co", validation_alias="FEEDBACK_EMAIL")
     from_email: str = Field(default="hello@paevo.co", validation_alias="FROM_EMAIL")
     posthog_api_key: str = ""
@@ -138,6 +139,10 @@ class Settings(BaseSettings):
     @property
     def max_upload_size_bytes(self) -> int:
         return self.max_upload_size_mb * 1024 * 1024
+
+    @property
+    def admin_email_list(self) -> set[str]:
+        return {email.strip().lower() for email in self.admin_emails.split(",") if email.strip()}
 
 
 _RAILWAY_HEALTH_HOSTS = ("*.up.railway.app", "*.railway.app", "localhost", "127.0.0.1")
