@@ -1,34 +1,39 @@
 # Estimator Question Bank
 
-Questionnaire version: **v2.1**
+Questionnaire version: **v2.3**
 
 ## Sections
 
 | Section | Key questions | Branch triggers |
 |---------|---------------|-----------------|
-| profile | company_type, arr, arr_confidence, customers | — |
-| pricing | pricing_models (multi), usage_based, seat_based | usage/seat sub-branches |
-| usage | unit_type, rating, billing_timing, reconciliation | `pricing.usage_based = true` |
-| seats | seat_reconciliation, true_up | `pricing.seat_based = true` |
-| product | billable_products, independent_catalogs, addons | — |
-| contracts | negotiated_arr_pct, custom_pricing, grandfathering, renewal_increases | — |
-| discounts | discount_frequency, discount_types, expiry_handling, expiry_confidence, stacking_policy | — |
-| changes | pricing_changes_24mo, migration_method, grandfathered_after_change | — |
+| profile | company_type, arr_amount, arr_confidence, customer_count | — |
+| pricing | pricing.models (multiselect) | usage / per-seat sub-branches |
+| usage | usage.rating, usage.reconciliation | `pricing.models` contains `usage` |
+| seats | seats.reconciliation | `pricing.models` contains `per_seat` |
+| product | billable_count, independent_catalogs, addons | — |
+| contracts | negotiated_arr_pct, grandfathering, renewal_increases | — |
+| discounts | frequency, auto_expiry_removal, expiry_confidence, stacking_policy | `auto_expiry_removal` when discounts are used |
+| changes | pricing_changes_24mo, migration_method | — |
 | systems | billing_system_count, primary_platform | — |
-| operations | manual_override_frequency, manual_change_logging, credit_memo_process, churn_billing_cutoff, invoice_cadence, customer_dedup | — |
-| quote_to_bill | commercial_truth_source, quote_automation | — |
-| migrations | migrated_36mo | unlocks migration detail |
-| international | multi_currency | unlocks currency detail |
-| controls | finance_team_size, billing_owner, reconciliation, billing_qa, invoice_price_qa | — |
-| velocity | commercial_changes_12mo | — |
-| confidence | billing_confidence, last_reconciliation | — |
+| operations | manual_override_frequency, unticketed_adjustments, credit_memo_process, churn_billing_cutoff | — |
+| quote_to_bill | commercial_truth, quote_automation, finance_sales_disagreement | — |
+| migrations | migrated_36mo | unlocks reconciliation + parallel_systems |
+| international | multi_currency | unlocks currency_count |
+| controls | billing_owner, monthly_reconciliation, billing_qa, invoice_price_qa | — |
+| confidence | billing_confidence | — |
 
 ## Branching Rules
 
-- `pricing.usage_based = true` → usage section (6 questions)
-- `pricing.seat_based = true` → seats section (4 questions)
-- `migrations.migrated_36mo = true` → migration detail (3 questions)
-- `international.multi_currency = true` → currency detail (2 questions)
+- `pricing.models` contains `usage` → usage section (2 questions)
+- `pricing.models` contains `per_seat` → seats section (1 question)
+- `migrations.migrated_36mo = true` → migration detail (2 questions)
+- `international.multi_currency = true` → currency detail (1 question)
+- `discounts.frequency` not `never` → `discounts.auto_expiry_removal`
+
+## Question count
+
+- Typical B2B SaaS path (flat pricing, no migration, single currency): **~33 questions**
+- Full branched path (usage + seats + migration + multi-currency): **~39 questions**
 
 ## Answer Types
 

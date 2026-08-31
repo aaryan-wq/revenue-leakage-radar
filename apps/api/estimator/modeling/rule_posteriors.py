@@ -25,12 +25,6 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "4_5": 1.8,
             "6_plus": 2.2,
         },
-        "contracts.custom_pricing": {
-            "no": 0.7,
-            "some": 1.0,
-            "yes": 1.3,
-            "unknown": 1.0,
-        },
     },
     "grandfathered_pricing": {
         "contracts.grandfathering": {
@@ -56,13 +50,6 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "4_5": 1.8,
             "6_plus": 2.2,
         },
-        "velocity.commercial_changes_12mo": {
-            "0": 0.8,
-            "1_2": 1.0,
-            "3_5": 1.1,
-            "6_10": 1.3,
-            "10_plus": 1.5,
-        },
     },
     "missing_scheduled_increase": {
         "contracts.renewal_increases": {"yes": 0.5, "manual": 2.0, "no": 1.3, "unknown": 1.4},
@@ -75,12 +62,13 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "common": 1.8,
             "nearly_all": 2.5,
         },
-        "discounts.expiry_handling": {
-            "automatic": 0.5,
-            "manual_finance": 1.3,
-            "manual_revops": 1.4,
-            "manual_sales": 1.6,
-            "unknown": 1.5,
+        "discounts.auto_expiry_removal": {
+            "always": 0.5,
+            "usually": 0.7,
+            "sometimes": 1.2,
+            "rarely": 1.6,
+            "never": 2.0,
+            "unknown": 1.4,
         },
     },
     "discount_stacking": {
@@ -197,11 +185,12 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
         },
     },
     "missing_expected_invoice": {
-        "operations.invoice_cadence": {
-            "automated": 0.4,
-            "scheduled": 0.6,
-            "manual": 1.6,
-            "ad_hoc": 2.0,
+        "controls.invoice_price_qa": {
+            "always": 0.4,
+            "usually": 0.6,
+            "sometimes": 1.2,
+            "rarely": 1.8,
+            "never": 2.2,
             "unknown": 1.4,
         },
     },
@@ -224,12 +213,11 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
         },
     },
     "duplicate_customer": {
-        "operations.customer_dedup": {
-            "automated": 0.4,
-            "quarterly": 0.7,
-            "manual": 1.5,
-            "never": 2.0,
-            "unknown": 1.4,
+        "systems.billing_system_count": {
+            "1": 0.6,
+            "2": 1.2,
+            "3_plus": 1.8,
+            "unknown": 1.3,
         },
     },
     "contract_billing_price_divergence": {
@@ -256,12 +244,6 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "spreadsheet": 1.4,
             "multiple": 1.6,
             "undefined": 1.7,
-        },
-        "contracts.custom_pricing": {
-            "no": 0.7,
-            "some": 1.0,
-            "yes": 1.3,
-            "unknown": 1.0,
         },
     },
     "price_catalog_mismatch": {

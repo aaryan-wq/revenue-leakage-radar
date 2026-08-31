@@ -18,5 +18,5 @@ rule_prior_multipliers:
   manual_price_override: 2.541338
   missing_expected_invoice: 0.835585
   missing_scheduled_increase: 0.099846
-  price_catalog_mismatch: 1.1564
-  renewal_price_drift: 0.389769
+  price_catalog_mismatch: 1.243547
+  renewal_price_drift: 0.214847

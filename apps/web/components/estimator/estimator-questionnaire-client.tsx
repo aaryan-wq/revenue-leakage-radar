@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LiveProfilePanel } from "@/components/estimator/live-profile-panel";
 import { ProgressRail } from "@/components/estimator/progress-rail";
 import { QuestionStep } from "@/components/estimator/question-step";
-import { AssessmentResumeNotice } from "@/components/estimator/assessment-resume-notice";
 import { AssessmentResumePrompt } from "@/components/estimator/assessment-resume-prompt";
 import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
@@ -213,7 +212,6 @@ export function EstimatorQuestionnaireClient() {
       <ProgressRail sectionLabel={sectionLabel} completionRate={progress.completion_rate} />
       <div className="mx-auto grid min-h-[calc(100vh-8rem)] max-w-marketing gap-10 px-6 py-12 md:grid-cols-[minmax(0,1fr)_280px] md:px-10 md:py-16">
         <div className="min-w-0">
-          {resume ? <AssessmentResumeNotice resume={resume} /> : null}
           {question ? (
             <QuestionStep
               question={question}

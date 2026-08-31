@@ -519,6 +519,18 @@ export {
 } from "./pricing";
 export type { CheckoutTotalBreakdown } from "./pricing";
 
+export {
+  AUDIT_ROI_BREAK_EVEN_ARR_USD,
+  GENERIC_ROI_EXAMPLE_ARR_USD,
+  VALUATION_MULTIPLE_HIGH,
+  VALUATION_MULTIPLE_LOW,
+  computeAuditRoi,
+  computeAuditRoiFromAmount,
+  formatCompactCurrency,
+  formatPaybackPeriod,
+} from "./audit-roi";
+export type { AuditRoiMetrics } from "./audit-roi";
+
 export interface CheckoutResponse {
   checkout_url: string;
   session_id: string;

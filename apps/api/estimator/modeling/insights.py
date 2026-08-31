@@ -54,13 +54,11 @@ EXPOSURE_BASE_LABELS: dict[str, str] = {
 ANSWER_DRIVERS: dict[str, str] = {
     "contracts.grandfathering": "grandfathering frequency",
     "contracts.negotiated_arr_pct": "negotiated ARR share",
-    "contracts.custom_pricing": "custom enterprise pricing",
     "contracts.renewal_increases": "renewal increase process",
     "discounts.frequency": "discount usage",
-    "discounts.expiry_handling": "discount expiry handling",
+    "discounts.auto_expiry_removal": "automatic discount removal",
     "discounts.expiry_confidence": "discount expiry confidence",
     "operations.manual_override_frequency": "manual billing overrides",
-    "operations.manual_change_logging": "override logging",
     "systems.billing_system_count": "billing system count",
     "quote_to_bill.commercial_truth": "commercial truth source",
     "quote_to_bill.quote_automation": "quote-to-bill automation",
@@ -73,14 +71,13 @@ ANSWER_DRIVERS: dict[str, str] = {
     "pricing.models": "pricing models",
     "usage.reconciliation": "usage reconciliation",
     "seats.reconciliation": "seat reconciliation",
-    "velocity.commercial_changes_12mo": "commercial change velocity",
     "controls.monthly_reconciliation": "reconciliation cadence",
 }
 
 HYPOTHESIS_DRIVER_KEYS: dict[str, list[str]] = {
     "H1": ["contracts.grandfathering", "changes.pricing_changes_24mo"],
     "H2": ["contracts.renewal_increases", "changes.pricing_changes_24mo"],
-    "H3": ["discounts.frequency", "discounts.expiry_handling"],
+    "H3": ["discounts.frequency", "discounts.auto_expiry_removal"],
     "H4": ["discounts.frequency", "discounts.expiry_confidence"],
     "H5": ["product.billable_count", "product.independent_catalogs"],
     "H6": ["changes.pricing_changes_24mo"],
@@ -90,11 +87,11 @@ HYPOTHESIS_DRIVER_KEYS: dict[str, list[str]] = {
     "H10": ["seats.reconciliation", "pricing.models"],
     "H11": ["usage.reconciliation", "pricing.models"],
     "H12": ["quote_to_bill.commercial_truth", "quote_to_bill.quote_automation"],
-    "H13": ["contracts.negotiated_arr_pct", "contracts.custom_pricing"],
+    "H13": ["contracts.negotiated_arr_pct", "quote_to_bill.quote_automation"],
     "H14": ["migrations.migrated_36mo", "migrations.parallel_systems"],
     "H15": ["international.multi_currency"],
-    "H16": ["operations.manual_override_frequency", "operations.manual_change_logging"],
-    "H17": ["velocity.commercial_changes_12mo", "changes.pricing_changes_24mo"],
+    "H16": ["operations.manual_override_frequency", "operations.unticketed_adjustments"],
+    "H17": ["changes.pricing_changes_24mo", "changes.migration_method"],
     "H18": ["contracts.negotiated_arr_pct", "profile.customer_count"],
 }
 
@@ -184,8 +181,8 @@ def _build_profile_summary(
         (normalized.get("international.multi_currency"), "Multi-currency billing"),
         (normalized.get("controls.monthly_reconciliation") == "never", "No monthly reconciliation"),
         (
-            normalized.get("discounts.expiry_handling") in {"manual_sales", "manual_revops", "manual_finance"},
-            "Manual discount expiry handling",
+            normalized.get("discounts.auto_expiry_removal") in {"rarely", "never"},
+            "Discounts not removed automatically when they expire",
         ),
         (normalized.get("changes.pricing_changes_24mo") == "6_plus", "Six or more pricing changes in 24 months"),
     ]

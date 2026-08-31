@@ -57,6 +57,7 @@ export const PRICING_TIERS = {
       "Customer / subscription / invoice-level detail where available",
       "Downloadable report + findings export",
       "Coverage report + remediation view",
+      "ROI typically exceeds audit cost on first verified finding",
       "Success fee based on recovery you confirm at checkout",
       "Workspace access for the purchased audit",
     ],
@@ -92,6 +93,7 @@ export const PRICING_PREVIEW_TIERS = [
     price: VERIFICATION_REPORT_PRICE,
     note: "Base fee + success fee at checkout",
     highlight: "Detailed findings, calculation trace, and downloadable exports",
+    roiNote: "Often pays for itself on the first verified finding",
   },
   {
     name: PRODUCT_NAMES.enterprise,

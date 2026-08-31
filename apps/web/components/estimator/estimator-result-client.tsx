@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, Copy, Mail, RotateCcw } from "lucide-react";
+import { ArrowRight, Mail, RotateCcw, Share2 } from "lucide-react";
 
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { captureEvent } from "@/lib/analytics/client";
+import { EstimatorShareModal } from "@/components/estimator/estimator-share-modal";
 import {
   calculateAssessment,
   clearAssessmentSession,
-  createShareLink,
   fetchAssessment,
   fetchResult,
   saveLead,
@@ -29,6 +29,7 @@ import {
 import {
   AnalyticsEvents,
   formatCurrency,
+  VERIFICATION_REPORT_BASE_FEE_USD,
   type EstimatorHypothesisBreakdown,
   type EstimatorMechanismInsight,
   type EstimatorResult,
@@ -40,7 +41,6 @@ interface EstimatorResultClientProps {
   assessmentId: string;
 }
 
-const AUDIT_PRICE_USD = 2500;
 const DISPLAY_SCENARIO = "aggressive";
 
 function toNumber(value: unknown): number {
@@ -128,7 +128,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const [emailSaved, setEmailSaved] = useState(false);
   const [resume, setResume] = useState<EstimatorResumeState | null>(null);
 
@@ -175,18 +175,6 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
     router.push(`/upload?assessment_id=${assessmentId}`);
   };
 
-  const handleShare = async () => {
-    try {
-      const share = await createShareLink(assessmentId);
-      const url = `${window.location.origin}${share.share_path}`;
-      await navigator.clipboard.writeText(url);
-      captureEvent(AnalyticsEvents.RESULT_SHARED, { assessment_id: assessmentId });
-      setShareMessage("Link copied to clipboard");
-    } catch {
-      setShareMessage("Unable to create share link. Please try again.");
-    }
-  };
-
   const handleEmail = async () => {
     if (!email) return;
     await saveLead(assessmentId, { email });
@@ -231,7 +219,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const mechanisms = result.top_hypotheses.slice(0, 5);
   const maxHigh = Math.max(...mechanisms.map((item) => item.high), 1);
   const ctaHigh = result.estimate.high;
-  const paybackPct = ctaHigh > 0 ? (AUDIT_PRICE_USD / ctaHigh) * 100 : 0;
+  const paybackPct = ctaHigh > 0 ? (VERIFICATION_REPORT_BASE_FEE_USD / ctaHigh) * 100 : 0;
   const top = result.top_hypotheses[0];
 
   return (
@@ -351,7 +339,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
             </Link>
           </div>
           <p className="text-small text-muted-foreground">
-            A {formatCurrency(AUDIT_PRICE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}%
+            A {formatCurrency(VERIFICATION_REPORT_BASE_FEE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}%
             of this estimate.
           </p>
         </HairlineCard>
@@ -383,19 +371,30 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Copy className="h-4 w-4 text-muted-foreground" />
+              <Share2 className="h-4 w-4 text-muted-foreground" />
               <h3 className="text-h4">Share with your team</h3>
             </div>
             <p className="text-small text-muted-foreground">
-              Create a read-only link for finance or RevOps review.
+              Send a read-only link to finance or RevOps, or share on LinkedIn and email.
             </p>
-            <Button variant="secondary" onClick={() => void handleShare()} className="min-h-[44px]">
-              Copy share link
+            <Button
+              variant="secondary"
+              onClick={() => setShareOpen(true)}
+              className="min-h-[44px]"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share estimate
             </Button>
-            {shareMessage ? <p className="text-caption text-muted-foreground">{shareMessage}</p> : null}
           </div>
         </div>
       </HairlineCard>
+
+      <EstimatorShareModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        assessmentId={assessmentId}
+        estimateHigh={result.estimate.high}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ FIXTURES_ROOT = Path(__file__).resolve().parents[1] / "verification_fixtures"
 RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
     "expired_discount": {
         "discounts.frequency": "common",
-        "discounts.expiry_handling": "manual_finance",
+        "discounts.auto_expiry_removal": "never",
         "discounts.stacking_policy": "allowed",
     },
     "grandfathered_pricing": {"contracts.grandfathering": "very_frequently"},
@@ -35,7 +35,7 @@ RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
 SINGLE_RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
     "expired_discount": {
         "discounts.frequency": "occasional",
-        "discounts.expiry_handling": "manual_finance",
+        "discounts.auto_expiry_removal": "rarely",
         "discounts.stacking_policy": "limited",
     },
     "grandfathered_pricing": {"contracts.grandfathering": "sometimes"},
@@ -56,12 +56,12 @@ SINGLE_RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
     "duplicate_credit": {"operations.credit_memo_process": "manual"},
     "contract_billing_price_divergence": {
         "quote_to_bill.commercial_truth": "billing",
-        "contracts.custom_pricing": "some",
+        "contracts.negotiated_arr_pct": "26_50",
     },
     "incorrect_seat_price": {"pricing.models": ["flat", "per_seat"], "seats.reconciliation": "manual"},
     "incorrect_addon_price": {"product.addons": True},
     "discount_wrong_product": {"discounts.frequency": "occasional"},
-    "missing_expected_invoice": {"operations.invoice_cadence": "scheduled"},
+    "missing_expected_invoice": {"controls.invoice_price_qa": "sometimes"},
 }
 
 

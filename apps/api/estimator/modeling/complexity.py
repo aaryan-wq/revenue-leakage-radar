@@ -65,8 +65,6 @@ def _systems_score(n: dict[str, Any]) -> int:
 def _change_score(n: dict[str, Any]) -> int:
     changes = n.get("changes.pricing_changes_24mo", "0")
     score = {"0": 0, "1": 1, "2_3": 3, "4_5": 5, "6_plus": 7}.get(changes, 1)
-    velocity = n.get("velocity.commercial_changes_12mo", "0")
-    score += {"0": 0, "1_2": 1, "3_5": 2, "6_10": 3, "10_plus": 4}.get(velocity, 0)
     if n.get("migrations.migrated_36mo"):
         score += 2
     return min(score, 8)

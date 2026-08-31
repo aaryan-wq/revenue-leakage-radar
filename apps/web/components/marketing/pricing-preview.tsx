@@ -28,6 +28,9 @@ export function PricingPreview() {
               <p className="mt-2 font-heading text-2xl tracking-tight tnum">{tier.price}</p>
               <p className="mt-1 text-xs text-muted-foreground">{tier.note}</p>
               <p className="mt-4 text-sm leading-relaxed text-foreground/80">{tier.highlight}</p>
+              {"roiNote" in tier && tier.roiNote ? (
+                <p className="mt-2 text-xs text-muted-foreground">{tier.roiNote}</p>
+              ) : null}
             </div>
           </StaggerItem>
         ))}

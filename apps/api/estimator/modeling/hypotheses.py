@@ -28,9 +28,9 @@ def _likelihood_ratio(hid: str, n: dict[str, Any]) -> float:
     if hid in {"H3", "H4"}:
         freq = n.get("discounts.frequency", "never")
         lr *= {"never": 0.3, "rare": 0.7, "occasional": 1.2, "common": 1.8, "nearly_all": 2.5}.get(freq, 1.0)
-        expiry = n.get("discounts.expiry_handling", "unknown")
-        lr *= {"automatic": 0.5, "manual_finance": 1.3, "manual_revops": 1.4, "manual_sales": 1.6, "unknown": 1.5}.get(
-            expiry, 1.0
+        auto_expiry = n.get("discounts.auto_expiry_removal", "unknown")
+        lr *= {"always": 0.5, "usually": 0.7, "sometimes": 1.2, "rarely": 1.6, "never": 2.0, "unknown": 1.4}.get(
+            auto_expiry, 1.0
         )
         conf = n.get("discounts.expiry_confidence")
         if conf is not None:
@@ -69,8 +69,8 @@ def _likelihood_ratio(hid: str, n: dict[str, Any]) -> float:
             manual, 1.0
         )
     if hid == "H17":
-        velocity = n.get("velocity.commercial_changes_12mo", "0")
-        lr *= {"0": 0.5, "1_2": 1.0, "3_5": 1.5, "6_10": 2.0, "10_plus": 2.5}.get(velocity, 1.0)
+        changes = n.get("changes.pricing_changes_24mo", "0")
+        lr *= {"0": 0.5, "1": 0.8, "2_3": 1.2, "4_5": 1.7, "6_plus": 2.2}.get(changes, 1.0)
     billing_conf = n.get("confidence.billing_confidence")
     if billing_conf is not None:
         lr *= 1.0 + (5 - float(billing_conf)) * 0.08

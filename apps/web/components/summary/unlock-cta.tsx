@@ -13,6 +13,8 @@ import { isClerkConfigured } from "@/lib/clerk";
 import { getBilling, unlockWithCredit } from "@/lib/report-api";
 import { getStoredAuditSession } from "@/lib/audit-session";
 import { PRODUCT_NAMES, VERIFICATION_REPORT_PRICE } from "@/lib/pricing-content";
+import { buildUnlockPaybackLine } from "@/lib/audit-roi-content";
+import { computeAuditRoiFromAmount } from "@rlr/shared";
 
 interface UnlockCtaProps {
   reportId: string;
@@ -57,6 +59,9 @@ export function UnlockCta({ reportId, recoverableArr, purchased, onUnlocked }: U
     }
   };
 
+  const roiMetrics = computeAuditRoiFromAmount(recoverableArr);
+  const paybackLine = roiMetrics ? buildUnlockPaybackLine(roiMetrics) : null;
+
   if (purchased) {
     return (
       <Reveal>
@@ -88,6 +93,9 @@ export function UnlockCta({ reportId, recoverableArr, purchased, onUnlocked }: U
             Get customer-level findings, invoice evidence, calculation traces, and remediation
             guidance. {VERIFICATION_REPORT_PRICE}.
           </p>
+          {paybackLine ? (
+            <p className="mt-3 text-sm text-muted-foreground">{paybackLine}</p>
+          ) : null}
 
           {!isSignedIn ? (
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">

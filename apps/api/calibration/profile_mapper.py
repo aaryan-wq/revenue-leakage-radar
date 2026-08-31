@@ -93,7 +93,6 @@ def profile_to_questionnaire(
     if profile.crm_platform and profile.crm_platform != "none":
         answers["quote_to_bill.commercial_truth"] = "multiple"
         answers.setdefault("contracts.negotiated_arr_pct", "26_50")
-        answers.setdefault("contracts.custom_pricing", "yes")
 
     boost_map = SINGLE_RULE_ANSWER_BOOSTS if single_rule else RULE_ANSWER_BOOSTS
     for rule_id in injected:

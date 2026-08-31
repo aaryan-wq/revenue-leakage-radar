@@ -1,0 +1,70 @@
+{
+  "company": {
+    "name": "Nimbus Analytics",
+    "arr_usd": 12000000,
+    "customers": 450,
+    "billing_platform": "Stripe",
+    "pricing": "Per-seat SaaS with enterprise deals and add-ons",
+    "risk_profile": "Manual discount cleanup, grandfathering, partial sales-to-billing automation",
+    "seed": 12000042,
+    "injected_rules": [
+      "expired_discount",
+      "legacy_pricing",
+      "invoice_price_mismatch",
+      "manual_price_override",
+      "duplicate_discount_stacking"
+    ],
+    "csv_dir": "D:\\RevenueLeakageRadar\\apps\\testdata\\nimbus_analytics\\billing"
+  },
+  "injected_leakage_annual_usd": 275596.44083350804,
+  "injected_by_rule": {
+    "expired_discount": 56282.03437269621,
+    "legacy_pricing": 70352.54296587026,
+    "invoice_price_mismatch": 28828.74877999003,
+    "manual_price_override": 120133.11471495152
+  },
+  "csv_audit": {
+    "primary_recoverable_arr": 275596.4448,
+    "matched_findings": 4,
+    "expected_findings": 4,
+    "per_rule_arr": {
+      "price_catalog_mismatch": 1767070.38,
+      "manual_price_override": 120133.116,
+      "expired_discount": 56282.0328,
+      "legacy_pricing": 70352.544,
+      "grandfathered_pricing": 126634.5768,
+      "invoice_price_mismatch": 148961.868,
+      "discount_stacking": 28141.0176,
+      "usage_billing_drift": 148961.868,
+      "renewal_price_drift": 148961.868
+    }
+  },
+  "estimator": {
+    "low": 60000,
+    "high": 300000,
+    "central": 120000,
+    "confidence": "Moderate",
+    "top_hypotheses": [
+      {
+        "name": "Manual Discount Persistence",
+        "high": 35000
+      },
+      {
+        "name": "Expired Discounts",
+        "high": 25000
+      },
+      {
+        "name": "Grandfathered Pricing",
+        "high": 0
+      },
+      {
+        "name": "Price Version Mismatch",
+        "high": 0
+      },
+      {
+        "name": "Renewal Pricing Drift",
+        "high": 0
+      }
+    ]
+  }
+}

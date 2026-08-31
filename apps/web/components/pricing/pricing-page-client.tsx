@@ -8,6 +8,7 @@ import { AnalyticsEvents } from "@rlr/shared";
 
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { PricingPageTracker } from "@/components/analytics/marketing-page-tracker";
+import { AuditRoiSection } from "@/components/pricing/audit-roi-section";
 import { LegalConsent } from "@/components/legal/legal-consent";
 import { CheckoutButton } from "@/components/summary/checkout-button";
 import { Button } from "@/components/ui/button";
@@ -222,6 +223,10 @@ export function PricingPageClient() {
             />
           </StaggerItem>
         </Stagger>
+
+        <div className="mt-12">
+          <AuditRoiSection recoverableArr={recoverableArr} />
+        </div>
 
         <Reveal delay={0.15} className="mt-12 max-w-3xl">
           <LegalConsent action="purchasing a plan" className="text-center" />

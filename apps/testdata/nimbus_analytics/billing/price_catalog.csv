@@ -1,0 +1,9 @@
+list_price,sku,currency,Effective Date,Product ID,billingInterval,version
+1207.0289,SKU-STAR-MO,USD,2024-07-01,prod_starter_mo,monthly,v2
+12070.2892,SKU-STAR-YR,USD,07/01/2024,prod_starter_yr,annual,v2
+1915.9189,SKU-GROW-MO,USD,2024-07-01,prod_growth_mo,monthly,v2
+19159.1893,SKU-GROW-YR,USD,01/07/2024,prod_growth_yr,annual,v2
+4004.2706,SKU-PROF-MO,USD,01/07/2024,prod_professional_mo,monthly,v2
+40042.7056,SKU-PROF-YR,USD,07/01/2024,prod_professional_yr,annual,v2
+7816.9492,SKU-BUSI-MO,USD,01/07/2024,prod_business_mo,monthly,v2
+78169.4922,SKU-BUSI-YR,USD,01/07/2024,prod_business_yr,annual,v2

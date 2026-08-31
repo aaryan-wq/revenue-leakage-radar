@@ -5,7 +5,6 @@ from typing import Any
 PERTURBATIONS: dict[str, tuple[str, Any]] = {
     "contracts.grandfathering": ("contracts.grandfathering", "very_frequently"),
     "discounts.frequency": ("discounts.frequency", "nearly_all"),
-    "discounts.expiry_handling": ("discounts.expiry_handling", "manual_sales"),
     "discounts.auto_expiry_removal": ("discounts.auto_expiry_removal", "never"),
     "operations.manual_override_frequency": ("operations.manual_override_frequency", "very_frequently"),
     "operations.unticketed_adjustments": ("operations.unticketed_adjustments", "very_often"),
@@ -22,7 +21,6 @@ PERTURBATIONS: dict[str, tuple[str, Any]] = {
 DRIVER_LABELS = {
     "contracts.grandfathering": "Grandfathered pricing",
     "discounts.frequency": "Discount frequency",
-    "discounts.expiry_handling": "Discount expiry handling",
     "discounts.auto_expiry_removal": "Automatic discount removal",
     "operations.manual_override_frequency": "Manual billing intervention",
     "operations.unticketed_adjustments": "Unticketed billing adjustments",

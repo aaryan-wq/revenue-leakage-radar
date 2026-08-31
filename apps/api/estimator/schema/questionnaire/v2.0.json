@@ -1,22 +1,21 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "sections": [
     { "id": "profile", "label": "Your company", "estimated_seconds": 30 },
     { "id": "pricing", "label": "Pricing", "estimated_seconds": 25 },
-    { "id": "usage", "label": "Usage Billing", "estimated_seconds": 20 },
-    { "id": "seats", "label": "Seat Pricing", "estimated_seconds": 15 },
+    { "id": "usage", "label": "Usage pricing", "estimated_seconds": 15 },
+    { "id": "seats", "label": "Per-seat billing", "estimated_seconds": 10 },
     { "id": "product", "label": "Products and plans", "estimated_seconds": 15 },
     { "id": "contracts", "label": "Contracts", "estimated_seconds": 20 },
     { "id": "discounts", "label": "Discounts", "estimated_seconds": 20 },
-    { "id": "changes", "label": "Pricing Changes", "estimated_seconds": 15 },
-    { "id": "systems", "label": "Billing Systems", "estimated_seconds": 10 },
+    { "id": "changes", "label": "Pricing history", "estimated_seconds": 15 },
+    { "id": "systems", "label": "Billing systems", "estimated_seconds": 10 },
     { "id": "operations", "label": "Operations", "estimated_seconds": 15 },
     { "id": "quote_to_bill", "label": "Sales to billing", "estimated_seconds": 10 },
     { "id": "migrations", "label": "Migrations", "estimated_seconds": 10 },
     { "id": "international", "label": "International", "estimated_seconds": 10 },
-    { "id": "controls", "label": "Checks and oversight", "estimated_seconds": 15 },
-    { "id": "velocity", "label": "Pace of change", "estimated_seconds": 10 },
-    { "id": "confidence", "label": "Confidence", "estimated_seconds": 10 }
+    { "id": "controls", "label": "Billing checks", "estimated_seconds": 15 },
+    { "id": "confidence", "label": "Final check", "estimated_seconds": 10 }
   ],
   "questions": [
     {
@@ -39,7 +38,7 @@
       "id": "profile.arr_amount",
       "section": "profile",
       "type": "currency",
-      "label": "How much subscription revenue do you bill per year (ARR)?",
+      "label": "What is your annual recurring revenue (ARR)?",
       "required": true,
       "currencies": ["USD", "CAD", "GBP", "EUR", "AUD"],
       "hypotheses": []
@@ -48,7 +47,7 @@
       "id": "profile.arr_confidence",
       "section": "profile",
       "type": "select",
-      "label": "How sure are you that ARR number?",
+      "label": "How accurate is that number?",
       "required": true,
       "options": [
         { "value": "exact", "label": "Exact" },
@@ -61,7 +60,7 @@
       "id": "profile.customer_count",
       "section": "profile",
       "type": "number",
-      "label": "How many paying customers do you have?",
+      "label": "About how many paying customers?",
       "required": true,
       "min": 1,
       "hypotheses": []
@@ -70,7 +69,7 @@
       "id": "pricing.models",
       "section": "pricing",
       "type": "multiselect",
-      "label": "Which pricing models do you use?",
+      "label": "How do you charge? (select all that apply)",
       "required": true,
       "options": [
         { "value": "flat", "label": "Flat subscription" },
@@ -86,23 +85,6 @@
       "hypotheses": ["H5", "H10", "H11"]
     },
     {
-      "id": "usage.unit_type",
-      "section": "usage",
-      "type": "select",
-      "label": "What usage do you mostly charge for?",
-      "required": true,
-      "visibility": { "when": "pricing.models", "contains": "usage" },
-      "options": [
-        { "value": "api_calls", "label": "API calls" },
-        { "value": "gb", "label": "GB / storage" },
-        { "value": "minutes", "label": "Minutes" },
-        { "value": "tokens", "label": "Tokens" },
-        { "value": "transactions", "label": "Transactions" },
-        { "value": "other", "label": "Other" }
-      ],
-      "hypotheses": ["H11"]
-    },
-    {
       "id": "usage.rating",
       "section": "usage",
       "type": "select",
@@ -114,21 +96,6 @@
         { "value": "tiered", "label": "Price changes at volume tiers" },
         { "value": "commit_overage", "label": "Prepaid commit with overage charges" },
         { "value": "custom", "label": "Custom enterprise rate" }
-      ],
-      "hypotheses": ["H11"]
-    },
-    {
-      "id": "usage.billing_timing",
-      "section": "usage",
-      "type": "select",
-      "label": "When do customers pay for usage?",
-      "required": true,
-      "visibility": { "when": "pricing.models", "contains": "usage" },
-      "options": [
-        { "value": "realtime", "label": "As usage happens" },
-        { "value": "monthly", "label": "Monthly in arrears" },
-        { "value": "postpaid", "label": "After the billing period ends" },
-        { "value": "hybrid", "label": "Mix of timing" }
       ],
       "hypotheses": ["H11"]
     },
@@ -162,28 +129,10 @@
       "hypotheses": ["H10"]
     },
     {
-      "id": "seats.true_up",
-      "section": "seats",
-      "type": "boolean",
-      "label": "Do you compare billed seats to how many people actually use the product?",
-      "required": true,
-      "visibility": { "when": "pricing.models", "contains": "per_seat" },
-      "hypotheses": ["H10"]
-    },
-    {
-      "id": "seats.self_service",
-      "section": "seats",
-      "type": "boolean",
-      "label": "Can customers add or remove seats on their own?",
-      "required": true,
-      "visibility": { "when": "pricing.models", "contains": "per_seat" },
-      "hypotheses": ["H10"]
-    },
-    {
       "id": "product.billable_count",
       "section": "product",
       "type": "select",
-      "label": "How many products or plans do you sell separately?",
+      "label": "How many separate products or plans do you sell?",
       "required": true,
       "options": [
         { "value": "1", "label": "1" },
@@ -220,7 +169,7 @@
       "id": "contracts.negotiated_arr_pct",
       "section": "contracts",
       "type": "select",
-      "label": "What percent of revenue comes from sales-negotiated contracts (not list price)?",
+      "label": "What share of revenue comes from custom-negotiated deals?",
       "required": true,
       "options": [
         { "value": "0", "label": "0%" },
@@ -232,23 +181,10 @@
       "hypotheses": ["H12", "H13", "H18"]
     },
     {
-      "id": "contracts.custom_pricing",
-      "section": "contracts",
-      "type": "select",
-      "label": "Do any contracts lock in prices different from your public rates?",
-      "required": true,
-      "options": [
-        { "value": "yes", "label": "Yes" },
-        { "value": "no", "label": "No" },
-        { "value": "some", "label": "Some" }
-      ],
-      "hypotheses": ["H12", "H13"]
-    },
-    {
       "id": "contracts.grandfathering",
       "section": "contracts",
       "type": "select",
-      "label": "Do existing customers keep old prices when you raise rates?",
+      "label": "When you raise prices, do existing customers keep their old rate?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -297,26 +233,10 @@
       }
     },
     {
-      "id": "discounts.expiry_handling",
-      "section": "discounts",
-      "type": "select",
-      "label": "What happens when a temporary discount expires?",
-      "required": true,
-      "options": [
-        { "value": "automatic", "label": "Automatic" },
-        { "value": "manual_finance", "label": "Removed manually by Finance" },
-        { "value": "manual_revops", "label": "Removed manually by RevOps" },
-        { "value": "manual_sales", "label": "Removed manually by Sales" },
-        { "value": "contract_driven", "label": "Depends on contract terms" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H3", "H4"]
-    },
-    {
       "id": "discounts.auto_expiry_removal",
       "section": "discounts",
       "type": "select",
-      "label": "Are expired discounts removed automatically from subscriptions?",
+      "label": "When a time-limited discount ends, is it removed from billing automatically?",
       "required": true,
       "visibility": { "when": "discounts.frequency", "not_equals": "never" },
       "options": [
@@ -333,17 +253,32 @@
       "id": "discounts.expiry_confidence",
       "section": "discounts",
       "type": "scale",
-      "label": "How confident are you that expired discounts are removed on time?",
+      "label": "How confident are you that discounts end on schedule?",
       "required": true,
       "min": 1,
       "max": 5,
       "hypotheses": ["H3", "H4"]
     },
     {
+      "id": "discounts.stacking_policy",
+      "section": "discounts",
+      "type": "select",
+      "label": "Can more than one discount apply to the same subscription?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "No, never" },
+        { "value": "single", "label": "Only one discount allowed" },
+        { "value": "limited", "label": "Sometimes, with approval" },
+        { "value": "allowed", "label": "Yes, without clear rules" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
       "id": "changes.pricing_changes_24mo",
       "section": "changes",
       "type": "select",
-      "label": "How many times did you change pricing in the last 2 years?",
+      "label": "How many company-wide pricing changes in the last 2 years?",
       "required": true,
       "options": [
         { "value": "0", "label": "None" },
@@ -408,7 +343,7 @@
       "id": "operations.manual_override_frequency",
       "section": "operations",
       "type": "select",
-      "label": "How often does someone manually edit a customer's bill?",
+      "label": "How often does someone manually change a customer's bill?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -421,24 +356,10 @@
       "hypotheses": ["H16"]
     },
     {
-      "id": "operations.manual_change_logging",
-      "section": "operations",
-      "type": "select",
-      "label": "When someone changes a bill manually, is it logged?",
-      "required": true,
-      "options": [
-        { "value": "yes", "label": "Yes" },
-        { "value": "no", "label": "No" },
-        { "value": "partially", "label": "Partially" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H16"]
-    },
-    {
       "id": "operations.unticketed_adjustments",
       "section": "operations",
       "type": "select",
-      "label": "How often do billing adjustments happen without a ticket or approval trail?",
+      "label": "How often are billing changes made without a ticket or approval?",
       "required": true,
       "options": [
         { "value": "never", "label": "Never" },
@@ -451,10 +372,40 @@
       "hypotheses": ["H16"]
     },
     {
+      "id": "operations.credit_memo_process",
+      "section": "operations",
+      "type": "select",
+      "label": "How are credits and refunds issued?",
+      "required": true,
+      "options": [
+        { "value": "automated", "label": "Automated in billing system" },
+        { "value": "reviewed", "label": "Created with finance review" },
+        { "value": "manual", "label": "Manual spreadsheet or ad hoc" },
+        { "value": "ad_hoc", "label": "No consistent process" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H4"]
+    },
+    {
+      "id": "operations.churn_billing_cutoff",
+      "section": "operations",
+      "type": "select",
+      "label": "When a customer churns, how quickly is billing stopped?",
+      "required": true,
+      "options": [
+        { "value": "immediate", "label": "Immediately automated" },
+        { "value": "same_day", "label": "Same business day" },
+        { "value": "within_week", "label": "Within a week" },
+        { "value": "manual", "label": "Manual cleanup, often delayed" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H13"]
+    },
+    {
       "id": "quote_to_bill.commercial_truth",
       "section": "quote_to_bill",
       "type": "select",
-      "label": "Where is the final sold price recorded before invoices are created?",
+      "label": "Where is the final sold price recorded before invoicing?",
       "required": true,
       "options": [
         { "value": "crm", "label": "CRM (Salesforce, HubSpot, etc.)" },
@@ -560,21 +511,6 @@
       "hypotheses": ["H15"]
     },
     {
-      "id": "controls.finance_team_size",
-      "section": "controls",
-      "type": "select",
-      "label": "How large is your finance team?",
-      "required": true,
-      "options": [
-        { "value": "1", "label": "1" },
-        { "value": "2_3", "label": "2 to 3" },
-        { "value": "4_10", "label": "4 to 10" },
-        { "value": "11_25", "label": "11 to 25" },
-        { "value": "25_plus", "label": "25+" }
-      ],
-      "hypotheses": []
-    },
-    {
       "id": "controls.billing_owner",
       "section": "controls",
       "type": "boolean",
@@ -586,7 +522,7 @@
       "id": "controls.monthly_reconciliation",
       "section": "controls",
       "type": "select",
-      "label": "How often do you check that invoices match signed contracts?",
+      "label": "How often do you compare invoices to signed contracts?",
       "required": true,
       "options": [
         { "value": "monthly", "label": "Every month" },
@@ -614,85 +550,10 @@
       "hypotheses": []
     },
     {
-      "id": "operations.credit_memo_process",
-      "section": "operations",
-      "type": "select",
-      "label": "How are credits and refunds issued?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Automated in billing system" },
-        { "value": "reviewed", "label": "Created with finance review" },
-        { "value": "manual", "label": "Manual spreadsheet or ad hoc" },
-        { "value": "ad_hoc", "label": "No consistent process" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H4"]
-    },
-    {
-      "id": "operations.churn_billing_cutoff",
-      "section": "operations",
-      "type": "select",
-      "label": "When a customer churns, how quickly is billing stopped?",
-      "required": true,
-      "options": [
-        { "value": "immediate", "label": "Immediately automated" },
-        { "value": "same_day", "label": "Same business day" },
-        { "value": "within_week", "label": "Within a week" },
-        { "value": "manual", "label": "Manual cleanup, often delayed" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H13"]
-    },
-    {
-      "id": "operations.invoice_cadence",
-      "section": "operations",
-      "type": "select",
-      "label": "How consistently do invoices go out on schedule?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Fully automated on schedule" },
-        { "value": "scheduled", "label": "Scheduled with occasional delays" },
-        { "value": "manual", "label": "Manually triggered each cycle" },
-        { "value": "ad_hoc", "label": "Ad hoc or inconsistent" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H13"]
-    },
-    {
-      "id": "operations.customer_dedup",
-      "section": "operations",
-      "type": "select",
-      "label": "How do you handle duplicate customer records?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Automated dedup rules" },
-        { "value": "quarterly", "label": "Quarterly manual review" },
-        { "value": "manual", "label": "Manual when discovered" },
-        { "value": "never", "label": "No dedup process" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H14"]
-    },
-    {
-      "id": "discounts.stacking_policy",
-      "section": "discounts",
-      "type": "select",
-      "label": "Can customers receive more than one discount on the same subscription?",
-      "required": true,
-      "options": [
-        { "value": "never", "label": "No, never" },
-        { "value": "single", "label": "Only one discount allowed" },
-        { "value": "limited", "label": "Sometimes, with approval" },
-        { "value": "allowed", "label": "Yes, without clear rules" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H3", "H4"]
-    },
-    {
       "id": "controls.invoice_price_qa",
       "section": "controls",
       "type": "select",
-      "label": "Do you compare invoice line prices to subscription prices before sending?",
+      "label": "Before sending invoices, do you check amounts match what customers should pay?",
       "required": true,
       "options": [
         { "value": "always", "label": "Always" },
@@ -705,60 +566,13 @@
       "hypotheses": ["H16"]
     },
     {
-      "id": "controls.revenue_recognition_review",
-      "section": "controls",
-      "type": "select",
-      "label": "Does finance check that recognized revenue matches what was billed?",
-      "required": true,
-      "options": [
-        { "value": "monthly", "label": "Every month" },
-        { "value": "quarterly", "label": "Quarterly" },
-        { "value": "occasionally", "label": "Occasionally" },
-        { "value": "never", "label": "Never" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": []
-    },
-    {
-      "id": "velocity.commercial_changes_12mo",
-      "section": "velocity",
-      "type": "select",
-      "label": "In the last 12 months, how often did pricing or contract terms change?",
-      "required": true,
-      "options": [
-        { "value": "0", "label": "0" },
-        { "value": "1_2", "label": "1 to 2" },
-        { "value": "3_5", "label": "3 to 5" },
-        { "value": "6_10", "label": "6 to 10" },
-        { "value": "10_plus", "label": "10+" }
-      ],
-      "hypotheses": ["H17"]
-    },
-    {
       "id": "confidence.billing_confidence",
       "section": "confidence",
       "type": "scale",
-      "label": "How confident are you that every customer is billed at their current agreed price?",
+      "label": "Overall, how confident are you that every customer is billed at their agreed price?",
       "required": true,
       "min": 1,
       "max": 5,
-      "hypotheses": []
-    },
-    {
-      "id": "confidence.last_reconciliation",
-      "section": "confidence",
-      "type": "select",
-      "label": "When did you last review all invoices against contracts?",
-      "required": true,
-      "options": [
-        { "value": "30d", "label": "Less than 30 days" },
-        { "value": "1_3mo", "label": "1 to 3 months" },
-        { "value": "3_6mo", "label": "3 to 6 months" },
-        { "value": "6_12mo", "label": "6 to 12 months" },
-        { "value": "12mo_plus", "label": "12+ months" },
-        { "value": "never", "label": "Never" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
       "hypotheses": []
     }
   ]

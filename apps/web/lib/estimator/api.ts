@@ -114,6 +114,7 @@ export async function createShareLink(assessmentId: string) {
 export async function fetchShare(token: string) {
   return apiFetch<{
     disclaimer: string;
+    arr_usd: number | null;
     estimate: EstimatorResult["estimate"];
     top_hypotheses: EstimatorResult["top_hypotheses"];
     confidence: string;
