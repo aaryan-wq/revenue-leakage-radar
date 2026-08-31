@@ -164,9 +164,6 @@ export interface EstimatorResult {
     display_range: string;
     stress_p90?: number;
     theoretical_stack_p90?: number;
-    headline_low?: number;
-    headline_high?: number;
-    headline_pct?: number;
     recoverable?: number;
     at_risk?: number;
     overlap_discount?: number;
