@@ -17,6 +17,9 @@ PROFILE_A = {
     "profile.arr_amount": 5_000_000,
     "profile.arr_confidence": "exact",
     "profile.customer_count": 200,
+    "quote_to_bill.finance_sales_disagreement": "never",
+    "operations.unticketed_adjustments": "never",
+    "controls.revenue_recognition_review": "monthly",
     "pricing.models": ["flat"],
     "product.billable_count": "1",
     "product.independent_catalogs": "no",
@@ -176,7 +179,7 @@ def test_monte_carlo_percentiles_ordered():
     segments = derive_segments(normalized)
     rule_posteriors = compute_rule_posteriors(normalized, rule_priors)
     rng = np.random.default_rng(1)
-    totals, _, _, _, _ = simulate_totals(
+    totals, _, _, _, _, _ = simulate_totals(
         rng,
         segments["arr"],
         segments,
@@ -283,4 +286,36 @@ def test_stale_result_detects_old_calibration_stage():
     assert is_stale_result(fresh) is False
     assert is_stale_result({"model_version": fresh["model_version"], "calibration_stage": 0}) is True
     assert is_stale_result({"model_version": "0.0.0", "calibration_stage": fresh["calibration_stage"]}) is True
+
+
+def test_headline_metrics_ordering():
+    result = run_model(PROFILE_B, random_seed=42, scenario="central")
+    pct = result["percentiles"]
+    est = result["estimate"]
+    assert pct["p10"] <= est["low"] <= est["central"] <= est["high"] <= pct["p90"]
+    assert est.get("gross_expected", 0) >= est["central"]
+
+
+def test_benchmark_never_overwrites_central():
+    from tests.estimator.calibration_fixtures import MERIDIAN_MODERATE, PROFILE_A
+
+    low = run_model({**PROFILE_A, "profile.arr_amount": 5_000_000}, random_seed=42)
+    high = run_model(MERIDIAN_MODERATE, random_seed=42)
+    for result in (low, high):
+        context = result.get("benchmark_context")
+        if context is None:
+            continue
+        assert result["estimate"]["central"] == result["estimate"]["net_recoverable"]
+        if context["may_understate"]:
+            assert result["estimate"]["central"] < context["low_usd"]
+        assert result["estimate"]["central"] != context["low_usd"] or result["estimate"]["central"] == 0
+
+
+def test_meridian_moderate_min_pct():
+    from tests.estimator.calibration_fixtures import MERIDIAN_MODERATE
+
+    result = run_model(MERIDIAN_MODERATE, random_seed=42)
+    arr = result["arr_usd"]
+    pct = (result["estimate"]["central"] / arr) * 100 if arr else 0
+    assert pct >= 0.8
 

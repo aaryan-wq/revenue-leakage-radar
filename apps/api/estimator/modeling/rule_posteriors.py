@@ -25,6 +25,12 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "4_5": 1.8,
             "6_plus": 2.2,
         },
+        "contracts.custom_pricing": {
+            "no": 0.7,
+            "some": 1.0,
+            "yes": 1.3,
+            "unknown": 1.0,
+        },
     },
     "grandfathered_pricing": {
         "contracts.grandfathering": {
@@ -49,6 +55,13 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "2_3": 1.4,
             "4_5": 1.8,
             "6_plus": 2.2,
+        },
+        "velocity.commercial_changes_12mo": {
+            "0": 0.8,
+            "1_2": 1.0,
+            "3_5": 1.1,
+            "6_10": 1.3,
+            "10_plus": 1.5,
         },
     },
     "missing_scheduled_increase": {
@@ -235,6 +248,21 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "manual": 2.2,
             "unknown": 1.4,
         },
+        "quote_to_bill.commercial_truth": {
+            "crm": 1.0,
+            "billing": 0.7,
+            "cpq": 0.85,
+            "contracts": 0.9,
+            "spreadsheet": 1.4,
+            "multiple": 1.6,
+            "undefined": 1.7,
+        },
+        "contracts.custom_pricing": {
+            "no": 0.7,
+            "some": 1.0,
+            "yes": 1.3,
+            "unknown": 1.0,
+        },
     },
     "price_catalog_mismatch": {
         "product.billable_count": {
@@ -277,10 +305,22 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
     "duplicate_subscription": {
         "migrations.migrated_36mo": {"true": 2.0, "false": 0.7},
         "migrations.parallel_systems": {"true": 1.5, "false": 0.9},
+        "systems.billing_system_count": {
+            "1": 0.6,
+            "2": 1.0,
+            "3_plus": 1.4,
+            "unknown": 1.0,
+        },
     },
     "orphaned_records": {
         "migrations.migrated_36mo": {"true": 2.0, "false": 0.7},
         "migrations.parallel_systems": {"true": 1.5, "false": 0.9},
+        "systems.billing_system_count": {
+            "1": 0.6,
+            "2": 1.0,
+            "3_plus": 1.4,
+            "unknown": 1.0,
+        },
     },
     "currency_mismatch": {
         "international.multi_currency": {"true": 2.0, "false": 0.4},
@@ -293,6 +333,31 @@ RULE_QUESTION_DRIVERS: dict[str, dict[str, dict[str, float]]] = {
             "51_75": 1.5,
             "76_100": 1.9,
         },
+    },
+}
+
+BILLING_EXECUTION_RULES = {
+    "active_subscription_not_billing",
+    "cancelled_subscription_still_billing",
+    "missing_expected_invoice",
+    "invoice_price_mismatch",
+}
+
+BILLING_EXECUTION_DRIVERS: dict[str, dict[str, float]] = {
+    "controls.billing_qa": {
+        "always": 0.5,
+        "usually": 0.7,
+        "sometimes": 1.1,
+        "rarely": 1.5,
+        "never": 1.9,
+        "unknown": 1.2,
+    },
+    "controls.monthly_reconciliation": {
+        "monthly": 0.6,
+        "quarterly": 0.9,
+        "occasionally": 1.2,
+        "never": 1.7,
+        "unknown": 1.1,
     },
 }
 
@@ -352,6 +417,8 @@ def compute_rule_posteriors(
         odds = prior / max(1 - prior, 1e-6)
         yaml_drivers = cfg.get("question_drivers") or {}
         merged_drivers = {**RULE_QUESTION_DRIVERS.get(rule_id, {}), **yaml_drivers}
+        if rule_id in BILLING_EXECUTION_RULES:
+            merged_drivers = {**merged_drivers, **BILLING_EXECUTION_DRIVERS}
         odds *= _likelihood_from_drivers(rule_id, normalized, {rule_id: merged_drivers})
         posterior = odds / (1 + odds)
         result[rule_id] = min(max(posterior, 0.001), 0.95)

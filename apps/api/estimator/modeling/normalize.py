@@ -18,6 +18,16 @@ def normalize_answers(answers: dict[str, Any]) -> dict[str, Any]:
 
     confidence = answers.get("profile.arr_confidence", "approximate")
     uncertainty = {"exact": 0.02, "approximate": 0.05, "rough": 0.15}.get(confidence, 0.05)
+    billing_conf = answers.get("confidence.billing_confidence")
+    if billing_conf is not None:
+        try:
+            score = float(billing_conf)
+            if score <= 2:
+                uncertainty = max(uncertainty, 0.10)
+            elif score <= 3:
+                uncertainty = max(uncertainty, 0.06)
+        except (TypeError, ValueError):
+            pass
     normalized["arr_uncertainty"] = uncertainty
 
     models = answers.get("pricing.models") or []
@@ -29,15 +39,16 @@ def normalize_answers(answers: dict[str, Any]) -> dict[str, Any]:
 
 def derive_segments(normalized: dict[str, Any]) -> dict[str, float]:
     arr = normalized.get("arr_usd", 0.0)
-    negotiated_pct = _pct_map(normalized.get("contracts.negotiated_arr_pct"))
     discount_freq = normalized.get("discounts.frequency", "never")
     discount_share = {
         "never": 0.05,
         "rare": 0.15,
-        "occasional": 0.34,
-        "common": 0.50,
+        "occasional": 0.38,
+        "common": 0.52,
         "nearly_all": 0.70,
     }.get(discount_freq, 0.20)
+
+    negotiated_pct = _pct_map(normalized.get("contracts.negotiated_arr_pct"))
 
     usage = normalized.get("pricing.usage_based") is True
     usage_share = 0.35 if usage else 0.05

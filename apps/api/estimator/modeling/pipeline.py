@@ -3,6 +3,7 @@ from typing import Any
 import numpy as np
 import time
 
+from estimator.modeling.benchmark import compute_benchmark_context
 from estimator.modeling.complexity import compute_complexity
 from estimator.modeling.confidence import compute_confidence
 from estimator.modeling.format import format_currency_range, round_display_amount
@@ -41,11 +42,21 @@ def _scenario_bounds(
     scenario: str,
     *,
     expected_mean: float,
+    completion_rate: float | None = None,
 ) -> tuple[float, float, str]:
     low_key, high_key = SCENARIO_BANDS.get(scenario, ("p25", "p75"))
     low = pct[low_key]
     high = pct[high_key]
     effective_high_key = high_key
+
+    if (
+        scenario == "central"
+        and completion_rate is not None
+        and completion_rate < 0.85
+        and pct["p90"] > high
+    ):
+        high = pct["p90"]
+        effective_high_key = "p90"
 
     expected_rounded = round_display_amount(expected_mean)
     median_rounded = round_display_amount(pct["p50"])
@@ -228,6 +239,7 @@ def run_model(
     simulation_count: int | None = None,
     scenario: str = "central",
     include_sensitivity: bool = True,
+    completion_rate: float | None = None,
 ) -> dict[str, Any]:
     started = time.perf_counter()
     priors = load_priors()
@@ -244,7 +256,7 @@ def run_model(
     arr = segments["arr"]
     rules_cfg = rule_priors.get("rules", {})
 
-    totals, detectable, recoverable, per_rule, per_recoverable = simulate_totals(
+    totals, gross_totals, detectable, recoverable, per_rule, per_recoverable = simulate_totals(
         rng,
         arr,
         segments,
@@ -260,13 +272,16 @@ def run_model(
     det_pct = percentiles(detectable)
     rec_pct = percentiles(recoverable)
     sim_stats_raw = _simulation_stats(totals)
+    gross_mean = float(np.mean(gross_totals))
     expected_mean = sim_stats_raw["expected_mean"]
     stack_p90 = theoretical_stack_p90(per_rule)
 
     estimate_low_raw, estimate_high_raw, high_band_key = _scenario_bounds(
-        pct, scenario, expected_mean=expected_mean
+        pct, scenario, expected_mean=expected_mean, completion_rate=completion_rate
     )
-    det_low_raw, det_high_raw, _ = _scenario_bounds(det_pct, scenario, expected_mean=float(np.mean(detectable)))
+    det_low_raw, det_high_raw, _ = _scenario_bounds(
+        det_pct, scenario, expected_mean=float(np.mean(detectable)), completion_rate=completion_rate
+    )
 
     rule_map_data = load_hypothesis_rule_map()
     hypothesis_meta = rule_map_data.get("hypotheses", {})
@@ -290,6 +305,8 @@ def run_model(
     estimate_low = round_display_amount(estimate_low_raw)
     estimate_high = round_display_amount(estimate_high_raw)
     estimate_central = round_display_amount(expected_mean)
+    gross_expected = round_display_amount(gross_mean)
+    net_recoverable = estimate_central
     median_run = round_display_amount(sim_stats_raw["median_run"])
     recoverable_expected = round_display_amount(float(np.mean(recoverable)))
     at_risk_expected = max(estimate_central - recoverable_expected, 0)
@@ -313,13 +330,24 @@ def run_model(
         "overlap_discount": overlap_discount,
         "arr_band_low": arr_band_low,
         "arr_band_high": arr_band_high,
+        "gross_expected": gross_expected,
+        "net_recoverable": net_recoverable,
     }
+
+    benchmark_context = compute_benchmark_context(
+        arr,
+        complexity.get("label", "Low"),
+        estimate_central,
+        priors,
+    )
 
     sim_stats = {
         "expected_mean": estimate_central,
         "median_run": median_run,
         "pct_runs_with_leakage": round(sim_stats_raw["pct_runs_with_leakage"], 1),
         "conditional_mean": round_display_amount(sim_stats_raw["conditional_mean"]),
+        "gross_expected": gross_expected,
+        "net_recoverable": net_recoverable,
         "high_band_key": high_band_key,
         "stress_p90": stress_p90,
         "theoretical_stack_p90": stack_p90_rounded,
@@ -351,6 +379,7 @@ def run_model(
 
     return {
         "estimate": estimate,
+        "benchmark_context": benchmark_context,
         "monthly": {
             "low": round_display_amount(estimate_low_raw / 12),
             "central": round_display_amount(expected_mean / 12),

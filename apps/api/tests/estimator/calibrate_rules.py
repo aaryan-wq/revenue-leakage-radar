@@ -23,7 +23,10 @@ RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
     "discount_stacking": {"discounts.stacking_policy": "allowed", "discounts.frequency": "common"},
     "duplicate_discount": {"discounts.stacking_policy": "allowed", "discounts.frequency": "common"},
     "excessive_discount": {"discounts.stacking_policy": "allowed", "discounts.frequency": "nearly_all"},
-    "invoice_price_mismatch": {"controls.invoice_price_qa": "never"},
+    "invoice_price_mismatch": {
+        "controls.invoice_price_qa": "never",
+        "controls.billing_qa": "never",
+    },
     "cancelled_subscription_still_billing": {"operations.churn_billing_cutoff": "manual"},
     "credit_leakage": {"operations.credit_memo_process": "ad_hoc"},
 }

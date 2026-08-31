@@ -102,7 +102,14 @@ def simulate_totals(
     simulation_count: int,
     complexity_total: int = 1,
     normalized: dict | None = None,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, np.ndarray], dict[str, np.ndarray]]:
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    dict[str, np.ndarray],
+    dict[str, np.ndarray],
+]:
     rules_cfg = rule_priors.get("rules", {})
     rule_ids = get_rule_ids(rule_priors)
     family_rhos = rule_priors.get("family_correlations", {})
@@ -132,6 +139,7 @@ def simulate_totals(
     arr_uncertainty = float((normalized or {}).get("arr_uncertainty", 0.05))
 
     totals = np.zeros(simulation_count)
+    gross_totals = np.zeros(simulation_count)
     detectable = np.zeros(simulation_count)
     recoverable = np.zeros(simulation_count)
     per_rule: dict[str, np.ndarray] = {rid: np.zeros(simulation_count) for rid in rule_ids}
@@ -142,6 +150,7 @@ def simulate_totals(
     for sim in range(simulation_count):
         exposure_jitter = 1.0 + rng.uniform(-arr_uncertainty, arr_uncertainty)
         rule_amounts: dict[str, float] = {}
+        rule_gross_amounts: dict[str, float] = {}
         rule_detectable: dict[str, float] = {}
         rule_recoverable: dict[str, float] = {}
 
@@ -161,7 +170,9 @@ def simulate_totals(
             ) * (persistence_tail if tail_mult > 1.0 else 1.0)
             recoverability = _draw_distribution(rng, cfg.get("recoverability", {}))
             detectability = float(cfg.get("detectability", 0.7))
-            leakage = exposure * affected * severity * persistence * recoverability * leakage_scale
+            gross_leakage = exposure * affected * severity * persistence * leakage_scale
+            leakage = gross_leakage * recoverability
+            rule_gross_amounts[rule_id] = gross_leakage
             rule_amounts[rule_id] = leakage
             rule_detectable[rule_id] = leakage * detectability
             rule_recoverable[rule_id] = leakage * recoverability
@@ -169,8 +180,11 @@ def simulate_totals(
             per_recoverable[rule_id][sim] = rule_recoverable[rule_id]
 
         adjusted, _ = apply_family_overlap(rule_amounts, rule_families, family_rhos)
+        gross_adjusted, _ = apply_family_overlap(rule_gross_amounts, rule_families, family_rhos)
         capped = min(adjusted, arr * max_fraction)
+        gross_capped = min(gross_adjusted, arr * max_fraction)
         totals[sim] = capped
+        gross_totals[sim] = gross_capped
 
         if rule_amounts:
             raw_det = sum(rule_detectable.values())
@@ -179,7 +193,7 @@ def simulate_totals(
             detectable[sim] = min(raw_det * scale, capped)
             recoverable[sim] = min(raw_rec * scale, capped)
 
-    return totals, detectable, recoverable, per_rule, per_recoverable
+    return totals, gross_totals, detectable, recoverable, per_rule, per_recoverable
 
 
 def rollup_hypothesis_samples(

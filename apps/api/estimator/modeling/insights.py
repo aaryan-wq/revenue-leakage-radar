@@ -415,6 +415,12 @@ def _build_calculation_summary(
                 "Stage 0 structural priors: conservative and not yet calibrated to completed audits. "
                 "Actual billing data can confirm higher or lower recovery."
             )
+        elif calibration_stage >= 3:
+            bullets.append(
+                "Stage 3 calibration: rule-native priors, questionnaire drivers, and industry context bands. "
+                f"Complexity score {complexity_score}/40 adjusts tail behavior. "
+                "Benchmark context is disclosed separately and never overwrites the model central estimate."
+            )
         elif calibration_stage >= 2:
             bullets.append(
                 "Stage 2 calibration: 27 rule-native priors tuned against verification fixtures and audit personas. "
@@ -432,6 +438,8 @@ def _build_calculation_summary(
         "median_run": median_run,
         "pct_runs_with_leakage": pct_runs,
         "conditional_mean": conditional_mean,
+        "gross_expected": estimate.get("gross_expected"),
+        "net_recoverable": estimate.get("net_recoverable", expected),
         "pct_of_arr": pct_of_arr,
         "scenario": scenario,
         "scenario_band_label": band_label,

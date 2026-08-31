@@ -121,8 +121,9 @@ def upsert_answer(db: Session, assessment: Assessment, payload: dict[str, Any]) 
 
 def _resume_state(assessment: Assessment, answers: dict[str, Any]) -> dict[str, Any]:
     version = assessment.questionnaire_version
-    pending = pending_question_ids(answers, version)
-    answered = answered_question_ids(answers, version)
+    effective_version = QUESTIONNAIRE_VERSION if assessment.status == "completed" else version
+    pending = pending_question_ids(answers, effective_version)
+    answered = answered_question_ids(answers, effective_version)
     requires_reanswer = assessment.status == "completed" and len(pending) > 0
     return {
         "pending_question_ids": pending,
@@ -168,7 +169,13 @@ def calculate_assessment(
     scenario: str = "central",
 ) -> dict[str, Any]:
     answers = _answers_dict(assessment)
-    result = run_model(answers, random_seed=random_seed, scenario=scenario)
+    progress = completion_progress(answers, assessment.questionnaire_version)
+    result = run_model(
+        answers,
+        random_seed=random_seed,
+        scenario=scenario,
+        completion_rate=progress["completion_rate"],
+    )
 
     model_run = AssessmentModelRun(
         assessment_id=assessment.id,

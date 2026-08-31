@@ -49,6 +49,8 @@ def _visibility_met(question: dict[str, Any], answers: dict[str, Any]) -> bool:
         if isinstance(actual, list):
             return needle in actual
         return False
+    if "not_equals" in visibility:
+        return actual != visibility["not_equals"]
     expected = visibility.get("equals")
     return actual == expected
 

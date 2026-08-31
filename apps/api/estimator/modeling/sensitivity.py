@@ -6,24 +6,34 @@ PERTURBATIONS: dict[str, tuple[str, Any]] = {
     "contracts.grandfathering": ("contracts.grandfathering", "very_frequently"),
     "discounts.frequency": ("discounts.frequency", "nearly_all"),
     "discounts.expiry_handling": ("discounts.expiry_handling", "manual_sales"),
+    "discounts.auto_expiry_removal": ("discounts.auto_expiry_removal", "never"),
     "operations.manual_override_frequency": ("operations.manual_override_frequency", "very_frequently"),
+    "operations.unticketed_adjustments": ("operations.unticketed_adjustments", "very_often"),
     "quote_to_bill.quote_automation": ("quote_to_bill.quote_automation", "manual"),
+    "quote_to_bill.finance_sales_disagreement": ("quote_to_bill.finance_sales_disagreement", "very_often"),
     "operations.churn_billing_cutoff": ("operations.churn_billing_cutoff", "manual"),
     "discounts.stacking_policy": ("discounts.stacking_policy", "allowed"),
     "operations.credit_memo_process": ("operations.credit_memo_process", "ad_hoc"),
     "controls.invoice_price_qa": ("controls.invoice_price_qa", "never"),
+    "controls.billing_qa": ("controls.billing_qa", "never"),
+    "controls.monthly_reconciliation": ("controls.monthly_reconciliation", "never"),
 }
 
 DRIVER_LABELS = {
     "contracts.grandfathering": "Grandfathered pricing",
     "discounts.frequency": "Discount frequency",
     "discounts.expiry_handling": "Discount expiry handling",
+    "discounts.auto_expiry_removal": "Automatic discount removal",
     "operations.manual_override_frequency": "Manual billing intervention",
+    "operations.unticketed_adjustments": "Unticketed billing adjustments",
     "quote_to_bill.quote_automation": "Quote-to-bill automation",
+    "quote_to_bill.finance_sales_disagreement": "Finance vs sales disagreement",
     "operations.churn_billing_cutoff": "Churn billing cutoff",
     "discounts.stacking_policy": "Discount stacking policy",
     "operations.credit_memo_process": "Credit memo process",
     "controls.invoice_price_qa": "Invoice price QA",
+    "controls.billing_qa": "Pre-invoice billing QA",
+    "controls.monthly_reconciliation": "Agreement reconciliation cadence",
 }
 
 

@@ -1,8 +1,24 @@
 version: 2.0.0
 source: model_prior
-calibration_stage: 2
+calibration_stage: 3
 simulation_count: 10000
 max_leakage_fraction_of_arr: 0.35
+benchmark_floors:
+  - arr_min: 5000000
+    complexity_labels: [moderate, high, very_high]
+    pct_arr_low: 0.005
+    pct_arr_high: 0.020
+    source: industry_context_v1
+  - arr_min: 10000000
+    complexity_labels: [moderate, high, very_high]
+    pct_arr_low: 0.008
+    pct_arr_high: 0.025
+    source: industry_context_v1
+  - arr_min: 25000000
+    complexity_labels: [high, very_high]
+    pct_arr_low: 0.015
+    pct_arr_high: 0.030
+    source: industry_context_v1
 monte_carlo:
   affected_rate:
     alpha: 2

@@ -141,12 +141,24 @@ export interface EstimatorVerificationPreview {
   rules: EstimatorVerificationRule[];
 }
 
+export interface EstimatorBenchmarkContext {
+  source: string;
+  pct_arr_low: number;
+  pct_arr_high: number;
+  low_usd: number;
+  high_usd: number;
+  model_pct_of_arr: number;
+  may_understate: boolean;
+}
+
 export interface EstimatorCalculationSummary {
   simulation_count: number;
   expected_value: number;
   median_run: number;
   pct_runs_with_leakage: number;
   conditional_mean: number;
+  gross_expected?: number;
+  net_recoverable?: number;
   pct_of_arr: number;
   scenario: string;
   scenario_band_label: string;
@@ -169,6 +181,8 @@ export interface EstimatorResult {
     overlap_discount?: number;
     arr_band_low?: number;
     arr_band_high?: number;
+    gross_expected?: number;
+    net_recoverable?: number;
   };
   monthly: { low: number; central: number; high: number };
   confidence: string;
@@ -196,6 +210,7 @@ export interface EstimatorResult {
   mechanism_insights?: EstimatorMechanismInsight[];
   verification_preview?: EstimatorVerificationPreview[] | EstimatorVerificationCategoryPreview[];
   calculation_summary?: EstimatorCalculationSummary;
+  benchmark_context?: EstimatorBenchmarkContext | null;
   executive_summary?: string;
   model_version: string;
   calibration_stage: number;

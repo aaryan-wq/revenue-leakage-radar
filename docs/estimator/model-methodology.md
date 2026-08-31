@@ -38,11 +38,14 @@ A separate 0–40 score across pricing, contract, systems, change, and operation
 
 | Metric | Meaning |
 |--------|---------|
-| Expected recoverable | Overlap-adjusted mean across all runs (headline) |
-| Stress case (P90) | Higher percentile total when mechanisms compound |
-| Full rule ceiling | Sum of per-rule P90s before family overlap (transparency) |
-| Recoverable slice | Expected weighted by rule recoverability |
-| At-risk | Expected minus recoverable slice |
+| Expected recoverable (`estimate.central`) | Canonical headline. Overlap-adjusted mean across all runs. |
+| Modeled range | Scenario percentile band (secondary in UI). |
+| Stress case (P90) | Higher percentile total when mechanisms compound. |
+| Conditional mean | Average when leakage occurred in a run (shown when most runs have leakage). |
+| Gross exposure | Pre-recoverability draw mean (optional UI toggle). |
+| Net recoverable | Same as central; recoverability is already in the mean draw. |
+| Full rule ceiling | Sum of per-rule P90s before family overlap (transparency). |
+| Industry context band | Disclosed benchmark range by ARR tier. Never overwrites central. |
 
 ### Scenario Bands
 
@@ -80,9 +83,9 @@ Optional AI narrative, when enabled, summarizes the result in prose. It never se
 
 ## Calibration Status
 
-**Stage 2, rule-native model.** Monte Carlo uses 27 rule streams calibrated against verification fixture anchors and five fictitious audit personas. Complexity score and tail fattening adjust simulation intensity for low-confidence, high-complexity stacks.
+**Stage 3, rule-native model.** Monte Carlo uses 27 rule streams with expanded questionnaire drivers and disclosed industry context bands. Stage 2 simulation intensity parameters are retained (beta 9 affected rate, complexity base 2.05, family rho 0.48) so calibration fixtures stay within MAPE gates.
 
-Stage 2 does not replace billing evidence. As completed audits accumulate, priors will continue to be updated with documented backtests.
+Stage 3 does not replace billing evidence. Benchmark context is shown for comparison only and never overwrites `estimate.central`. As completed audits accumulate, priors will continue to be updated with documented backtests.
 
 ## Limitations
 

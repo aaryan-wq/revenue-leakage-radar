@@ -617,6 +617,7 @@ export {
 
 export type {
   EstimatorAssessmentState,
+  EstimatorBenchmarkContext,
   EstimatorComplexityPreview,
   EstimatorCoverageBridge,
   EstimatorDisplayRollup,

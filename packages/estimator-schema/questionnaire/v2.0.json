@@ -1,5 +1,5 @@
 {
-  "version": "2.1",
+  "version": "2.2",
   "sections": [
     { "id": "profile", "label": "Billing Profile", "estimated_seconds": 30 },
     { "id": "pricing", "label": "Pricing", "estimated_seconds": 25 },
@@ -288,7 +288,13 @@
         { "value": "common", "label": "Common" },
         { "value": "nearly_all", "label": "Nearly every enterprise deal" }
       ],
-      "hypotheses": ["H3", "H4"]
+      "hypotheses": ["H3", "H4"],
+      "branches": {
+        "rare": ["discounts.auto_expiry_removal"],
+        "occasional": ["discounts.auto_expiry_removal"],
+        "common": ["discounts.auto_expiry_removal"],
+        "nearly_all": ["discounts.auto_expiry_removal"]
+      }
     },
     {
       "id": "discounts.expiry_handling",
@@ -302,6 +308,23 @@
         { "value": "manual_revops", "label": "Manual (RevOps)" },
         { "value": "manual_sales", "label": "Manual (Sales)" },
         { "value": "contract_driven", "label": "Contract-driven" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H3", "H4"]
+    },
+    {
+      "id": "discounts.auto_expiry_removal",
+      "section": "discounts",
+      "type": "select",
+      "label": "Are expired discounts removed automatically from subscriptions?",
+      "required": true,
+      "visibility": { "when": "discounts.frequency", "not_equals": "never" },
+      "options": [
+        { "value": "always", "label": "Always" },
+        { "value": "usually", "label": "Usually" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "never", "label": "Never" },
         { "value": "unknown", "label": "Unknown" }
       ],
       "hypotheses": ["H3", "H4"]
@@ -412,6 +435,22 @@
       "hypotheses": ["H16"]
     },
     {
+      "id": "operations.unticketed_adjustments",
+      "section": "operations",
+      "type": "select",
+      "label": "How often do billing adjustments happen without a ticket or approval trail?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "often", "label": "Often" },
+        { "value": "very_often", "label": "Very often" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H16"]
+    },
+    {
       "id": "quote_to_bill.commercial_truth",
       "section": "quote_to_bill",
       "type": "select",
@@ -440,6 +479,22 @@
         { "value": "partial", "label": "Partially automated" },
         { "value": "mostly_manual", "label": "Mostly manual" },
         { "value": "manual", "label": "Manual" },
+        { "value": "unknown", "label": "Unknown" }
+      ],
+      "hypotheses": ["H12", "H13"]
+    },
+    {
+      "id": "quote_to_bill.finance_sales_disagreement",
+      "section": "quote_to_bill",
+      "type": "select",
+      "label": "How often do finance and sales disagree on what was sold?",
+      "required": true,
+      "options": [
+        { "value": "never", "label": "Never" },
+        { "value": "rarely", "label": "Rarely" },
+        { "value": "sometimes", "label": "Sometimes" },
+        { "value": "often", "label": "Often" },
+        { "value": "very_often", "label": "Very often" },
         { "value": "unknown", "label": "Unknown" }
       ],
       "hypotheses": ["H12", "H13"]
@@ -650,95 +705,19 @@
       "hypotheses": ["H16"]
     },
     {
-      "id": "operations.credit_memo_process",
-      "section": "operations",
-      "type": "select",
-      "label": "How are credit memos and refunds handled?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Automated in billing system" },
-        { "value": "reviewed", "label": "Created with finance review" },
-        { "value": "manual", "label": "Manual spreadsheet or ad hoc" },
-        { "value": "ad_hoc", "label": "No consistent process" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H4"]
-    },
-    {
-      "id": "operations.churn_billing_cutoff",
-      "section": "operations",
-      "type": "select",
-      "label": "When a customer churns, how quickly is billing stopped?",
-      "required": true,
-      "options": [
-        { "value": "immediate", "label": "Immediately automated" },
-        { "value": "same_day", "label": "Same business day" },
-        { "value": "within_week", "label": "Within a week" },
-        { "value": "manual", "label": "Manual cleanup, often delayed" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H13"]
-    },
-    {
-      "id": "operations.invoice_cadence",
-      "section": "operations",
-      "type": "select",
-      "label": "How predictable is your invoice generation schedule?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Fully automated on schedule" },
-        { "value": "scheduled", "label": "Scheduled with occasional delays" },
-        { "value": "manual", "label": "Manually triggered each cycle" },
-        { "value": "ad_hoc", "label": "Ad hoc or inconsistent" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H13"]
-    },
-    {
-      "id": "operations.customer_dedup",
-      "section": "operations",
-      "type": "select",
-      "label": "How do you handle duplicate customer records?",
-      "required": true,
-      "options": [
-        { "value": "automated", "label": "Automated dedup rules" },
-        { "value": "quarterly", "label": "Quarterly manual review" },
-        { "value": "manual", "label": "Manual when discovered" },
-        { "value": "never", "label": "No dedup process" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H14"]
-    },
-    {
-      "id": "discounts.stacking_policy",
-      "section": "discounts",
-      "type": "select",
-      "label": "What is your discount stacking policy?",
-      "required": true,
-      "options": [
-        { "value": "never", "label": "Never stack discounts" },
-        { "value": "single", "label": "One discount per subscription" },
-        { "value": "limited", "label": "Limited stacking with approval" },
-        { "value": "allowed", "label": "Stacking allowed without guardrails" },
-        { "value": "unknown", "label": "Unknown" }
-      ],
-      "hypotheses": ["H3", "H4"]
-    },
-    {
-      "id": "controls.invoice_price_qa",
+      "id": "controls.revenue_recognition_review",
       "section": "controls",
       "type": "select",
-      "label": "Do you compare invoice line prices to subscription prices before sending?",
+      "label": "Does finance review revenue recognition against billing monthly?",
       "required": true,
       "options": [
-        { "value": "always", "label": "Always" },
-        { "value": "usually", "label": "Usually" },
-        { "value": "sometimes", "label": "Sometimes" },
-        { "value": "rarely", "label": "Rarely" },
+        { "value": "monthly", "label": "Every month" },
+        { "value": "quarterly", "label": "Quarterly" },
+        { "value": "occasionally", "label": "Occasionally" },
         { "value": "never", "label": "Never" },
         { "value": "unknown", "label": "Unknown" }
       ],
-      "hypotheses": ["H16"]
+      "hypotheses": []
     },
     {
       "id": "velocity.commercial_changes_12mo",

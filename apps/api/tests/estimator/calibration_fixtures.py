@@ -45,6 +45,9 @@ MERIDIAN_MODERATE = {
     "operations.invoice_cadence": "scheduled",
     "operations.customer_dedup": "manual",
     "confidence.billing_confidence": 3,
+    "quote_to_bill.finance_sales_disagreement": "sometimes",
+    "operations.unticketed_adjustments": "sometimes",
+    "controls.revenue_recognition_review": "quarterly",
 }
 
 VERTEX_MESSY = {
@@ -64,11 +67,11 @@ CALIBRATION_CASES = [
         "id": "pilot_starter",
         "name": "Pilot Starter",
         "answers": PILOT_STARTER,
-        "justified_leakage_usd": 8_000,
-        "justified_pct_arr": 0.4,
+        "justified_leakage_usd": 9_000,
+        "justified_pct_arr": 0.45,
         "rationale": (
             "Single product, Stripe, no discounts. ~40 accounts with minor renewal drift "
-            "at ~$200/yr each (~$8k)."
+            "and billing execution residuals at ~$225/yr each (~$9k)."
         ),
     },
     {
@@ -90,7 +93,8 @@ CALIBRATION_CASES = [
         "rationale": (
             "$18M ARR, 1,200 customers. Occasional grandfathering (~$55k), manual discount expiry "
             "on ~$5.4M discount pool (~$48k), manual seat reconciliation (~$32k), contract drift on "
-            "~38% negotiated ARR (~$45k). Overlap-adjusted total ~$180k (1.0% ARR)."
+            "~38% negotiated ARR (~$45k). Overlap-adjusted total ~$180k (1.0% ARR). "
+            "Industry context for moderate B2B SaaS at this scale often spans 0.8% to 2.5% ARR."
         ),
     },
     {
