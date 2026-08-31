@@ -21,9 +21,9 @@ interface FreeSummaryViewProps {
 export function FreeSummaryView({ summary, onUnlocked, footer }: FreeSummaryViewProps) {
   return (
     <div className="mx-auto max-w-report space-y-0 px-6 md:px-10">
-      {!summary.purchased && <AuditRoiBanner recoverableArr={summary.recoverable_arr} />}
       <SummaryHero summary={summary} />
       <OpportunityBreakdown items={summary.opportunity_breakdown} />
+      {!summary.purchased && <AuditRoiBanner recoverableArr={summary.recoverable_arr} />}
       <VerificationChecklist checks={summary.verification_checks} />
       <CoverageSection coverage={summary.coverage} />
       {!summary.purchased && (

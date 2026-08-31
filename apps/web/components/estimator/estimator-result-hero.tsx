@@ -89,7 +89,7 @@ export function EstimatorSensitivityUpsell({ drivers }: { drivers: EstimatorResu
             className="rounded-xl border border-border/40 bg-surface-glass-subtle p-4"
           >
             <p className="text-small font-medium text-foreground">{driver.label}</p>
-            <p className="text-body mt-2 tabular-nums text-foreground">
+            <p className="text-metric-xl mt-2 tabular-nums text-foreground">
               +{formatCurrency(driver.delta_expected ?? 0)}
             </p>
           </div>

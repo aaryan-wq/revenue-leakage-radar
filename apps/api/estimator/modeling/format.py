@@ -1,4 +1,6 @@
 def round_display_amount(value: float) -> float:
+    if value <= 0:
+        return 0.0
     abs_val = abs(value)
     if abs_val < 10_000:
         step = 1_000
@@ -8,7 +10,10 @@ def round_display_amount(value: float) -> float:
         step = 10_000
     else:
         step = 50_000
-    return round(value / step) * step
+    rounded = round(value / step) * step
+    if rounded <= 0:
+        return float(step)
+    return rounded
 
 
 def format_currency_range(low: float, high: float) -> str:

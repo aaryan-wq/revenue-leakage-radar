@@ -224,8 +224,8 @@ export function PricingPageClient() {
           </StaggerItem>
         </Stagger>
 
-        <div className="mt-12">
-          <AuditRoiSection recoverableArr={recoverableArr} />
+        <div className="mt-16 pt-4">
+          <AuditRoiSection />
         </div>
 
         <Reveal delay={0.15} className="mt-12 max-w-3xl">

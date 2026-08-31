@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { captureEvent } from "@/lib/analytics/client";
+import { buildEstimatorCtaPaybackLine } from "@/lib/audit-roi-content";
 import { EstimatorShareModal } from "@/components/estimator/estimator-share-modal";
 import {
   calculateAssessment,
@@ -21,6 +22,7 @@ import {
   storeAssessmentId,
 } from "@/lib/estimator/api";
 import { AssessmentResumeBanner } from "@/components/estimator/assessment-resume-prompt";
+import { EstimatorRoiBanner } from "@/components/estimator/estimator-roi-banner";
 import {
   EstimatorIncompleteEstimateNotice,
   EstimatorResultHero,
@@ -28,6 +30,7 @@ import {
 } from "@/components/estimator/estimator-result-hero";
 import {
   AnalyticsEvents,
+  computeAuditRoi,
   formatCurrency,
   VERIFICATION_REPORT_BASE_FEE_USD,
   type EstimatorHypothesisBreakdown,
@@ -113,6 +116,10 @@ function normalizeResult(data: EstimatorResult): EstimatorResult {
     calculation_summary: data.calculation_summary,
     benchmark_context: data.benchmark_context ?? null,
   };
+}
+
+function mechanismAmount(item: EstimatorHypothesisBreakdown): number {
+  return Math.max(item.expected, item.high, item.mid ?? 0);
 }
 
 function insightForHypothesis(
@@ -217,9 +224,10 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
 
   const profile = result.profile_summary;
   const mechanisms = result.top_hypotheses.slice(0, 5);
-  const maxHigh = Math.max(...mechanisms.map((item) => item.high), 1);
+  const maxMechanism = Math.max(...mechanisms.map(mechanismAmount), 1);
   const ctaHigh = result.estimate.high;
-  const paybackPct = ctaHigh > 0 ? (VERIFICATION_REPORT_BASE_FEE_USD / ctaHigh) * 100 : 0;
+  const roiMetrics = computeAuditRoi(ctaHigh);
+  const ctaPaybackLine = roiMetrics ? buildEstimatorCtaPaybackLine(roiMetrics) : null;
   const top = result.top_hypotheses[0];
 
   return (
@@ -237,6 +245,8 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         <EstimatorResultHero result={result} />
       </Reveal>
 
+      <EstimatorRoiBanner estimateHighUsd={ctaHigh} />
+
       <EstimatorSensitivityUpsell drivers={result.drivers} />
 
       {error ? <p className="text-center text-small text-destructive">{error}</p> : null}
@@ -245,7 +255,13 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
         <Reveal>
           <HairlineCard padding="lg" className="space-y-4">
             <h2 className="text-h4 text-foreground">Your profile</h2>
-            <dl className="grid gap-4 sm:grid-cols-3">
+            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="text-caption text-muted-foreground">Estimated recoverable</dt>
+                <dd className="text-metric-xl tabular-nums text-foreground">
+                  ~{formatCurrency(result.estimate.high)}
+                </dd>
+              </div>
               <div>
                 <dt className="text-caption text-muted-foreground">ARR</dt>
                 <dd className="text-body tabular-nums text-foreground">{formatCurrency(profile.arr_usd)}</dd>
@@ -285,23 +301,25 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
             </p>
           </div>
           {mechanisms.map((item) => {
+            const amount = mechanismAmount(item);
             const insight = insightForHypothesis(result.mechanism_insights ?? [], item.hypothesis_id);
             return (
               <StaggerItem key={item.hypothesis_id}>
                 <HairlineCard padding="lg" className="space-y-4">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="space-y-2">
                     <h3 className="text-body font-medium text-foreground">{item.name}</h3>
-                    <p className="shrink-0 text-body tabular-nums text-foreground">
-                      ~{formatCurrency(item.high)}
+                    <p className="text-metric-xl tabular-nums text-foreground">
+                      ~{formatCurrency(amount)}
+                      <span className="text-h4 text-muted-foreground"> /year</span>
                     </p>
                   </div>
                   {insight ? (
                     <p className="max-w-readable text-small text-muted-foreground">{insight}</p>
                   ) : null}
-                  <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
+                  <div className="h-2 overflow-hidden rounded-full bg-border/30">
                     <div
                       className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                      style={{ width: `${Math.max(8, (item.high / maxHigh) * 100)}%` }}
+                      style={{ width: `${Math.max(8, (amount / maxMechanism) * 100)}%` }}
                     />
                   </div>
                 </HairlineCard>
@@ -338,9 +356,8 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
               </Button>
             </Link>
           </div>
-          <p className="text-small text-muted-foreground">
-            A {formatCurrency(VERIFICATION_REPORT_BASE_FEE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}%
-            of this estimate.
+          <p className="text-small font-medium text-foreground">
+            {ctaPaybackLine ?? `A ${formatCurrency(VERIFICATION_REPORT_BASE_FEE_USD)} audit pays for itself when billing data confirms enough of this estimate.`}
           </p>
         </HairlineCard>
       </Reveal>

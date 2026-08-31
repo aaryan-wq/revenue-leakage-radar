@@ -27,7 +27,7 @@ export function AuditRoiBanner({ recoverableArr }: AuditRoiBannerProps) {
 
   if (!metrics.isPositiveRoi) {
     return (
-      <section className="pb-12">
+      <section className="border-t border-line pt-12 pb-12">
         <Reveal>
           <HairlineCard padding="lg" subtle className="border-line">
             <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
@@ -49,7 +49,7 @@ export function AuditRoiBanner({ recoverableArr }: AuditRoiBannerProps) {
   const stats = buildPositiveRoiStats(metrics);
 
   return (
-    <section className="pb-12">
+    <section className="border-t border-line pt-12 pb-12">
       <Reveal>
         <HairlineCard padding="lg" elevated className="border-line">
           <div className="flex items-start gap-4">

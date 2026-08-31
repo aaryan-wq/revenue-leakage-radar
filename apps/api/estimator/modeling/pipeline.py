@@ -184,6 +184,8 @@ def _build_hypothesis_breakdown(
         high = round_display_amount(row["high_raw"])
         if low == 0 and expected > 0:
             low = round_display_amount(row["p10_raw"])
+        if high == 0 and expected > 0:
+            high = expected
         breakdown.append(
             {
                 "hypothesis_id": row["hypothesis_id"],

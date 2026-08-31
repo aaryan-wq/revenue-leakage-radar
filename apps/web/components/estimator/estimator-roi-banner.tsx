@@ -5,25 +5,51 @@ import { TrendingUp } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { HairlineCard } from "@/components/ui/hairline-card";
 import {
-  PRICING_ROI_DISCLAIMER,
+  ESTIMATOR_ROI_DISCLAIMER,
   VALUATION_FRAMING,
-  buildPricingRoiHeadline,
-  buildPricingRoiStats,
-  buildPricingRoiSubhead,
+  buildBelowBreakEvenHeadline,
+  buildEstimatorBelowBreakEvenSubhead,
+  buildEstimatorRoiHeadline,
+  buildEstimatorRoiStats,
+  buildEstimatorRoiSubhead,
 } from "@/lib/audit-roi-content";
-import { GENERIC_ROI_EXAMPLE_ARR_USD, computeAuditRoi } from "@rlr/shared";
+import { computeAuditRoi } from "@rlr/shared";
 
-export function AuditRoiSection() {
-  const metrics = computeAuditRoi(GENERIC_ROI_EXAMPLE_ARR_USD);
+interface EstimatorRoiBannerProps {
+  estimateHighUsd: number;
+}
 
-  if (!metrics || !metrics.isPositiveRoi) {
+export function EstimatorRoiBanner({ estimateHighUsd }: EstimatorRoiBannerProps) {
+  const metrics = computeAuditRoi(estimateHighUsd);
+  if (!metrics) {
     return null;
   }
 
-  const stats = buildPricingRoiStats(metrics);
+  if (!metrics.isPositiveRoi) {
+    return (
+      <Reveal>
+        <HairlineCard padding="lg" subtle className="border-line">
+          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Audit ROI
+          </p>
+          <h2 className="mt-4 font-heading text-2xl tracking-tight text-foreground md:text-3xl">
+            {buildBelowBreakEvenHeadline()}
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {buildEstimatorBelowBreakEvenSubhead()}
+          </p>
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+            {ESTIMATOR_ROI_DISCLAIMER}
+          </p>
+        </HairlineCard>
+      </Reveal>
+    );
+  }
+
+  const stats = buildEstimatorRoiStats(metrics);
 
   return (
-    <Reveal delay={0.1}>
+    <Reveal>
       <HairlineCard padding="lg" elevated className="border-line">
         <div className="flex items-start gap-4">
           <div className="hidden rounded-full border border-line bg-secondary/40 p-3 sm:block">
@@ -31,13 +57,13 @@ export function AuditRoiSection() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-              Return on investment
+              Audit ROI
             </p>
-            <h2 className="mt-4 font-heading text-[clamp(1.75rem,4vw,2.25rem)] leading-tight tracking-tight text-foreground">
-              {buildPricingRoiHeadline(metrics)}
+            <h2 className="mt-4 font-heading text-[clamp(1.75rem,4vw,2.5rem)] leading-tight tracking-tight text-foreground">
+              {buildEstimatorRoiHeadline(metrics)}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {buildPricingRoiSubhead()}
+              {buildEstimatorRoiSubhead(estimateHighUsd)}
             </p>
 
             <dl className="mt-8 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
@@ -59,7 +85,9 @@ export function AuditRoiSection() {
             </dl>
 
             <p className="mt-6 text-sm leading-relaxed text-muted-foreground">{VALUATION_FRAMING}</p>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{PRICING_ROI_DISCLAIMER}</p>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              {ESTIMATOR_ROI_DISCLAIMER}
+            </p>
           </div>
         </div>
       </HairlineCard>

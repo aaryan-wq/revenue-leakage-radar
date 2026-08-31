@@ -40,7 +40,9 @@ export function EstimatorShareClient({ token }: { token: string }) {
 
   const { estimate, top_hypotheses: topHypotheses, confidence, disclaimer, arr_usd: arrUsd } = data;
   const topThree = topHypotheses.slice(0, 3);
-  const maxHigh = Math.max(...topThree.map((item) => item.high), 1);
+  const mechanismAmount = (item: (typeof topThree)[number]) =>
+    Math.max(item.expected ?? 0, item.high ?? 0, item.mid ?? 0);
+  const maxMechanism = Math.max(...topThree.map(mechanismAmount), 1);
   const pctOfArr = arrUsd && arrUsd > 0 ? (estimate.high / arrUsd) * 100 : null;
 
   return (
@@ -67,12 +69,6 @@ export function EstimatorShareClient({ token }: { token: string }) {
                 <span className="text-h4 text-muted-foreground"> /year</span>
               </p>
 
-              {estimate.low > 0 && estimate.high > estimate.low ? (
-                <p className="text-body tabular-nums text-muted-foreground">
-                  Range: {formatCurrency(estimate.low)} to {formatCurrency(estimate.high)}
-                </p>
-              ) : null}
-
               {pctOfArr !== null && arrUsd ? (
                 <p className="text-body tabular-nums text-muted-foreground">
                   About {pctOfArr.toFixed(1)}% of {formatCurrency(arrUsd)} ARR
@@ -93,24 +89,28 @@ export function EstimatorShareClient({ token }: { token: string }) {
               These categories overlap and are not additive.
             </p>
           </div>
-          {topThree.map((item) => (
+          {topThree.map((item) => {
+            const amount = mechanismAmount(item);
+            return (
             <StaggerItem key={item.hypothesis_id}>
               <HairlineCard padding="lg" className="space-y-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="space-y-2">
                   <h3 className="text-body font-medium text-foreground">{item.name}</h3>
-                  <p className="shrink-0 text-body tabular-nums text-foreground">
-                    ~{formatCurrency(item.high)}
+                  <p className="text-metric-xl tabular-nums text-foreground">
+                    ~{formatCurrency(amount)}
+                    <span className="text-h4 text-muted-foreground"> /year</span>
                   </p>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
+                <div className="h-2 overflow-hidden rounded-full bg-border/30">
                   <div
                     className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                    style={{ width: `${Math.max(8, (item.high / maxHigh) * 100)}%` }}
+                    style={{ width: `${Math.max(8, (amount / maxMechanism) * 100)}%` }}
                   />
                 </div>
               </HairlineCard>
             </StaggerItem>
-          ))}
+            );
+          })}
         </Stagger>
       ) : null}
 
