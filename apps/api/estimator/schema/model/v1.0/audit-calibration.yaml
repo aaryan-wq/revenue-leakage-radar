@@ -9,13 +9,14 @@ rule_prior_multipliers:
   duplicate_credit: 0.173205
   duplicate_discount: 1.050943
   excessive_discount: 0.05
-  expired_discount: 0.27048
-  grandfathered_pricing: 2.424075
-  incorrect_addon_price: 0.14352
+  expired_discount: 0.14067
+  grandfathered_pricing: 3.173669
+  incorrect_addon_price: 0.054371
   incorrect_seat_price: 4.0
-  invoice_price_mismatch: 0.32448
-  legacy_pricing: 1.935035
-  missing_expected_invoice: 0.887143
-  missing_scheduled_increase: 0.146629
+  invoice_price_mismatch: 0.05
+  legacy_pricing: 3.74436
+  manual_price_override: 2.541338
+  missing_expected_invoice: 0.835585
+  missing_scheduled_increase: 0.099846
   price_catalog_mismatch: 1.1564
   renewal_price_drift: 0.389769
