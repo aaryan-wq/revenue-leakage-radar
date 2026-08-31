@@ -18,7 +18,11 @@ from notifications.clerk import ClerkUserInfo
 )
 def test_is_admin_clerk_user(metadata, email, expected):
     with patch("auth.admin.fetch_clerk_user") as mock_fetch:
-        mock_fetch.return_value = ClerkUserInfo(email=email, public_metadata=metadata)
+        mock_fetch.return_value = ClerkUserInfo(
+            email=email,
+            display_name="Test User",
+            public_metadata=metadata,
+        )
         is_admin, resolved_email = is_admin_clerk_user("user_123")
         assert is_admin is expected
         assert resolved_email == email

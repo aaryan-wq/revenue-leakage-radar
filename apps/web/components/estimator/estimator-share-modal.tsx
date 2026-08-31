@@ -203,14 +203,14 @@ export function EstimatorShareModal({
                       </Button>
                     </div>
                   ) : shareUrl ? (
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex min-w-0 flex-1 gap-2">
+                    <div className="space-y-2">
+                      <div className="flex min-w-0 gap-2">
                         <input
                           type="text"
                           readOnly
                           value={shareUrl}
                           aria-label="Share link"
-                          className="min-h-[44px] flex-1 truncate rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3 text-small text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          className="min-h-[44px] min-w-0 flex-1 truncate rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3 text-small text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                           onFocus={(e) => e.target.select()}
                         />
                         <Button
@@ -230,7 +230,7 @@ export function EstimatorShareModal({
                       <Button
                         variant="secondary"
                         onClick={() => handleChannel("email")}
-                        className="min-h-[44px] shrink-0"
+                        className="min-h-[44px] w-full sm:w-auto"
                       >
                         <Mail className="mr-2 h-4 w-4" />
                         Email team

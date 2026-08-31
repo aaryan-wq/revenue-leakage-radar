@@ -150,6 +150,7 @@ export function DeveloperReportsTable() {
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium text-right">Recoverable ARR</th>
                   <th className="px-6 py-4 font-medium">Access</th>
+                  <th className="px-6 py-4 font-medium">User</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -170,6 +171,20 @@ export function DeveloperReportsTable() {
                       <Badge variant={report.purchased ? "elevated" : "gray"}>
                         {report.purchased ? "Purchased" : "Locked"}
                       </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-xs">
+                      {report.clerk_user_id ? (
+                        <>
+                          <div className="font-medium text-foreground">
+                            {report.clerk_user_name ?? "Unknown user"}
+                          </div>
+                          <div className="mt-1 text-muted-foreground">
+                            {report.clerk_user_email ?? report.clerk_user_id}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Anonymous</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">

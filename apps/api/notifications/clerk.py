@@ -11,7 +11,23 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class ClerkUserInfo:
     email: str | None
+    display_name: str | None
     public_metadata: dict
+
+
+def _display_name(data: dict) -> str | None:
+    first = (data.get("first_name") or "").strip()
+    last = (data.get("last_name") or "").strip()
+    full = f"{first} {last}".strip()
+    if full:
+        return full
+    username = data.get("username")
+    if isinstance(username, str) and username.strip():
+        return username.strip()
+    email = _extract_primary_email(data)
+    if email:
+        return email.split("@", 1)[0]
+    return None
 
 
 def _extract_primary_email(data: dict) -> str | None:
@@ -38,6 +54,7 @@ def fetch_clerk_user(clerk_user_id: str) -> ClerkUserInfo | None:
         metadata = data.get("public_metadata")
         return ClerkUserInfo(
             email=_extract_primary_email(data),
+            display_name=_display_name(data),
             public_metadata=metadata if isinstance(metadata, dict) else {},
         )
     except Exception:

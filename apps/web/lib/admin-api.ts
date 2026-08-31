@@ -7,6 +7,7 @@ import type {
   PaginatedAuditsResponse,
   PaginatedCompaniesResponse,
   PaginatedLogsResponse,
+  PaginatedAssessmentsResponse,
   PaginatedReportsResponse,
   PaginatedSupportNotesResponse,
   SupportNote,
@@ -76,6 +77,22 @@ export async function getAdminReports(
   const query = search.toString();
   return apiFetch<PaginatedReportsResponse>(
     `/admin/reports${query ? `?${query}` : ""}`,
+    authOptions(authToken),
+  );
+}
+
+export async function getAdminAssessments(
+  authToken: string,
+  params: { q?: string; status?: string; page?: number; page_size?: number } = {},
+): Promise<PaginatedAssessmentsResponse> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.status) search.set("status", params.status);
+  if (params.page) search.set("page", String(params.page));
+  if (params.page_size) search.set("page_size", String(params.page_size));
+  const query = search.toString();
+  return apiFetch<PaginatedAssessmentsResponse>(
+    `/admin/assessments${query ? `?${query}` : ""}`,
     authOptions(authToken),
   );
 }

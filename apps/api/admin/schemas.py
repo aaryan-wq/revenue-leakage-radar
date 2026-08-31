@@ -12,12 +12,31 @@ class AdminMeResponse(BaseModel):
 class AdminOverviewResponse(BaseModel):
     total_audits: int
     linked_users: int
+    anonymous_audits: int
+    completed_audits: int
+    audits_in_progress: int
     total_reports: int
     purchased_reports: int
     total_purchases: int
+    refunded_purchases: int
     total_recoverable_arr: str
+    average_recoverable_arr: str
+    total_purchase_revenue_cents: int
     audits_last_7_days: int
+    audits_last_30_days: int
     purchases_last_7_days: int
+    purchases_last_30_days: int
+    total_companies: int
+    active_memberships: int
+    purchase_conversion_pct: float
+    total_assessments: int
+    completed_assessments: int
+    assessments_last_7_days: int
+    assessments_last_30_days: int
+    assessments_with_leads: int
+    assessments_scan_intent: int
+    assessments_linked_to_audits: int
+    assessment_to_audit_conversion_pct: float
 
 
 class AdminCompanyItem(BaseModel):
@@ -39,6 +58,9 @@ class AdminAuditListItem(BaseModel):
     report_id: uuid.UUID | None
     company_name: str | None
     clerk_user_id: str | None
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
+    assessment_id: uuid.UUID | None = None
     status: str
     recoverable_arr: str | None
     finding_count: int | None
@@ -79,6 +101,9 @@ class AdminAuditDetailResponse(BaseModel):
     company_name: str | None
     company_id: uuid.UUID | None
     clerk_user_id: str | None
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
+    assessment_id: uuid.UUID | None = None
     status: str
     platform: str | None
     recoverable_arr: str | None
@@ -97,11 +122,43 @@ class AdminReportListItem(BaseModel):
     audit_id: uuid.UUID
     company_name: str | None
     clerk_user_id: str | None
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
     recoverable_arr: str
     finding_count: int
     purchased: bool
     status: str
     generated_at: datetime | None
+
+
+class AdminAssessmentListItem(BaseModel):
+    assessment_id: uuid.UUID
+    status: str
+    industry: str | None
+    country: str | None
+    arr_amount: str | None
+    arr_currency: str | None
+    customer_count: int | None
+    estimated_leakage: str | None
+    lead_email: str | None
+    lead_company_name: str | None
+    lead_role: str | None
+    lead_score: int | None
+    scan_intent: bool
+    linked_audit_id: uuid.UUID | None
+    clerk_user_id: str | None
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
+    started_at: datetime | None
+    completed_at: datetime | None
+    created_at: datetime | None
+
+
+class PaginatedAssessmentsResponse(BaseModel):
+    items: list[AdminAssessmentListItem]
+    total: int
+    page: int
+    page_size: int
 
 
 class PaginatedReportsResponse(BaseModel):

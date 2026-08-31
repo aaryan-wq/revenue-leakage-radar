@@ -123,8 +123,19 @@ export function DeveloperAuditsTable() {
                     <td className="px-6 py-4 text-right tabular-nums">
                       {audit.recoverable_arr ? formatCurrency(audit.recoverable_arr) : "—"}
                     </td>
-                    <td className="px-6 py-4 text-xs text-muted-foreground">
-                      {audit.clerk_user_id ?? "Anonymous"}
+                    <td className="px-6 py-4 text-xs">
+                      {audit.clerk_user_id ? (
+                        <>
+                          <div className="font-medium text-foreground">
+                            {audit.clerk_user_name ?? "Unknown user"}
+                          </div>
+                          <div className="mt-1 text-muted-foreground">
+                            {audit.clerk_user_email ?? audit.clerk_user_id}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Anonymous</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">

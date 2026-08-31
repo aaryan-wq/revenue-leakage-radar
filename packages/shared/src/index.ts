@@ -577,12 +577,31 @@ export interface AdminMeResponse {
 export interface AdminOverviewResponse {
   total_audits: number;
   linked_users: number;
+  anonymous_audits: number;
+  completed_audits: number;
+  audits_in_progress: number;
   total_reports: number;
   purchased_reports: number;
   total_purchases: number;
+  refunded_purchases: number;
   total_recoverable_arr: string;
+  average_recoverable_arr: string;
+  total_purchase_revenue_cents: number;
   audits_last_7_days: number;
+  audits_last_30_days: number;
   purchases_last_7_days: number;
+  purchases_last_30_days: number;
+  total_companies: number;
+  active_memberships: number;
+  purchase_conversion_pct: number;
+  total_assessments: number;
+  completed_assessments: number;
+  assessments_last_7_days: number;
+  assessments_last_30_days: number;
+  assessments_with_leads: number;
+  assessments_scan_intent: number;
+  assessments_linked_to_audits: number;
+  assessment_to_audit_conversion_pct: number;
 }
 
 export interface AdminCompanyItem {
@@ -604,6 +623,9 @@ export interface AdminAuditListItem {
   report_id: string | null;
   company_name: string | null;
   clerk_user_id: string | null;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
+  assessment_id: string | null;
   status: string;
   recoverable_arr: string | null;
   finding_count: number | null;
@@ -644,6 +666,9 @@ export interface AdminAuditDetailResponse {
   company_name: string | null;
   company_id: string | null;
   clerk_user_id: string | null;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
+  assessment_id: string | null;
   status: string;
   platform: string | null;
   recoverable_arr: string | null;
@@ -662,11 +687,43 @@ export interface AdminReportListItem {
   audit_id: string;
   company_name: string | null;
   clerk_user_id: string | null;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
   recoverable_arr: string;
   finding_count: number;
   purchased: boolean;
   status: string;
   generated_at: string | null;
+}
+
+export interface AdminAssessmentListItem {
+  assessment_id: string;
+  status: string;
+  industry: string | null;
+  country: string | null;
+  arr_amount: string | null;
+  arr_currency: string | null;
+  customer_count: number | null;
+  estimated_leakage: string | null;
+  lead_email: string | null;
+  lead_company_name: string | null;
+  lead_role: string | null;
+  lead_score: number | null;
+  scan_intent: boolean;
+  linked_audit_id: string | null;
+  clerk_user_id: string | null;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+}
+
+export interface PaginatedAssessmentsResponse {
+  items: AdminAssessmentListItem[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 export interface PaginatedReportsResponse {

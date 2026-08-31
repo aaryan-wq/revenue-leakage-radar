@@ -13,6 +13,7 @@ const tabs = [
   { href: "/developer", label: "Overview", exact: true },
   { href: "/developer/audits", label: "Audits", exact: false },
   { href: "/developer/reports", label: "Reports", exact: false },
+  { href: "/developer/assessments", label: "Assessments", exact: false },
   { href: "/developer/logs", label: "Logs", exact: false },
   { href: "/developer/notes", label: "Notes", exact: false },
 ] as const;
