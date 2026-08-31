@@ -1,21 +1,21 @@
 {
   "version": "2.2",
   "sections": [
-    { "id": "profile", "label": "Billing Profile", "estimated_seconds": 30 },
+    { "id": "profile", "label": "Your company", "estimated_seconds": 30 },
     { "id": "pricing", "label": "Pricing", "estimated_seconds": 25 },
     { "id": "usage", "label": "Usage Billing", "estimated_seconds": 20 },
     { "id": "seats", "label": "Seat Pricing", "estimated_seconds": 15 },
-    { "id": "product", "label": "Product Catalog", "estimated_seconds": 15 },
+    { "id": "product", "label": "Products and plans", "estimated_seconds": 15 },
     { "id": "contracts", "label": "Contracts", "estimated_seconds": 20 },
     { "id": "discounts", "label": "Discounts", "estimated_seconds": 20 },
     { "id": "changes", "label": "Pricing Changes", "estimated_seconds": 15 },
     { "id": "systems", "label": "Billing Systems", "estimated_seconds": 10 },
     { "id": "operations", "label": "Operations", "estimated_seconds": 15 },
-    { "id": "quote_to_bill", "label": "Quote to Bill", "estimated_seconds": 10 },
+    { "id": "quote_to_bill", "label": "Sales to billing", "estimated_seconds": 10 },
     { "id": "migrations", "label": "Migrations", "estimated_seconds": 10 },
     { "id": "international", "label": "International", "estimated_seconds": 10 },
-    { "id": "controls", "label": "Controls", "estimated_seconds": 15 },
-    { "id": "velocity", "label": "Change Velocity", "estimated_seconds": 10 },
+    { "id": "controls", "label": "Checks and oversight", "estimated_seconds": 15 },
+    { "id": "velocity", "label": "Pace of change", "estimated_seconds": 10 },
     { "id": "confidence", "label": "Confidence", "estimated_seconds": 10 }
   ],
   "questions": [
@@ -39,7 +39,7 @@
       "id": "profile.arr_amount",
       "section": "profile",
       "type": "currency",
-      "label": "What is your annual recurring revenue (ARR)?",
+      "label": "How much subscription revenue do you bill per year (ARR)?",
       "required": true,
       "currencies": ["USD", "CAD", "GBP", "EUR", "AUD"],
       "hypotheses": []
@@ -48,7 +48,7 @@
       "id": "profile.arr_confidence",
       "section": "profile",
       "type": "select",
-      "label": "How precise is that ARR figure?",
+      "label": "How sure are you that ARR number?",
       "required": true,
       "options": [
         { "value": "exact", "label": "Exact" },
@@ -77,11 +77,11 @@
         { "value": "per_seat", "label": "Per seat" },
         { "value": "usage", "label": "Usage-based" },
         { "value": "tiered", "label": "Tiered" },
-        { "value": "custom_enterprise", "label": "Custom enterprise" },
+        { "value": "custom_enterprise", "label": "Custom enterprise deals" },
         { "value": "addons", "label": "Add-ons" },
         { "value": "bundles", "label": "Bundles" },
-        { "value": "minimum_commit", "label": "Minimum commitments" },
-        { "value": "hybrid", "label": "Hybrid pricing" }
+        { "value": "minimum_commit", "label": "Minimum spend commitments" },
+        { "value": "hybrid", "label": "Mix of pricing types" }
       ],
       "hypotheses": ["H5", "H10", "H11"]
     },
@@ -89,7 +89,7 @@
       "id": "usage.unit_type",
       "section": "usage",
       "type": "select",
-      "label": "What do you primarily meter and bill for?",
+      "label": "What usage do you mostly charge for?",
       "required": true,
       "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
@@ -111,8 +111,8 @@
       "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
         { "value": "simple", "label": "Simple unit price" },
-        { "value": "tiered", "label": "Tiered usage" },
-        { "value": "commit_overage", "label": "Commit + overage" },
+        { "value": "tiered", "label": "Price changes at volume tiers" },
+        { "value": "commit_overage", "label": "Prepaid commit with overage charges" },
         { "value": "custom", "label": "Custom enterprise rate" }
       ],
       "hypotheses": ["H11"]
@@ -125,10 +125,10 @@
       "required": true,
       "visibility": { "when": "pricing.models", "contains": "usage" },
       "options": [
-        { "value": "realtime", "label": "Real-time" },
-        { "value": "monthly", "label": "Monthly" },
-        { "value": "postpaid", "label": "Postpaid" },
-        { "value": "hybrid", "label": "Hybrid" }
+        { "value": "realtime", "label": "As usage happens" },
+        { "value": "monthly", "label": "Monthly in arrears" },
+        { "value": "postpaid", "label": "After the billing period ends" },
+        { "value": "hybrid", "label": "Mix of timing" }
       ],
       "hypotheses": ["H11"]
     },
@@ -165,7 +165,7 @@
       "id": "seats.true_up",
       "section": "seats",
       "type": "boolean",
-      "label": "Do you reconcile seat counts against actual usage?",
+      "label": "Do you compare billed seats to how many people actually use the product?",
       "required": true,
       "visibility": { "when": "pricing.models", "contains": "per_seat" },
       "hypotheses": ["H10"]
@@ -220,7 +220,7 @@
       "id": "contracts.negotiated_arr_pct",
       "section": "contracts",
       "type": "select",
-      "label": "What share of revenue comes from custom-negotiated deals?",
+      "label": "What percent of revenue comes from sales-negotiated contracts (not list price)?",
       "required": true,
       "options": [
         { "value": "0", "label": "0%" },
@@ -304,10 +304,10 @@
       "required": true,
       "options": [
         { "value": "automatic", "label": "Automatic" },
-        { "value": "manual_finance", "label": "Manual (Finance)" },
-        { "value": "manual_revops", "label": "Manual (RevOps)" },
-        { "value": "manual_sales", "label": "Manual (Sales)" },
-        { "value": "contract_driven", "label": "Contract-driven" },
+        { "value": "manual_finance", "label": "Removed manually by Finance" },
+        { "value": "manual_revops", "label": "Removed manually by RevOps" },
+        { "value": "manual_sales", "label": "Removed manually by Sales" },
+        { "value": "contract_driven", "label": "Depends on contract terms" },
         { "value": "unknown", "label": "Unknown" }
       ],
       "hypotheses": ["H3", "H4"]
@@ -424,7 +424,7 @@
       "id": "operations.manual_change_logging",
       "section": "operations",
       "type": "select",
-      "label": "Are manual billing changes tracked in a log or audit trail?",
+      "label": "When someone changes a bill manually, is it logged?",
       "required": true,
       "options": [
         { "value": "yes", "label": "Yes" },
@@ -454,12 +454,12 @@
       "id": "quote_to_bill.commercial_truth",
       "section": "quote_to_bill",
       "type": "select",
-      "label": "Where does the agreed deal price live before it hits billing?",
+      "label": "Where is the final sold price recorded before invoices are created?",
       "required": true,
       "options": [
-        { "value": "crm", "label": "CRM" },
+        { "value": "crm", "label": "CRM (Salesforce, HubSpot, etc.)" },
         { "value": "billing", "label": "Billing system" },
-        { "value": "cpq", "label": "CPQ" },
+        { "value": "cpq", "label": "Quoting tool (CPQ)" },
         { "value": "contracts", "label": "Contracts" },
         { "value": "spreadsheet", "label": "Spreadsheet" },
         { "value": "multiple", "label": "Multiple systems" },
@@ -471,7 +471,7 @@
       "id": "quote_to_bill.quote_automation",
       "section": "quote_to_bill",
       "type": "select",
-      "label": "How much of the quote-to-billing flow is automated?",
+      "label": "How much of the path from signed deal to invoice is automated?",
       "required": true,
       "options": [
         { "value": "fully", "label": "Fully automated" },
@@ -586,7 +586,7 @@
       "id": "controls.monthly_reconciliation",
       "section": "controls",
       "type": "select",
-      "label": "How often do you reconcile billing against signed agreements?",
+      "label": "How often do you check that invoices match signed contracts?",
       "required": true,
       "options": [
         { "value": "monthly", "label": "Every month" },
@@ -617,7 +617,7 @@
       "id": "operations.credit_memo_process",
       "section": "operations",
       "type": "select",
-      "label": "How are credit memos and refunds handled?",
+      "label": "How are credits and refunds issued?",
       "required": true,
       "options": [
         { "value": "automated", "label": "Automated in billing system" },
@@ -647,7 +647,7 @@
       "id": "operations.invoice_cadence",
       "section": "operations",
       "type": "select",
-      "label": "How predictable is your invoice generation schedule?",
+      "label": "How consistently do invoices go out on schedule?",
       "required": true,
       "options": [
         { "value": "automated", "label": "Fully automated on schedule" },
@@ -677,13 +677,13 @@
       "id": "discounts.stacking_policy",
       "section": "discounts",
       "type": "select",
-      "label": "What is your discount stacking policy?",
+      "label": "Can customers receive more than one discount on the same subscription?",
       "required": true,
       "options": [
-        { "value": "never", "label": "Never stack discounts" },
-        { "value": "single", "label": "One discount per subscription" },
-        { "value": "limited", "label": "Limited stacking with approval" },
-        { "value": "allowed", "label": "Stacking allowed without guardrails" },
+        { "value": "never", "label": "No, never" },
+        { "value": "single", "label": "Only one discount allowed" },
+        { "value": "limited", "label": "Sometimes, with approval" },
+        { "value": "allowed", "label": "Yes, without clear rules" },
         { "value": "unknown", "label": "Unknown" }
       ],
       "hypotheses": ["H3", "H4"]
@@ -708,7 +708,7 @@
       "id": "controls.revenue_recognition_review",
       "section": "controls",
       "type": "select",
-      "label": "Does finance review revenue recognition against billing monthly?",
+      "label": "Does finance check that recognized revenue matches what was billed?",
       "required": true,
       "options": [
         { "value": "monthly", "label": "Every month" },
@@ -723,7 +723,7 @@
       "id": "velocity.commercial_changes_12mo",
       "section": "velocity",
       "type": "select",
-      "label": "How many significant deal or pricing changes happened in the last 12 months?",
+      "label": "In the last 12 months, how often did pricing or contract terms change?",
       "required": true,
       "options": [
         { "value": "0", "label": "0" },
@@ -748,7 +748,7 @@
       "id": "confidence.last_reconciliation",
       "section": "confidence",
       "type": "select",
-      "label": "When was your last full billing reconciliation?",
+      "label": "When did you last review all invoices against contracts?",
       "required": true,
       "options": [
         { "value": "30d", "label": "Less than 30 days" },

@@ -304,7 +304,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <h3 className="text-body font-medium text-foreground">{item.name}</h3>
                     <p className="shrink-0 text-body tabular-nums text-foreground">
-                      up to {formatCurrency(item.high)}
+                      ~{formatCurrency(item.high)}
                     </p>
                   </div>
                   {insight ? (
@@ -336,7 +336,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button onClick={handleScanClick} className="min-h-[44px]">
               {ctaHigh >= 100_000
-                ? `Confirm ${formatCurrency(ctaHigh)}+ with a free billing scan`
+                ? `Confirm ~${formatCurrency(ctaHigh)}+ with a free billing scan`
                 : "Run free billing scan"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -352,7 +352,7 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
           </div>
           <p className="text-small text-muted-foreground">
             A {formatCurrency(AUDIT_PRICE_USD)} audit pays for itself if it confirms about {paybackPct.toFixed(1)}%
-            of the upper end of this estimate.
+            of this estimate.
           </p>
         </HairlineCard>
       </Reveal>

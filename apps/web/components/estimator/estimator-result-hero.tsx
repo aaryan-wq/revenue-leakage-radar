@@ -1,5 +1,6 @@
 "use client";
 
+import { CountUp } from "@/components/count-up";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
@@ -11,9 +12,8 @@ interface EstimatorResultHeroProps {
 
 export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
   const arr = result.arr_usd ?? result.profile_summary?.arr_usd ?? 0;
-  const { low, high } = result.estimate;
-  const midpoint = (low + high) / 2;
-  const pctOfArr = arr > 0 ? (midpoint / arr) * 100 : 0;
+  const high = result.estimate.high;
+  const pctOfArr = arr > 0 ? (high / arr) * 100 : 0;
 
   return (
     <HairlineCard padding="lg" className="overflow-hidden">
@@ -27,7 +27,7 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
         <div className="space-y-4 text-center">
           <h1 className="text-h2 text-foreground">Estimated recoverable revenue</h1>
           <p className="text-metric-xl tabular-nums text-foreground">
-            {formatCurrency(low)} to {formatCurrency(high)}
+            <CountUp to={high} prefix="~$" />
             <span className="text-h4 text-muted-foreground"> /year</span>
           </p>
           {arr > 0 ? (

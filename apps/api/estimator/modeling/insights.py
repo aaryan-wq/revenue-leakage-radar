@@ -381,16 +381,16 @@ def _build_calculation_summary(
     else:
         bullets.append(
             f"Based on {_fmt_usd(arr)} ARR and your questionnaire answers, "
-            f"estimated recoverable revenue is {_fmt_usd(estimate['low'])} to {_fmt_usd(estimate['high'])} per year "
-            f"({band_label} band)."
+            f"estimated recoverable revenue is up to {_fmt_usd(estimate['high'])} per year."
         )
+        high_pct = round((estimate["high"] / arr) * 100, 1) if arr > 0 else 0.0
         bullets.append(
-            f"Midpoint estimate: {_fmt_usd(expected)} ({pct_of_arr:.1f}% of ARR). "
+            f"That is about {high_pct:.1f}% of ARR. "
             "This is directional guidance, not an audited finding."
         )
         if top_hypotheses:
             top_line = ", ".join(
-                f"{item['name']} (up to {_fmt_usd(item['high'])})"
+                f"{item['name']} (~{_fmt_usd(item['high'])})"
                 for item in top_hypotheses[:3]
             )
             bullets.append(f"Largest likely sources: {top_line}. Categories overlap and are not additive.")

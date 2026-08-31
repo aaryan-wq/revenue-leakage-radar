@@ -23,11 +23,10 @@ export function AssessmentContextBanner({ assessmentId }: { assessmentId: string
     <HairlineCard padding="md" className="mb-8 border-primary/20 bg-surface-glass-subtle">
       <p className="text-overline text-muted-foreground">From your leakage assessment</p>
       <p className="text-body mt-2 text-foreground">
-        Based on your assessment ({result.estimate.display_range} modeled exposure), we will prioritize
+        Based on your assessment (~{formatCurrency(result.estimate.high)} modeled exposure), we will prioritize
         checks related to {names || "your top billing risk areas"} during the scan presentation.
       </p>
       <p className="text-caption mt-2 text-muted-foreground">
-        Estimated range: {formatCurrency(result.estimate.low)} to {formatCurrency(result.estimate.high)} ARR.
         This does not change scan logic or findings.
       </p>
     </HairlineCard>

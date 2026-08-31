@@ -41,7 +41,7 @@ export function EstimatorShareClient({ token }: { token: string }) {
       <HairlineCard padding="lg" className="space-y-6 text-center">
         <h1 className="text-h2 text-foreground">Estimated recoverable revenue</h1>
         <p className="text-metric-xl tabular-nums text-foreground">
-          {formatCurrency(data.estimate.low)} to {formatCurrency(data.estimate.high)}
+          ~{formatCurrency(data.estimate.high)}
           <span className="text-h4 text-muted-foreground"> /year</span>
         </p>
         <p className="text-small text-muted-foreground">{data.disclaimer}</p>
