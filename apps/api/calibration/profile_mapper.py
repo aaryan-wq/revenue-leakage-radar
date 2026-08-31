@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from harness.types import CompanyProfile, GroundTruthDocument
-from tests.estimator.calibrate_rules import RULE_ANSWER_BOOSTS
+from tests.estimator.calibrate_rules import RULE_ANSWER_BOOSTS, SINGLE_RULE_ANSWER_BOOSTS
 from tests.estimator.test_engine import PROFILE_A, PROFILE_B
 from harness.injections import ALL_RULE_IDS
 
@@ -56,6 +56,7 @@ def profile_to_questionnaire(
         injected = list(ground_truth.injected_rules or injected)
 
     injection_count = len(injected)
+    single_rule = injection_count == 1
     if injection_count >= max(len(ALL_RULE_IDS) // 2, 10):
         answers = dict(PROFILE_B)
     elif injection_count >= 4:
@@ -94,12 +95,13 @@ def profile_to_questionnaire(
         answers.setdefault("contracts.negotiated_arr_pct", "26_50")
         answers.setdefault("contracts.custom_pricing", "yes")
 
+    boost_map = SINGLE_RULE_ANSWER_BOOSTS if single_rule else RULE_ANSWER_BOOSTS
     for rule_id in injected:
-        boosts = RULE_ANSWER_BOOSTS.get(rule_id)
+        boosts = boost_map.get(rule_id)
         if boosts:
             answers.update(boosts)
 
-    if any("discount" in rule_id for rule_id in injected):
+    if not single_rule and any("discount" in rule_id for rule_id in injected):
         answers.setdefault("discounts.frequency", "occasional")
 
     return answers

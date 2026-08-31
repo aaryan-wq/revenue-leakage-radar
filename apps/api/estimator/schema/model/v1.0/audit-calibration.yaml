@@ -1,0 +1,21 @@
+version: 1
+calibration_stage: 1
+source: audit_driven_loop
+rule_prior_multipliers:
+  cancelled_subscription_still_billing: 0.447577
+  contract_billing_price_divergence: 1.115441
+  discount_stacking: 0.259748
+  discount_wrong_product: 2.75304
+  duplicate_credit: 0.173205
+  duplicate_discount: 1.050943
+  excessive_discount: 0.05
+  expired_discount: 0.27048
+  grandfathered_pricing: 2.424075
+  incorrect_addon_price: 0.14352
+  incorrect_seat_price: 4.0
+  invoice_price_mismatch: 0.32448
+  legacy_pricing: 1.935035
+  missing_expected_invoice: 0.887143
+  missing_scheduled_increase: 0.146629
+  price_catalog_mismatch: 1.1564
+  renewal_price_drift: 0.389769

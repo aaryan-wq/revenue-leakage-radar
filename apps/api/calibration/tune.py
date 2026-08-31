@@ -8,15 +8,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+import yaml
+
 from calibration.cases import AuditCalibrationCase
 from calibration.compare import ComparisonRow, max_abs_error, mean_abs_error
 from estimator.modeling.pipeline import run_model
-from estimator.questionnaire.schema import load_priors, load_rule_priors
+from estimator.questionnaire.schema import load_audit_calibration, load_priors, load_rule_priors
 
-PRIORS_PATH = Path(__file__).resolve().parents[1] / "estimator" / "schema" / "model" / "v1.0" / "priors.yaml"
-RULE_PRIORS_PATH = (
-    Path(__file__).resolve().parents[1] / "estimator" / "schema" / "model" / "v1.0" / "rule-priors.yaml"
-)
+API_ROOT = Path(__file__).resolve().parents[1]
+PRIORS_PATH = API_ROOT / "estimator" / "schema" / "model" / "v1.0" / "priors.yaml"
+AUDIT_CALIBRATION_PATH = API_ROOT / "estimator" / "schema" / "model" / "v1.0" / "audit-calibration.yaml"
+
 
 @dataclass
 class TuneConfig:
@@ -31,6 +33,18 @@ class TuneResult:
     max_abs_error_pct: float
     config: TuneConfig
     rows: list
+
+
+def _clear_schema_caches() -> None:
+    load_priors.cache_clear()
+    load_rule_priors.cache_clear()
+    load_audit_calibration.cache_clear()
+
+
+def _load_overlay_multipliers() -> dict[str, float]:
+    data = load_audit_calibration()
+    raw = data.get("rule_prior_multipliers") or {}
+    return {str(rule_id): float(value) for rule_id, value in raw.items()}
 
 
 def _apply_tune_config(config: TuneConfig) -> tuple[Callable, Callable]:
@@ -55,8 +69,7 @@ def _apply_tune_config(config: TuneConfig) -> tuple[Callable, Callable]:
 
 def score_cases(cases: list[AuditCalibrationCase], config: TuneConfig, *, random_seed: int = 42) -> TuneResult:
     patched_priors, patched_rule_priors = _apply_tune_config(config)
-    load_priors.cache_clear()
-    load_rule_priors.cache_clear()
+    _clear_schema_caches()
 
     import estimator.modeling.pipeline as pipeline
     import estimator.modeling.rule_posteriors as rule_posteriors
@@ -65,45 +78,25 @@ def score_cases(cases: list[AuditCalibrationCase], config: TuneConfig, *, random
     original_priors = schema.load_priors
     original_rule_priors = schema.load_rule_priors
     schema.load_priors = patched_priors  # type: ignore[assignment]
-    schema.load_rule_priors = patched_rule_priors  # type: ignore[assignment]
+    schema.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
     pipeline.load_priors = patched_priors  # type: ignore[assignment]
-    pipeline.load_rule_priors = patched_rule_priors  # type: ignore[assignment]
-    rule_posteriors.load_rule_priors = patched_rule_priors  # type: ignore[assignment]
+    pipeline.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
+    rule_posteriors.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
 
     rows: list[ComparisonRow] = []
     try:
+        from calibration.compare import compare_case
+
         for case in cases:
-            result = run_model(case.answers, random_seed=random_seed, include_sensitivity=False)
-            estimator_central = float(result["estimate"]["central"])
-            audit_target = case.audit_target_usd
-            error_pct = ((estimator_central - audit_target) / audit_target * 100) if audit_target > 0 else 0.0
-            injected = case.injected_annual_usd
-            audit_vs_injected = (
-                ((audit_target - injected) / injected * 100) if injected > 0 else 0.0
-            )
-            rows.append(
-                ComparisonRow(
-                    case_id=case.case_id,
-                    name=case.name,
-                    audit_target_usd=audit_target,
-                    injected_annual_usd=injected,
-                    estimator_central_usd=estimator_central,
-                    error_pct=error_pct,
-                    abs_error_pct=abs(error_pct),
-                    audit_vs_injected_pct=audit_vs_injected,
-                    matched_findings=case.audit.matched_findings,
-                    expected_findings=case.audit.expected_findings,
-                    source=case.source,
-                )
-            )
+            row, _ = compare_case(case, random_seed=random_seed)
+            rows.append(row)
     finally:
         schema.load_priors = original_priors  # type: ignore[assignment]
         schema.load_rule_priors = original_rule_priors  # type: ignore[assignment]
         pipeline.load_priors = original_priors  # type: ignore[assignment]
         pipeline.load_rule_priors = original_rule_priors  # type: ignore[assignment]
         rule_posteriors.load_rule_priors = original_rule_priors  # type: ignore[assignment]
-        load_priors.cache_clear()
-        load_rule_priors.cache_clear()
+        _clear_schema_caches()
 
     return TuneResult(
         mean_abs_error_pct=mean_abs_error(rows),
@@ -126,9 +119,7 @@ def grid_search(
         beta_values = [max(base.affected_beta - 1, 5), base.affected_beta, base.affected_beta + 1]
         rule_mult_values = [1.0]
     else:
-        complexity_values = _neighbor_values(
-            base.complexity_base, [1.8, 2.0, 2.05, 2.1, 2.2, 2.4]
-        )
+        complexity_values = _neighbor_values(base.complexity_base, [1.8, 2.0, 2.05, 2.1, 2.2, 2.4])
         beta_values = _neighbor_values(float(base.affected_beta), [7, 9, 11])
         rule_mult_values = _neighbor_values(base.rule_prior_multiplier, [0.9, 1.0, 1.1])
 
@@ -148,13 +139,11 @@ def grid_search(
 
 
 def _neighbor_values(center: float, grid: list[float]) -> list[float]:
-    """Prefer a tight band around the current center, falling back to the full grid."""
     band = [value for value in grid if abs(value - center) <= 0.35 or abs(value - center) <= 2.5]
     return sorted(set(band or grid))
 
 
-def apply_config_to_priors(config: TuneConfig, *, rule_multiplier: float = 1.0) -> None:
-    del rule_multiplier
+def apply_config_to_priors(config: TuneConfig) -> None:
     priors_text = PRIORS_PATH.read_text(encoding="utf-8")
     priors_text = re.sub(
         r"(complexity_scale:\n\s+base:\s+)[0-9.]+",
@@ -169,59 +158,127 @@ def apply_config_to_priors(config: TuneConfig, *, rule_multiplier: float = 1.0) 
         count=1,
     )
     PRIORS_PATH.write_text(priors_text, encoding="utf-8")
-    load_priors.cache_clear()
-    load_rule_priors.cache_clear()
+    _clear_schema_caches()
 
 
 def compute_rule_prior_adjustments(
     cases: list[AuditCalibrationCase],
     rows: list[ComparisonRow],
     *,
-    damping: float = 0.65,
+    damping: float = 0.5,
 ) -> dict[str, float]:
-    """Return rule_id -> multiplicative prior adjustment from audit/estimator ratios."""
+    """Return rule_id -> multiplicative overlay adjustment from audit/estimator rule-level ratios."""
+    existing = _load_overlay_multipliers()
     buckets: dict[str, list[float]] = {}
     for case, row in zip(cases, rows):
         if len(case.injected_rules) != 1:
             continue
         rule_id = case.injected_rules[0]
         audit = row.audit_target_usd
-        estimate = row.estimator_central_usd
+        estimate = row.estimator_rule_usd if row.estimator_rule_usd > 0 else row.estimator_central_usd
         if audit <= 0 or estimate <= 0:
             continue
         ratio = audit / estimate
-        damped = ratio**damping if ratio < 1 else ratio**damping
+        damped = ratio**damping
         buckets.setdefault(rule_id, []).append(damped)
 
     adjustments: dict[str, float] = {}
     for rule_id, values in buckets.items():
         values = sorted(values)
         median = values[len(values) // 2]
-        adjustments[rule_id] = min(max(median, 0.05), 8.0)
+        prior = existing.get(rule_id, 1.0)
+        adjustments[rule_id] = min(max(prior * median, 0.05), 4.0)
     return adjustments
 
 
-def apply_rule_prior_adjustments(adjustments: dict[str, float]) -> int:
+def write_audit_calibration_overlay(adjustments: dict[str, float], *, stage: int = 1) -> None:
+    payload = {
+        "version": 1,
+        "calibration_stage": stage,
+        "source": "audit_driven_loop",
+        "rule_prior_multipliers": {rule_id: round(value, 6) for rule_id, value in sorted(adjustments.items())},
+    }
+    AUDIT_CALIBRATION_PATH.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    _clear_schema_caches()
+
+
+def _apply_overlay_to_rule_priors(rule_priors: dict[str, Any], multipliers: dict[str, float]) -> dict[str, Any]:
+    data = copy.deepcopy(rule_priors)
+    for rule_id, multiplier in multipliers.items():
+        if multiplier == 1.0:
+            continue
+        rule_cfg = data.get("rules", {}).get(rule_id)
+        if not rule_cfg:
+            continue
+        base_prior = float(rule_cfg.get("prior", 0.03))
+        rule_cfg["prior"] = min(max(base_prior * float(multiplier), 0.001), 0.5)
+    return data
+
+
+def _with_overlay_multipliers(multipliers: dict[str, float]):
+    """Patch rule priors loader to include audit-calibration overlay multipliers."""
+    import estimator.modeling.pipeline as pipeline
+    import estimator.modeling.rule_posteriors as rule_posteriors
+    import estimator.questionnaire.schema as schema
+
+    base_rule_priors = schema.load_rule_priors()
+    overlaid = _apply_overlay_to_rule_priors(base_rule_priors, multipliers)
+
+    def patched_load_rule_priors(version: str = "1.0") -> dict[str, Any]:
+        return copy.deepcopy(overlaid)
+
+    original_rule_priors = schema.load_rule_priors
+    schema.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
+    pipeline.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
+    rule_posteriors.load_rule_priors = patched_load_rule_priors  # type: ignore[assignment]
+    return schema, pipeline, rule_posteriors, original_rule_priors
+
+
+def _restore_overlay_patch(schema, pipeline, rule_posteriors, original_rule_priors) -> None:
+    schema.load_rule_priors = original_rule_priors  # type: ignore[assignment]
+    pipeline.load_rule_priors = original_rule_priors  # type: ignore[assignment]
+    rule_posteriors.load_rule_priors = original_rule_priors  # type: ignore[assignment]
+    _clear_schema_caches()
+
+
+def calibration_fixtures_pass_with_overlay(multipliers: dict[str, float]) -> bool:
+    from estimator.modeling.pipeline import run_model
+    from tests.estimator.calibration_fixtures import CALIBRATION_CASES
+
+    schema, pipeline, rule_posteriors, original_rule_priors = _with_overlay_multipliers(multipliers)
+    try:
+        errors: list[float] = []
+        for case in CALIBRATION_CASES:
+            result = run_model(case["answers"], random_seed=42, include_sensitivity=False)
+            model = result["estimate"]["central"]
+            justified = case["justified_leakage_usd"]
+            errors.append(abs((model - justified) / justified * 100))
+        mean_error = sum(errors) / len(errors)
+        max_error = max(errors)
+        return mean_error <= 12.0 and max_error <= 26.0
+    finally:
+        _restore_overlay_patch(schema, pipeline, rule_posteriors, original_rule_priors)
+
+
+def calibration_fixtures_pass() -> bool:
+    return calibration_fixtures_pass_with_overlay(_load_overlay_multipliers())
+
+
+def safe_apply_rule_overlay(adjustments: dict[str, float]) -> tuple[int, bool]:
+    """Apply overlay multipliers one rule at a time, keeping only fixture-safe changes."""
     if not adjustments:
-        return 0
-    text = RULE_PRIORS_PATH.read_text(encoding="utf-8")
-    updated = 0
-    for rule_id, multiplier in adjustments.items():
-        pattern = rf"({re.escape(rule_id)}:\n\s+prior:\s+)([0-9.]+)"
+        return 0, True
+    merged = dict(_load_overlay_multipliers())
+    applied = 0
+    for rule_id, multiplier in sorted(adjustments.items()):
+        trial = dict(merged)
+        trial[rule_id] = multiplier
+        if calibration_fixtures_pass_with_overlay(trial):
+            merged = trial
+            applied += 1
+    write_audit_calibration_overlay(merged)
+    return applied, applied > 0 or not adjustments
 
-        def _replace(match: re.Match[str], mult: float = multiplier) -> str:
-            old = float(match.group(2))
-            new = min(max(old * mult, 0.001), 0.5)
-            return f"{match.group(1)}{new:.6f}".rstrip("0").rstrip(".")
-
-        new_text, count = re.subn(pattern, _replace, text, count=1)
-        if count:
-            text = new_text
-            updated += 1
-    if updated:
-        RULE_PRIORS_PATH.write_text(text, encoding="utf-8")
-        load_rule_priors.cache_clear()
-    return updated
 
 def iterative_search(
     cases: list[AuditCalibrationCase],

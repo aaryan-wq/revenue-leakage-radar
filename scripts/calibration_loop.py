@@ -34,10 +34,11 @@ from calibration.compare import compare_cases, format_comparison_table, max_abs_
 from calibration.tune import (  # noqa: E402
     TuneConfig,
     apply_config_to_priors,
-    apply_rule_prior_adjustments,
     compute_rule_prior_adjustments,
     grid_search,
     iterative_search,
+    safe_apply_rule_overlay,
+    _load_overlay_multipliers,
 )
 
 
@@ -138,12 +139,19 @@ def cmd_tune(args: argparse.Namespace) -> int:
     print(format_comparison_table(result.rows))
 
     if args.apply:
-        apply_config_to_priors(result.config, rule_multiplier=result.config.rule_prior_multiplier)
-        print("\nApplied best configuration to priors.yaml and rule-priors.yaml.")
+        adjustments = compute_rule_prior_adjustments(cases, result.rows)
+        updated, ok = safe_apply_rule_overlay(adjustments)
+        if ok and updated:
+            print(f"\nApplied {updated} rule overlay multiplier(s) to audit-calibration.yaml.")
+        elif not ok:
+            print("\nSkipped overlay apply: hand-calibrated fixtures would fail.")
+        apply_config_to_priors(result.config)
+        print("Updated MC knobs in priors.yaml (if changed).")
     return 0
 
 
 def cmd_loop(args: argparse.Namespace) -> int:
+    baseline_err = 999.0
     for pass_num in range(1, args.max_passes + 1):
         cases = _build_cases(args)
         if not cases:
@@ -153,48 +161,41 @@ def cmd_loop(args: argparse.Namespace) -> int:
         rows, _ = compare_cases(cases, random_seed=args.seed)
         baseline_err = mean_abs_error(rows)
         print(format_comparison_table(rows))
-        print(f"\nBaseline mean abs error: {baseline_err:.1f}%")
+        print(f"\nRule-level mean abs error: {baseline_err:.1f}%")
         if baseline_err <= args.target_error:
             print(f"Target error ({args.target_error}%) reached.")
             return 0
 
         adjustments = compute_rule_prior_adjustments(cases, rows)
         if adjustments:
-            print("\nProposed rule-prior adjustments:")
+            print("\nProposed audit-calibration overlay multipliers:")
             for rule_id, mult in sorted(adjustments.items()):
                 print(f"  {rule_id}: x{mult:.3f}")
             if args.apply:
-                updated = apply_rule_prior_adjustments(adjustments)
-                print(f"\nApplied prior adjustments for {updated} rule(s).")
-                rows, _ = compare_cases(cases, random_seed=args.seed)
-                baseline_err = mean_abs_error(rows)
-                print(format_comparison_table(rows))
-                print(f"\nAfter rule-prior adjustment: {baseline_err:.1f}%")
-                if baseline_err <= args.target_error:
-                    print(f"Target error ({args.target_error}%) reached.")
-                    return 0
-
-        result = grid_search(cases, random_seed=args.seed, fast=True)
-        print("\nBest MC configuration from fast grid search:")
-        print(f"  complexity_scale.base = {result.config.complexity_base}")
-        print(f"  affected_rate.beta    = {result.config.affected_beta}")
-        print(f"  mean abs error        = {result.mean_abs_error_pct:.1f}%")
-
-        if result.mean_abs_error_pct + 0.25 < baseline_err:
-            print(format_comparison_table(result.rows))
-            if args.apply:
-                apply_config_to_priors(result.config)
-                print("\nApplied MC knobs to priors.yaml.")
-            baseline_err = result.mean_abs_error_pct
+                updated, ok = safe_apply_rule_overlay(adjustments)
+                if ok and updated:
+                    print(f"\nSaved overlay recommendations for {updated} rule(s) (tooling only).")
+                    rows, _ = compare_cases(
+                        cases,
+                        random_seed=args.seed,
+                        overlay_multipliers=_load_overlay_multipliers(),
+                    )
+                    baseline_err = mean_abs_error(rows)
+                    print(format_comparison_table(rows))
+                    print(f"\nAfter overlay: {baseline_err:.1f}%")
+                    if baseline_err <= args.target_error:
+                        print(f"Target error ({args.target_error}%) reached.")
+                        return 0
+                elif not ok:
+                    print("\nOverlay rejected: hand-calibrated fixtures would fail.")
 
         if baseline_err <= args.target_error:
-            print(f"Target error ({args.target_error}%) reached after tuning.")
             return 0
 
         if pass_num == args.max_passes:
             break
 
-    print(f"\nStopped after {args.max_passes} passes (mean abs error {baseline_err:.1f}%).")
+    print(f"\nStopped after {args.max_passes} passes (rule-level mean abs error {baseline_err:.1f}%).")
     return 0
 
 
@@ -245,7 +246,7 @@ def main() -> int:
         help="Stop when mean abs error below this pct",
     )
     loop_parser.add_argument("--max-passes", type=int, default=5, help="Maximum tune passes")
-    loop_parser.add_argument("--apply", action="store_true", help="Write best knobs to priors each pass")
+    loop_parser.add_argument("--apply", action="store_true", help="Save fixture-safe overlay recommendations")
 
     tune_parser.add_argument("--iterations", type=int, default=2, help="Grid search passes")
     tune_parser.add_argument(

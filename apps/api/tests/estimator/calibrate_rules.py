@@ -31,6 +31,39 @@ RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
     "credit_leakage": {"operations.credit_memo_process": "ad_hoc"},
 }
 
+# Milder questionnaire signals for single-rule verification companies (mostly clean baseline).
+SINGLE_RULE_ANSWER_BOOSTS: dict[str, dict[str, object]] = {
+    "expired_discount": {
+        "discounts.frequency": "occasional",
+        "discounts.expiry_handling": "manual_finance",
+        "discounts.stacking_policy": "limited",
+    },
+    "grandfathered_pricing": {"contracts.grandfathering": "sometimes"},
+    "legacy_pricing": {"changes.pricing_changes_24mo": "2_3"},
+    "renewal_price_drift": {"contracts.renewal_increases": "manual"},
+    "missing_scheduled_increase": {"contracts.renewal_increases": "manual"},
+    "manual_price_override": {"operations.manual_override_frequency": "sometimes"},
+    "price_catalog_mismatch": {"product.billable_count": "3_5", "changes.pricing_changes_24mo": "1"},
+    "discount_stacking": {"discounts.stacking_policy": "limited", "discounts.frequency": "occasional"},
+    "duplicate_discount": {"discounts.stacking_policy": "limited", "discounts.frequency": "occasional"},
+    "excessive_discount": {"discounts.stacking_policy": "limited", "discounts.frequency": "occasional"},
+    "invoice_price_mismatch": {
+        "controls.invoice_price_qa": "sometimes",
+        "controls.billing_qa": "sometimes",
+    },
+    "cancelled_subscription_still_billing": {"operations.churn_billing_cutoff": "within_week"},
+    "credit_leakage": {"operations.credit_memo_process": "manual"},
+    "duplicate_credit": {"operations.credit_memo_process": "manual"},
+    "contract_billing_price_divergence": {
+        "quote_to_bill.commercial_truth": "billing",
+        "contracts.custom_pricing": "some",
+    },
+    "incorrect_seat_price": {"pricing.models": ["flat", "per_seat"], "seats.reconciliation": "manual"},
+    "incorrect_addon_price": {"product.addons": True},
+    "discount_wrong_product": {"discounts.frequency": "occasional"},
+    "missing_expected_invoice": {"operations.invoice_cadence": "scheduled"},
+}
+
 
 def load_fixture_anchors() -> dict[str, list[float]]:
     """Return rule_id -> list of annual_leakage/arr_target ratios from fixtures."""

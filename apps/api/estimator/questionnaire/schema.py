@@ -30,6 +30,15 @@ def load_hypothesis_rule_map() -> dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
+def load_audit_calibration(version: str = "1.0") -> dict[str, Any]:
+    path = SCHEMA_ROOT / "model" / f"v{version}" / "audit-calibration.yaml"
+    if not path.exists():
+        return {"rule_prior_multipliers": {}}
+    with path.open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle) or {"rule_prior_multipliers": {}}
+
+
+@lru_cache(maxsize=1)
 def load_rule_priors(version: str = "1.0") -> dict[str, Any]:
     path = SCHEMA_ROOT / "model" / f"v{version}" / "rule-priors.yaml"
     with path.open(encoding="utf-8") as handle:
