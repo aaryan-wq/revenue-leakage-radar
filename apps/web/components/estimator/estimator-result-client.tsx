@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { HairlineCard } from "@/components/ui/glass-card";
 import { PageLoadingSkeleton } from "@/components/ui/skeleton";
 import { captureEvent } from "@/lib/analytics/client";
+import { toast } from "@/lib/toast";
 import { buildEstimatorCtaPaybackLine } from "@/lib/audit-roi-content";
 import { EstimatorShareModal } from "@/components/estimator/estimator-share-modal";
 import {
@@ -137,6 +138,8 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   const [error, setError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [emailSaved, setEmailSaved] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [resume, setResume] = useState<EstimatorResumeState | null>(null);
 
   const loadInitial = useCallback(async () => {
@@ -183,10 +186,27 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
   };
 
   const handleEmail = async () => {
-    if (!email) return;
-    await saveLead(assessmentId, { email });
-    captureEvent(AnalyticsEvents.ASSESSMENT_EMAIL_SAVED, { assessment_id: assessmentId });
-    setEmailSaved(true);
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    setEmailSending(true);
+    setEmailError(null);
+    try {
+      const response = await saveLead(assessmentId, { email: trimmed });
+      captureEvent(AnalyticsEvents.ASSESSMENT_EMAIL_SAVED, { assessment_id: assessmentId });
+      if (response.email_sent) {
+        setEmailSaved(true);
+        toast.success("Estimate sent. Check your inbox.");
+      } else {
+        setEmailSaved(true);
+        toast.info("We saved your email, but could not deliver the summary right now. Try again shortly.");
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unable to send your estimate";
+      setEmailError(message);
+      toast.error(message);
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   const handleAnswerNewQuestions = () => {
@@ -372,17 +392,22 @@ export function EstimatorResultClient({ assessmentId }: EstimatorResultClientPro
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(null);
+                if (emailSaved) setEmailSaved(false);
+              }}
               placeholder="you@company.com"
               className="w-full rounded-xl border border-border/50 bg-surface-glass-subtle px-4 py-3 text-body min-h-[44px] focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
+            {emailError ? <p className="text-small text-destructive">{emailError}</p> : null}
             <Button
               variant="secondary"
               onClick={() => void handleEmail()}
-              disabled={!email || emailSaved}
+              disabled={!email.trim() || emailSending || emailSaved}
               className="min-h-[44px]"
             >
-              {emailSaved ? "Sent" : "Send summary"}
+              {emailSending ? "Sending..." : emailSaved ? "Sent" : "Send summary"}
             </Button>
           </div>
 

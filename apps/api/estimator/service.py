@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from core.config import settings
 from estimator.config import MODEL_VERSION, QUESTIONNAIRE_VERSION
 from estimator.modeling.fingerprint import is_stale_result
 from estimator.modeling.pipeline import run_model
@@ -20,6 +21,7 @@ from estimator.questionnaire.engine import (
 )
 from estimator.questionnaire.schema import get_question_by_id
 from estimator.validation.checks import check_contradictions, check_sanity
+from notifications.templates import estimator_summary_email
 from models.estimator import (
     Assessment,
     AssessmentAnswer,
@@ -285,7 +287,7 @@ def save_lead(
     email: str,
     company_name: str | None,
     role: str | None,
-) -> LeadProfile:
+) -> tuple[LeadProfile, bool]:
     result = get_result(db, assessment)
     score = compute_lead_score(assessment, result)
     existing = db.query(LeadProfile).filter(LeadProfile.assessment_id == assessment.id).first()
@@ -299,7 +301,35 @@ def save_lead(
     db.commit()
     db.refresh(existing)
     record_event(db, assessment.id, "assessment_email_saved")
-    return existing
+
+    email_sent = False
+    if result:
+        share_token = create_share_token(db, assessment)
+        base = settings.web_url.rstrip("/")
+        result_url = f"{base}/saas-revenue-leakage-calculator/result/{assessment.id}"
+        share_url = f"{base}/saas-revenue-leakage-calculator/share/{share_token}"
+        scan_url = f"{base}/upload?assessment_id={assessment.id}"
+        estimate = result.get("estimate") or {}
+        estimate_high = float(estimate.get("high") or estimate.get("central") or 0)
+        arr_usd = float(result.get("arr_usd") or 0) or None
+        top_mechanisms = []
+        for item in result.get("top_hypotheses") or []:
+            amount = max(
+                float(item.get("expected") or 0),
+                float(item.get("high") or 0),
+                float(item.get("mid") or 0),
+            )
+            top_mechanisms.append({"name": item.get("name", "Mechanism"), "amount": amount})
+        email_sent = estimator_summary_email(
+            to=email,
+            estimate_high=estimate_high,
+            arr_usd=arr_usd,
+            top_mechanisms=top_mechanisms,
+            result_url=result_url,
+            share_url=share_url,
+            scan_url=scan_url,
+        )
+    return existing, email_sent
 
 
 def compute_lead_score(assessment: Assessment, result: dict[str, Any] | None) -> int:

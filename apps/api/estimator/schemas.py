@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class CreateAssessmentRequest(BaseModel):
@@ -26,7 +26,7 @@ class CalculateRequest(BaseModel):
 
 
 class LeadRequest(BaseModel):
-    email: str
+    email: EmailStr
     company_name: str | None = None
     role: str | None = None
     scan_intent: bool = False

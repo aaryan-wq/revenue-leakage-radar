@@ -152,11 +152,11 @@ def post_narrative(
 @router.post("/assessments/{assessment_id}/lead")
 def save_lead(assessment_id: uuid.UUID, body: LeadRequest, db: Session = Depends(get_db)):
     assessment = _get_assessment_or_404(db, assessment_id)
-    lead = service.save_lead(db, assessment, body.email, body.company_name, body.role)
+    lead, email_sent = service.save_lead(db, assessment, body.email, body.company_name, body.role)
     if body.scan_intent:
         lead.scan_intent = True
         db.commit()
-    return {"lead_id": str(lead.id), "lead_score": lead.lead_score}
+    return {"lead_id": str(lead.id), "lead_score": lead.lead_score, "email_sent": email_sent}
 
 
 @router.post("/assessments/{assessment_id}/share")

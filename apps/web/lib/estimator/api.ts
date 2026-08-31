@@ -97,11 +97,14 @@ export async function saveLead(
   assessmentId: string,
   payload: { email: string; company_name?: string; role?: string; scan_intent?: boolean },
 ) {
-  return apiFetch<{ lead_id: string; lead_score: number }>(`/estimator/assessments/${assessmentId}/lead`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  return apiFetch<{ lead_id: string; lead_score: number; email_sent: boolean }>(
+    `/estimator/assessments/${assessmentId}/lead`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export async function createShareLink(assessmentId: string) {

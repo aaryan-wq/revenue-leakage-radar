@@ -5,6 +5,15 @@ from core.config import settings
 from notifications.client import send_email
 
 
+def _format_usd(value: float) -> str:
+    if value >= 1_000_000:
+        text = f"${value / 1_000_000:.1f}M"
+        return text.replace(".0M", "M")
+    if value >= 1_000:
+        return f"${value / 1_000:.0f}k"
+    return f"${value:,.0f}"
+
+
 def purchase_confirmation_email(*, to: str, report_url: str) -> bool:
     subject = "Your Paevo report purchase is confirmed"
     text = (
@@ -31,6 +40,81 @@ def report_ready_email(*, to: str, summary_url: str) -> bool:
         "<p>Your revenue audit scan has completed.</p>"
         f'<p><a href="{summary_url}">View your free summary</a></p>'
         f"<p>Questions? Contact us at {settings.support_email}.</p>"
+    )
+    return send_email(to=to, subject=subject, html=html, text=text)
+
+
+def estimator_summary_email(
+    *,
+    to: str,
+    estimate_high: float,
+    arr_usd: float | None,
+    top_mechanisms: list[dict[str, str | float]],
+    result_url: str,
+    share_url: str | None,
+    scan_url: str,
+) -> bool:
+    headline = _format_usd(estimate_high)
+    subject = f"Your Paevo revenue leakage estimate: ~{headline}/year"
+
+    arr_line = ""
+    if arr_usd and arr_usd > 0:
+        pct = (estimate_high / arr_usd) * 100
+        arr_line = f"About {pct:.1f}% of your {_format_usd(arr_usd)} ARR.\n"
+
+    mechanism_lines: list[str] = []
+    for item in top_mechanisms[:3]:
+        name = str(item.get("name", "Mechanism"))
+        amount = _format_usd(float(item.get("amount", 0)))
+        mechanism_lines.append(f"- {name}: ~{amount}/year")
+
+    mechanisms_text = "\n".join(mechanism_lines) if mechanism_lines else "- See your full results online"
+    share_text = f"\nShare with your team: {share_url}\n" if share_url else ""
+
+    text = (
+        "Your estimated recoverable revenue\n\n"
+        f"~{headline}/year\n"
+        f"{arr_line}\n"
+        "Top likely sources (overlap, not additive):\n"
+        f"{mechanisms_text}\n\n"
+        f"View full results: {result_url}\n"
+        f"{share_text}"
+        f"Confirm with a free billing scan: {scan_url}\n\n"
+        "This estimate is based on your questionnaire answers, not billing records.\n"
+        f"Questions? Contact us at {settings.support_email}."
+    )
+
+    safe_headline = escape(headline)
+    mechanism_html = "".join(
+        f"<li><strong>{escape(str(item.get('name', 'Mechanism')))}</strong>: "
+        f"~{escape(_format_usd(float(item.get('amount', 0))))}/year</li>"
+        for item in top_mechanisms[:3]
+    )
+    if not mechanism_html:
+        mechanism_html = "<li>See your full results online</li>"
+
+    arr_html = ""
+    if arr_usd and arr_usd > 0:
+        pct = (estimate_high / arr_usd) * 100
+        arr_html = (
+            f"<p>About {pct:.1f}% of your {_format_usd(arr_usd)} annual recurring revenue.</p>"
+        )
+
+    share_html = (
+        f'<p><a href="{escape(share_url)}">Share with your team</a></p>' if share_url else ""
+    )
+
+    html = (
+        "<p>Your estimated recoverable revenue</p>"
+        f"<p style=\"font-size:24px;font-weight:600\">~{safe_headline}/year</p>"
+        f"{arr_html}"
+        "<p><strong>Top likely sources</strong> (overlap, not additive):</p>"
+        f"<ul>{mechanism_html}</ul>"
+        f'<p><a href="{escape(result_url)}">View full results</a></p>'
+        f"{share_html}"
+        f'<p><a href="{escape(scan_url)}">Confirm with a free billing scan</a></p>'
+        "<p><em>This estimate is based on your questionnaire answers, not billing records.</em></p>"
+        f"<p>Questions? Contact us at {escape(settings.support_email)}.</p>"
     )
     return send_email(to=to, subject=subject, html=html, text=text)
 
