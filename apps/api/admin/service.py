@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import stripe
-from sqlalchemy import func, or_
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from admin.user_lookup import ClerkUserSummary, resolve_clerk_users
@@ -725,6 +725,106 @@ def list_admin_assessments(
                 "started_at": assessment.started_at,
                 "completed_at": assessment.completed_at,
                 "created_at": assessment.created_at,
+            }
+        )
+
+    return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+
+def list_admin_accounts(
+    db: Session,
+    *,
+    q: str | None,
+    page: int,
+    page_size: int,
+) -> dict:
+    audit_stats = (
+        db.query(
+            Audit.clerk_user_id.label("clerk_user_id"),
+            func.count(Audit.id).label("audit_count"),
+            func.max(Audit.updated_at).label("last_audit_at"),
+            func.min(Audit.created_at).label("first_audit_at"),
+        )
+        .filter(Audit.clerk_user_id.isnot(None))
+        .group_by(Audit.clerk_user_id)
+        .subquery()
+    )
+
+    purchase_stats = (
+        db.query(
+            ReportPurchase.clerk_user_id.label("clerk_user_id"),
+            func.count(ReportPurchase.id).label("purchase_count"),
+        )
+        .group_by(ReportPurchase.clerk_user_id)
+        .subquery()
+    )
+
+    membership_ids = db.query(Membership.clerk_user_id)
+    audit_user_ids = db.query(Audit.clerk_user_id).filter(Audit.clerk_user_id.isnot(None))
+    all_user_ids = membership_ids.union(audit_user_ids).subquery()
+
+    base = (
+        db.query(
+            all_user_ids.c.clerk_user_id,
+            Membership.plan,
+            Membership.status.label("membership_status"),
+            Membership.reports_remaining,
+            Membership.created_at.label("joined_at"),
+            audit_stats.c.audit_count,
+            audit_stats.c.last_audit_at,
+            audit_stats.c.first_audit_at,
+            purchase_stats.c.purchase_count,
+        )
+        .outerjoin(Membership, Membership.clerk_user_id == all_user_ids.c.clerk_user_id)
+        .outerjoin(audit_stats, audit_stats.c.clerk_user_id == all_user_ids.c.clerk_user_id)
+        .outerjoin(purchase_stats, purchase_stats.c.clerk_user_id == all_user_ids.c.clerk_user_id)
+    )
+
+    order_clause = desc(func.coalesce(audit_stats.c.last_audit_at, Membership.created_at))
+
+    if q:
+        term = q.strip()
+        all_rows = base.order_by(order_clause).all()
+        user_ids = {row.clerk_user_id for row in all_rows}
+        users = resolve_clerk_users(user_ids)
+        term_lower = term.lower()
+        matched = []
+        for row in all_rows:
+            clerk_user_id = row.clerk_user_id
+            if term_lower in clerk_user_id.lower():
+                matched.append(row)
+                continue
+            summary = users.get(clerk_user_id)
+            if not summary:
+                continue
+            if summary.email and term_lower in summary.email.lower():
+                matched.append(row)
+                continue
+            if summary.display_name and term_lower in summary.display_name.lower():
+                matched.append(row)
+        total = len(matched)
+        page_rows = matched[(page - 1) * page_size : page * page_size]
+    else:
+        total = base.count()
+        page_rows = base.order_by(order_clause).offset((page - 1) * page_size).limit(page_size).all()
+        users = resolve_clerk_users({row.clerk_user_id for row in page_rows})
+
+    if q:
+        users = resolve_clerk_users({row.clerk_user_id for row in page_rows})
+
+    items = []
+    for row in page_rows:
+        items.append(
+            {
+                "clerk_user_id": row.clerk_user_id,
+                **_user_fields(row.clerk_user_id, users),
+                "plan": row.plan,
+                "membership_status": row.membership_status,
+                "reports_remaining": row.reports_remaining,
+                "audit_count": row.audit_count or 0,
+                "purchase_count": row.purchase_count or 0,
+                "joined_at": row.joined_at,
+                "last_active_at": row.last_audit_at or row.joined_at,
             }
         )
 

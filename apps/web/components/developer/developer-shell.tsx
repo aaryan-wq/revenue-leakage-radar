@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { href: "/developer", label: "Overview", exact: true },
+  { href: "/developer/accounts", label: "Accounts", exact: false },
   { href: "/developer/audits", label: "Audits", exact: false },
   { href: "/developer/reports", label: "Reports", exact: false },
   { href: "/developer/assessments", label: "Assessments", exact: false },

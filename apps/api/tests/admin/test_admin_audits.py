@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from admin.service import build_admin_overview, list_admin_audits, list_admin_assessments, search_companies
+from admin.service import build_admin_overview, list_admin_audits, list_admin_assessments, list_admin_accounts, search_companies
 from models import Audit, Company, Report
 
 
@@ -91,5 +91,18 @@ def test_list_admin_assessments_returns_items():
     query.order_by.return_value.offset.return_value.limit.return_value.all.return_value = []
 
     result = list_admin_assessments(db, q=None, status=None, page=1, page_size=25)
+    assert result["items"] == []
+    assert result["total"] == 0
+
+
+def test_list_admin_accounts_returns_items():
+    db = MagicMock()
+    base = db.query.return_value.outerjoin.return_value.outerjoin.return_value.outerjoin.return_value
+    base.count.return_value = 0
+    base.order_by.return_value.offset.return_value.limit.return_value.all.return_value = []
+
+    with patch("admin.service.resolve_clerk_users", return_value={}):
+        result = list_admin_accounts(db, q=None, page=1, page_size=25)
+
     assert result["items"] == []
     assert result["total"] == 0

@@ -4,6 +4,7 @@ import type {
   AdminOverviewResponse,
   AdminReprocessResponse,
   AdminRefundResponse,
+  PaginatedAccountsResponse,
   PaginatedAuditsResponse,
   PaginatedCompaniesResponse,
   PaginatedLogsResponse,
@@ -39,6 +40,21 @@ export async function getAdminCompanies(
   const query = search.toString();
   return apiFetch<PaginatedCompaniesResponse>(
     `/admin/companies${query ? `?${query}` : ""}`,
+    authOptions(authToken),
+  );
+}
+
+export async function getAdminAccounts(
+  authToken: string,
+  params: { q?: string; page?: number; page_size?: number } = {},
+): Promise<PaginatedAccountsResponse> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.page) search.set("page", String(params.page));
+  if (params.page_size) search.set("page_size", String(params.page_size));
+  const query = search.toString();
+  return apiFetch<PaginatedAccountsResponse>(
+    `/admin/accounts${query ? `?${query}` : ""}`,
     authOptions(authToken),
   );
 }

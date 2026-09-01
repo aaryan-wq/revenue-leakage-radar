@@ -53,6 +53,26 @@ class PaginatedCompaniesResponse(BaseModel):
     page_size: int
 
 
+class AdminAccountListItem(BaseModel):
+    clerk_user_id: str
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
+    plan: str | None
+    membership_status: str | None
+    reports_remaining: int | None
+    audit_count: int
+    purchase_count: int
+    joined_at: datetime | None
+    last_active_at: datetime | None
+
+
+class PaginatedAccountsResponse(BaseModel):
+    items: list[AdminAccountListItem]
+    total: int
+    page: int
+    page_size: int
+
+
 class AdminAuditListItem(BaseModel):
     audit_id: uuid.UUID
     report_id: uuid.UUID | None

@@ -618,6 +618,26 @@ export interface PaginatedCompaniesResponse {
   page_size: number;
 }
 
+export interface AdminAccountListItem {
+  clerk_user_id: string;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
+  plan: string | null;
+  membership_status: string | null;
+  reports_remaining: number | null;
+  audit_count: number;
+  purchase_count: number;
+  joined_at: string | null;
+  last_active_at: string | null;
+}
+
+export interface PaginatedAccountsResponse {
+  items: AdminAccountListItem[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
 export interface AdminAuditListItem {
   audit_id: string;
   report_id: string | null;

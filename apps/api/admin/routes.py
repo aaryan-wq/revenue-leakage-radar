@@ -12,6 +12,7 @@ from admin.schemas import (
     AdminRefundResponse,
     AdminReprocessRequest,
     AdminReprocessResponse,
+    PaginatedAccountsResponse,
     PaginatedAssessmentsResponse,
     PaginatedAuditsResponse,
     PaginatedCompaniesResponse,
@@ -31,6 +32,7 @@ from admin.service import (
     build_operational_logs,
     create_support_note,
     get_admin_audit_detail,
+    list_admin_accounts,
     list_admin_assessments,
     list_admin_audits,
     list_admin_reports,
@@ -67,6 +69,17 @@ def admin_companies(
     _admin: AdminContext = Depends(require_admin),
 ) -> PaginatedCompaniesResponse:
     return PaginatedCompaniesResponse(**search_companies(db, q=q, page=page, page_size=page_size))
+
+
+@router.get("/accounts", response_model=PaginatedAccountsResponse)
+def admin_accounts(
+    q: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=25, ge=1, le=100),
+    db: Session = Depends(get_db),
+    _admin: AdminContext = Depends(require_admin),
+) -> PaginatedAccountsResponse:
+    return PaginatedAccountsResponse(**list_admin_accounts(db, q=q, page=page, page_size=page_size))
 
 
 @router.get("/audits", response_model=PaginatedAuditsResponse)
