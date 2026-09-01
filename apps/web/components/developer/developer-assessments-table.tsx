@@ -20,6 +20,19 @@ function formatArr(amount: string | null, currency: string | null): string {
   return currency ? `${formatted} ${currency}` : formatted;
 }
 
+function formatTimestamp(value: string | null): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function DeveloperAssessmentsTable() {
   const { getToken } = useAppAuth();
   const [search, setSearch] = useState("");
@@ -108,6 +121,7 @@ export function DeveloperAssessmentsTable() {
                 <tr>
                   <th className="px-6 py-4 font-medium">Lead / company</th>
                   <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium">Completed</th>
                   <th className="px-6 py-4 font-medium text-right">Est. leakage</th>
                   <th className="px-6 py-4 font-medium text-right">ARR</th>
                   <th className="px-6 py-4 font-medium">User</th>
@@ -145,6 +159,20 @@ export function DeveloperAssessmentsTable() {
                       <Badge variant="gray">{assessment.status}</Badge>
                       {assessment.industry && (
                         <div className="mt-2 text-xs text-muted-foreground">{assessment.industry}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-xs">
+                      {assessment.completed_at ? (
+                        <span className="tabular-nums">{formatTimestamp(assessment.completed_at)}</span>
+                      ) : assessment.started_at ? (
+                        <>
+                          <span className="tabular-nums text-muted-foreground">
+                            {formatTimestamp(assessment.started_at)}
+                          </span>
+                          <div className="mt-1 text-muted-foreground">In progress</div>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right tabular-nums">
