@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -34,6 +35,7 @@ function formatTimestamp(value: string | null): string {
 }
 
 export function DeveloperAssessmentsTable() {
+  const router = useRouter();
   const { getToken } = useAppAuth();
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
@@ -132,7 +134,8 @@ export function DeveloperAssessmentsTable() {
                 {items.map((assessment: AdminAssessmentListItem) => (
                   <tr
                     key={assessment.assessment_id}
-                    className="border-b border-line/40 last:border-0 align-top"
+                    className="cursor-pointer border-b border-line/40 align-top transition-colors last:border-0 hover:bg-secondary/20"
+                    onClick={() => router.push(`/developer/assessments/${assessment.assessment_id}`)}
                   >
                     <td className="px-6 py-4">
                       <div className="font-medium">
@@ -198,10 +201,16 @@ export function DeveloperAssessmentsTable() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
+                        <Link
+                          href={`/developer/assessments/${assessment.assessment_id}`}
+                          className={buttonVariants({ variant: "ghost", size: "sm" })}
+                        >
+                          View
+                        </Link>
                         {assessment.linked_audit_id && (
                           <Link
-                            href={`/audits/${assessment.linked_audit_id}`}
+                            href={`/developer/audits/${assessment.linked_audit_id}`}
                             className={buttonVariants({ variant: "ghost", size: "sm" })}
                           >
                             Audit

@@ -1,4 +1,5 @@
 import type {
+  AdminAssessmentDetailResponse,
   AdminAuditDetailResponse,
   AdminMeResponse,
   AdminOverviewResponse,
@@ -109,6 +110,16 @@ export async function getAdminAssessments(
   const query = search.toString();
   return apiFetch<PaginatedAssessmentsResponse>(
     `/admin/assessments${query ? `?${query}` : ""}`,
+    authOptions(authToken),
+  );
+}
+
+export async function getAdminAssessmentDetail(
+  authToken: string,
+  assessmentId: string,
+): Promise<AdminAssessmentDetailResponse> {
+  return apiFetch<AdminAssessmentDetailResponse>(
+    `/admin/assessments/${assessmentId}`,
     authOptions(authToken),
   );
 }

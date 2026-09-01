@@ -691,13 +691,30 @@ export interface AdminAuditDetailResponse {
   assessment_id: string | null;
   status: string;
   platform: string | null;
+  audit_type: string | null;
+  is_anonymous: boolean;
   recoverable_arr: string | null;
   finding_count: number | null;
   purchased: boolean;
   ingestion_error: string | null;
   scan_error: string | null;
+  validation_result: string | null;
+  data_tier: string | null;
+  billing_platform_detected: string | null;
+  crm_platform_detected: string | null;
+  csv_file_count: number | null;
+  estimated_monthly_leakage: string | null;
+  estimated_annual_leakage: string | null;
+  coverage_score: string | null;
+  confidence_score: string | null;
+  findings_total: number | null;
+  rules_executed: number | null;
   created_at: string | null;
+  upload_completed_at: string | null;
+  verification_started_at: string | null;
   verification_completed_at: string | null;
+  validation_report: Record<string, unknown> | null;
+  scan_report: Record<string, unknown> | null;
   uploads: AdminUploadItem[];
   purchases: AdminPurchaseItem[];
 }
@@ -744,6 +761,43 @@ export interface PaginatedAssessmentsResponse {
   total: number;
   page: number;
   page_size: number;
+}
+
+export interface AdminAssessmentAnswerItem {
+  question_id: string;
+  section: string;
+  label: string | null;
+  display_value: string;
+  answered_at: string | null;
+}
+
+export interface AdminAssessmentDetailResponse {
+  assessment_id: string;
+  status: string;
+  industry: string | null;
+  country: string | null;
+  company_type: string | null;
+  arr_amount: string | null;
+  arr_currency: string | null;
+  customer_count: number | null;
+  subscription_count: number | null;
+  estimated_leakage: string | null;
+  questionnaire_version: string;
+  model_version: string;
+  lead_email: string | null;
+  lead_company_name: string | null;
+  lead_role: string | null;
+  lead_score: number | null;
+  scan_intent: boolean;
+  linked_audit_id: string | null;
+  clerk_user_id: string | null;
+  clerk_user_name: string | null;
+  clerk_user_email: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+  answers: AdminAssessmentAnswerItem[];
+  result_summary: Record<string, unknown> | null;
 }
 
 export interface PaginatedReportsResponse {

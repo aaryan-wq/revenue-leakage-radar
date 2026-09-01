@@ -126,13 +126,30 @@ class AdminAuditDetailResponse(BaseModel):
     assessment_id: uuid.UUID | None = None
     status: str
     platform: str | None
+    audit_type: str | None = None
+    is_anonymous: bool = False
     recoverable_arr: str | None
     finding_count: int | None
     purchased: bool
     ingestion_error: str | None
     scan_error: str | None
+    validation_result: str | None = None
+    data_tier: str | None = None
+    billing_platform_detected: str | None = None
+    crm_platform_detected: str | None = None
+    csv_file_count: int | None = None
+    estimated_monthly_leakage: str | None = None
+    estimated_annual_leakage: str | None = None
+    coverage_score: str | None = None
+    confidence_score: str | None = None
+    findings_total: int | None = None
+    rules_executed: int | None = None
     created_at: datetime | None
+    upload_completed_at: datetime | None = None
+    verification_started_at: datetime | None = None
     verification_completed_at: datetime | None
+    validation_report: dict | None = None
+    scan_report: dict | None = None
     uploads: list[AdminUploadItem]
     purchases: list[AdminPurchaseItem]
 
@@ -179,6 +196,43 @@ class PaginatedAssessmentsResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class AdminAssessmentAnswerItem(BaseModel):
+    question_id: str
+    section: str
+    label: str | None
+    display_value: str
+    answered_at: datetime | None
+
+
+class AdminAssessmentDetailResponse(BaseModel):
+    assessment_id: uuid.UUID
+    status: str
+    industry: str | None
+    country: str | None
+    company_type: str | None
+    arr_amount: str | None
+    arr_currency: str | None
+    customer_count: int | None
+    subscription_count: int | None
+    estimated_leakage: str | None
+    questionnaire_version: str
+    model_version: str
+    lead_email: str | None
+    lead_company_name: str | None
+    lead_role: str | None
+    lead_score: int | None
+    scan_intent: bool
+    linked_audit_id: uuid.UUID | None
+    clerk_user_id: str | None
+    clerk_user_name: str | None = None
+    clerk_user_email: str | None = None
+    started_at: datetime | None
+    completed_at: datetime | None
+    created_at: datetime | None
+    answers: list[AdminAssessmentAnswerItem]
+    result_summary: dict | None = None
 
 
 class PaginatedReportsResponse(BaseModel):

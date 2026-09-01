@@ -11,8 +11,9 @@ from admin.user_lookup import ClerkUserSummary, resolve_clerk_users
 from audit.service import _destroy_audit_data, get_audit_by_id, trigger_verification
 from core.config import settings
 from core.enums import AuditStatus, SCAN_PROCESSING_STATUSES
+from estimator.questionnaire.schema import get_question_by_id
 from models import Audit, Company, Membership, PaymentEvent, Report, ReportPurchase, SupportNote, Upload
-from models.estimator import Assessment, AssessmentModelRun, AssessmentResult, LeadProfile
+from models.estimator import Assessment, AssessmentAnswer, AssessmentModelRun, AssessmentResult, LeadProfile
 from payments.service import ensure_stripe_configured
 from reports.service import get_report_by_id, unlock_report
 from upload.service import delete_upload
@@ -271,13 +272,34 @@ def get_admin_audit_detail(db: Session, audit_id: uuid.UUID) -> dict | None:
         "assessment_id": audit.assessment_id,
         "status": audit.status,
         "platform": audit.platform,
+        "audit_type": audit.audit_type,
+        "is_anonymous": audit.is_anonymous,
         "recoverable_arr": str(report.recoverable_arr) if report else None,
         "finding_count": report.finding_count if report else None,
         "purchased": report.purchased if report else False,
         "ingestion_error": audit.ingestion_error,
         "scan_error": audit.scan_error,
+        "validation_result": audit.validation_result,
+        "data_tier": audit.data_tier,
+        "billing_platform_detected": audit.billing_platform_detected,
+        "crm_platform_detected": audit.crm_platform_detected,
+        "csv_file_count": audit.csv_file_count,
+        "estimated_monthly_leakage": (
+            str(audit.estimated_monthly_leakage) if audit.estimated_monthly_leakage is not None else None
+        ),
+        "estimated_annual_leakage": (
+            str(audit.estimated_annual_leakage) if audit.estimated_annual_leakage is not None else None
+        ),
+        "coverage_score": str(audit.coverage_score) if audit.coverage_score is not None else None,
+        "confidence_score": str(audit.confidence_score) if audit.confidence_score is not None else None,
+        "findings_total": audit.findings_total,
+        "rules_executed": audit.rules_executed,
         "created_at": audit.created_at,
+        "upload_completed_at": audit.upload_completed_at,
+        "verification_started_at": audit.verification_started_at,
         "verification_completed_at": audit.verification_completed_at,
+        "validation_report": audit.validation_report if isinstance(audit.validation_report, dict) else None,
+        "scan_report": audit.scan_report if isinstance(audit.scan_report, dict) else None,
         "uploads": [
             {
                 "id": upload.id,
@@ -301,6 +323,108 @@ def get_admin_audit_detail(db: Session, audit_id: uuid.UUID) -> dict | None:
             }
             for purchase in purchases
         ],
+    }
+
+
+def _format_answer_display(answer: AssessmentAnswer, question: dict | None) -> str:
+    if answer.value_text:
+        return answer.value_text
+    if answer.value_enum:
+        if question and question.get("options"):
+            for option in question["options"]:
+                if option["value"] == answer.value_enum:
+                    return option.get("label", answer.value_enum)
+        return answer.value_enum
+    if answer.value_boolean is not None:
+        return "Yes" if answer.value_boolean else "No"
+    if answer.value_numeric is not None:
+        return str(answer.value_numeric)
+    if answer.value_json is not None:
+        if isinstance(answer.value_json, list):
+            if question and question.get("options"):
+                labels: list[str] = []
+                for value in answer.value_json:
+                    matched = next(
+                        (option.get("label", value) for option in question["options"] if option["value"] == value),
+                        str(value),
+                    )
+                    labels.append(matched)
+                return ", ".join(labels)
+            return ", ".join(str(value) for value in answer.value_json)
+        return str(answer.value_json)
+    return "—"
+
+
+def get_admin_assessment_detail(db: Session, assessment_id: uuid.UUID) -> dict | None:
+    assessment = (
+        db.query(Assessment)
+        .options(
+            joinedload(Assessment.answers),
+            joinedload(Assessment.lead_profile),
+            joinedload(Assessment.result),
+        )
+        .filter(Assessment.id == assessment_id)
+        .first()
+    )
+    if not assessment:
+        return None
+
+    linked_audit = db.query(Audit).filter(Audit.assessment_id == assessment.id).first()
+    clerk_user_id = linked_audit.clerk_user_id if linked_audit else None
+    users = resolve_clerk_users({clerk_user_id} if clerk_user_id else set())
+    lead = assessment.lead_profile
+
+    model_runs = (
+        db.query(AssessmentModelRun)
+        .filter(AssessmentModelRun.assessment_id == assessment.id)
+        .order_by(AssessmentModelRun.created_at.desc())
+        .all()
+    )
+
+    answers = sorted(assessment.answers, key=lambda item: item.answered_at or datetime.min.replace(tzinfo=UTC))
+    answer_items = []
+    for answer in answers:
+        question = get_question_by_id(answer.question_id, assessment.questionnaire_version)
+        answer_items.append(
+            {
+                "question_id": answer.question_id,
+                "section": answer.section,
+                "label": question.get("label") if question else answer.question_id,
+                "display_value": _format_answer_display(answer, question),
+                "answered_at": answer.answered_at,
+            }
+        )
+
+    result_summary = None
+    if assessment.result and isinstance(assessment.result.result_json, dict):
+        result_summary = assessment.result.result_json
+
+    return {
+        "assessment_id": assessment.id,
+        "status": assessment.status,
+        "industry": assessment.industry,
+        "country": assessment.country,
+        "company_type": assessment.company_type,
+        "arr_amount": str(assessment.arr_amount) if assessment.arr_amount is not None else None,
+        "arr_currency": assessment.arr_currency,
+        "customer_count": assessment.customer_count,
+        "subscription_count": assessment.subscription_count,
+        "estimated_leakage": _assessment_estimate(assessment.result, model_runs),
+        "questionnaire_version": assessment.questionnaire_version,
+        "model_version": assessment.model_version,
+        "lead_email": lead.email if lead else None,
+        "lead_company_name": lead.company_name if lead else None,
+        "lead_role": lead.role if lead else None,
+        "lead_score": lead.lead_score if lead else None,
+        "scan_intent": lead.scan_intent if lead else False,
+        "linked_audit_id": linked_audit.id if linked_audit else None,
+        "clerk_user_id": clerk_user_id,
+        **_user_fields(clerk_user_id, users),
+        "started_at": assessment.started_at,
+        "completed_at": assessment.completed_at,
+        "created_at": assessment.created_at,
+        "answers": answer_items,
+        "result_summary": result_summary,
     }
 
 

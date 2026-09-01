@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -31,6 +32,7 @@ function formatTimestamp(value: string | null): string {
 }
 
 export function DeveloperAuditsTable() {
+  const router = useRouter();
   const { getToken } = useAppAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -121,7 +123,11 @@ export function DeveloperAuditsTable() {
               </thead>
               <tbody>
                 {items.map((audit: AdminAuditListItem) => (
-                  <tr key={audit.audit_id} className="border-b border-line/40 last:border-0">
+                  <tr
+                    key={audit.audit_id}
+                    className="cursor-pointer border-b border-line/40 transition-colors last:border-0 hover:bg-secondary/20"
+                    onClick={() => router.push(`/developer/audits/${audit.audit_id}`)}
+                  >
                     <td className="px-6 py-4">
                       <div className="font-medium">{audit.company_name ?? "Unknown company"}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{audit.audit_id}</div>
@@ -168,7 +174,13 @@ export function DeveloperAuditsTable() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
+                        <Link
+                          href={`/developer/audits/${audit.audit_id}`}
+                          className={buttonVariants({ variant: "ghost", size: "sm" })}
+                        >
+                          View
+                        </Link>
                         {audit.report_id && (
                           <Link
                             href={`/report/${audit.report_id}`}

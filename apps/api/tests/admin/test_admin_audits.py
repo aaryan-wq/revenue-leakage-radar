@@ -4,8 +4,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from admin.service import build_admin_overview, list_admin_audits, list_admin_assessments, list_admin_accounts, search_companies
+from admin.service import (
+    build_admin_overview,
+    get_admin_assessment_detail,
+    list_admin_accounts,
+    list_admin_assessments,
+    list_admin_audits,
+    search_companies,
+)
 from models import Audit, Company, Report
+from models.estimator import Assessment, AssessmentAnswer, LeadProfile
 
 
 def test_build_admin_overview_returns_shape():
@@ -106,3 +114,49 @@ def test_list_admin_accounts_returns_items():
 
     assert result["items"] == []
     assert result["total"] == 0
+
+
+def test_get_admin_assessment_detail_serializes_answers():
+    assessment = Assessment(session_token="token", status="completed", questionnaire_version="2.0")
+    assessment.id = uuid.uuid4()
+    assessment.lead_profile = LeadProfile(
+        assessment_id=assessment.id,
+        email="lead@example.com",
+        company_name="Acme",
+        role="CFO",
+        lead_score=4,
+        scan_intent=True,
+    )
+    assessment.answers = [
+        AssessmentAnswer(
+            assessment_id=assessment.id,
+            question_id="profile.customer_count",
+            section="profile",
+            answer_type="number",
+            value_numeric=120,
+        )
+    ]
+    assessment.result = None
+
+    db = MagicMock()
+    assessment_query = MagicMock()
+    assessment_query.options.return_value.filter.return_value.first.return_value = assessment
+
+    audit_query = MagicMock()
+    audit_query.filter.return_value.first.return_value = None
+
+    model_run_query = MagicMock()
+    model_run_query.filter.return_value.order_by.return_value.all.return_value = []
+
+    db.query.side_effect = [assessment_query, audit_query, model_run_query]
+
+    with patch("admin.service.get_question_by_id") as mock_question, patch(
+        "admin.service.resolve_clerk_users", return_value={}
+    ):
+        mock_question.return_value = {"label": "About how many paying customers?"}
+        detail = get_admin_assessment_detail(db, assessment.id)
+
+    assert detail is not None
+    assert detail["lead_email"] == "lead@example.com"
+    assert detail["answers"][0]["display_value"] == "120"
+    assert detail["answers"][0]["label"] == "About how many paying customers?"

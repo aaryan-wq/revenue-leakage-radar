@@ -3,6 +3,8 @@ export const queryKeys = {
   billing: ["billing"] as const,
   adminMe: ["admin", "me"] as const,
   adminOverview: ["admin", "overview"] as const,
+  adminAudit: (auditId: string) => ["admin", "audit", auditId] as const,
+  adminAssessment: (assessmentId: string) => ["admin", "assessment", assessmentId] as const,
   adminAccounts: (params: { q?: string; page?: number }) => ["admin", "accounts", params] as const,
   adminAudits: (params: { q?: string; page?: number }) => ["admin", "audits", params] as const,
   adminReports: (params: { q?: string; purchased?: boolean; page?: number }) =>

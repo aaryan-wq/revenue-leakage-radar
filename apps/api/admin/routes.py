@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from admin.schemas import (
+    AdminAssessmentDetailResponse,
     AdminAuditDetailResponse,
     AdminMeResponse,
     AdminOverviewResponse,
@@ -31,6 +32,7 @@ from admin.service import (
     build_admin_overview,
     build_operational_logs,
     create_support_note,
+    get_admin_assessment_detail,
     get_admin_audit_detail,
     list_admin_accounts,
     list_admin_assessments,
@@ -131,6 +133,18 @@ def admin_assessments(
     return PaginatedAssessmentsResponse(
         **list_admin_assessments(db, q=q, status=status, page=page, page_size=page_size)
     )
+
+
+@router.get("/assessments/{assessment_id}", response_model=AdminAssessmentDetailResponse)
+def admin_assessment_detail(
+    assessment_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _admin: AdminContext = Depends(require_admin),
+) -> AdminAssessmentDetailResponse:
+    detail = get_admin_assessment_detail(db, assessment_id)
+    if not detail:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found.")
+    return AdminAssessmentDetailResponse(**detail)
 
 
 @router.delete("/reports/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
