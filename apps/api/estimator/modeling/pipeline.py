@@ -343,6 +343,11 @@ def run_model(
         priors,
     )
 
+    display_headline_usd = estimate_high
+    if benchmark_context and benchmark_context.get("may_understate"):
+        display_headline_usd = max(estimate_high, benchmark_context["low_usd"])
+    estimate["display_headline_usd"] = display_headline_usd
+
     sim_stats = {
         "expected_mean": estimate_central,
         "median_run": median_run,

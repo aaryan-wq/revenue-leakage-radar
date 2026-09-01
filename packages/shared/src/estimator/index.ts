@@ -185,6 +185,7 @@ export interface EstimatorResult {
     arr_band_high?: number;
     gross_expected?: number;
     net_recoverable?: number;
+    display_headline_usd?: number;
   };
   monthly: { low: number; central: number; high: number };
   confidence: string;
@@ -277,9 +278,9 @@ export const INDUSTRY_LEAKAGE_PCT_LOW = 0.03;
 export const INDUSTRY_LEAKAGE_PCT_HIGH = 0.05;
 export const INDUSTRY_LEAKAGE_PCT_AVERAGE = 0.042;
 
-/** Headline for calculator results: model output, not the industry average. */
+/** Headline for calculator results: benchmark-aware display when model may understate. */
 export function getEstimatorHeadlineUsd(result: EstimatorResult): number {
-  return result.estimate.high;
+  return result.estimate.display_headline_usd ?? result.estimate.high;
 }
 
 export function getIndustryLeakageHeadlineUsd(arrUsd: number): number {

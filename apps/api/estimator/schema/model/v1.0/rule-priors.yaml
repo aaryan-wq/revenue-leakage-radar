@@ -1,12 +1,12 @@
 version: 2.0.0
 calibration_stage: 3
 family_correlations:
-  subscription_pricing_gap: 0.48
-  discount_integrity: 0.48
-  invoice_execution: 0.48
-  usage_monetization: 0.48
-  renewal_event: 0.48
-  operational: 0.48
+  subscription_pricing_gap: 0.35
+  discount_integrity: 0.35
+  invoice_execution: 0.35
+  usage_monetization: 0.35
+  renewal_event: 0.35
+  operational: 0.35
 tail_fattening:
   billing_confidence_max: 2
   complexity_min: 8
@@ -14,7 +14,7 @@ tail_fattening:
   persistence_multiplier: 1.22
 rules:
   legacy_pricing:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -39,7 +39,7 @@ rules:
     - subscription
     category: pricing
   contract_billing_price_divergence:
-    prior: 0.049
+    prior: 0.065
     exposure_base: contract_arr
     severity:
       distribution: beta
@@ -65,7 +65,7 @@ rules:
     - subscription
     category: pricing
   price_catalog_mismatch:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -92,7 +92,7 @@ rules:
     - price
     category: pricing
   grandfathered_pricing:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -116,7 +116,7 @@ rules:
     - subscription
     category: pricing
   missing_scheduled_increase:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -140,7 +140,7 @@ rules:
     - subscription
     category: pricing
   renewal_price_drift:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -164,7 +164,7 @@ rules:
     - subscription
     category: pricing
   manual_price_override:
-    prior: 0.049
+    prior: 0.065
     exposure_base: arr
     severity:
       distribution: beta
@@ -189,7 +189,7 @@ rules:
     - price
     category: pricing
   incorrect_seat_price:
-    prior: 0.049
+    prior: 0.065
     exposure_base: seat_arr
     severity:
       distribution: beta
@@ -214,7 +214,7 @@ rules:
     - subscription
     category: pricing
   incorrect_addon_price:
-    prior: 0.049
+    prior: 0.065
     exposure_base: addon_arr
     severity:
       distribution: beta
@@ -240,7 +240,7 @@ rules:
     - price
     category: pricing
   expired_discount:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -266,7 +266,7 @@ rules:
     - subscription
     category: discounts
   discount_stacking:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -291,7 +291,7 @@ rules:
     - subscription
     category: discounts
   duplicate_discount:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -317,7 +317,7 @@ rules:
     - subscription
     category: discounts
   permanent_promotional_discount:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -341,7 +341,7 @@ rules:
     - subscription
     category: discounts
   excessive_discount:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -365,7 +365,7 @@ rules:
     - invoice
     category: discounts
   discount_wrong_product:
-    prior: 0.055999999999999994
+    prior: 0.074
     exposure_base: discount_arr
     severity:
       distribution: beta
@@ -390,7 +390,7 @@ rules:
     - subscription
     category: discounts
   invoice_price_mismatch:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: invoice_arr
     severity:
       distribution: beta
@@ -414,7 +414,7 @@ rules:
     - subscription
     category: billing
   duplicate_subscription:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: arr
     severity:
       distribution: beta
@@ -437,7 +437,7 @@ rules:
     - subscription
     category: billing
   billing_frequency_mismatch:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: contract_arr
     severity:
       distribution: beta
@@ -461,7 +461,7 @@ rules:
     - subscription
     category: billing
   active_subscription_not_billing:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: usage_arr
     severity:
       distribution: beta
@@ -484,7 +484,7 @@ rules:
     - subscription
     category: billing
   cancelled_subscription_still_billing:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: billing_execution_arr
     severity:
       distribution: beta
@@ -508,7 +508,7 @@ rules:
     - subscription
     category: billing
   missing_expected_invoice:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: billing_execution_arr
     severity:
       distribution: beta
@@ -532,7 +532,7 @@ rules:
     - subscription
     category: billing
   credit_leakage:
-    prior: 0.041999999999999996
+    prior: 0.056
     exposure_base: credit_arr
     severity:
       distribution: beta
@@ -555,7 +555,7 @@ rules:
     - invoice
     category: credits
   duplicate_credit:
-    prior: 0.041999999999999996
+    prior: 0.056
     exposure_base: credit_arr
     severity:
       distribution: beta
@@ -578,7 +578,7 @@ rules:
     - invoice
     category: credits
   duplicate_customer:
-    prior: 0.0392
+    prior: 0.052
     exposure_base: arr
     severity:
       distribution: beta
@@ -601,7 +601,7 @@ rules:
     - customer
     category: data_quality
   currency_mismatch:
-    prior: 0.0392
+    prior: 0.052
     exposure_base: international_arr
     severity:
       distribution: beta
@@ -625,7 +625,7 @@ rules:
     - subscription
     category: data_quality
   orphaned_records:
-    prior: 0.0392
+    prior: 0.052
     exposure_base: arr
     severity:
       distribution: beta
@@ -648,7 +648,7 @@ rules:
     - invoice_line_item
     category: data_quality
   usage_billing_drift:
-    prior: 0.0532
+    prior: 0.071
     exposure_base: usage_arr
     severity:
       distribution: beta

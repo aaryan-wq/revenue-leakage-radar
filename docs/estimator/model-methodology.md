@@ -11,12 +11,14 @@ Structured answers about ARR, pricing architecture, contracts, discounts, billin
 ```
 Answers → Normalize (v2 segments) → Complexity score
        → 27 rule-native posterior scores
-       → 27-stream Monte Carlo (10,000 runs, seeded)
+       → 27-stream Monte Carlo (10,000 runs, seeded, posterior-scaled per rule)
        → Leak-family overlap adjustment
        → Aggregate to H1–H18 hypothesis rollups
        → Percentiles (P10–P90) + theoretical stack ceiling
        → Scenario bands + rule-aware insights
 ```
+
+Each rule contributes every simulation run, scaled by its posterior probability (no Bernoulli skip). This preserves posterior meaning while avoiding sparse zero-heavy totals.
 
 ### Exposure Formula (per rule)
 
@@ -46,6 +48,7 @@ A separate 0–40 score across pricing, contract, systems, change, and operation
 | Net recoverable | Same as central; recoverability is already in the mean draw. |
 | Full rule ceiling | Sum of per-rule P90s before family overlap (transparency). |
 | Industry context band | Disclosed benchmark range by ARR tier. Never overwrites central. |
+| Display headline | `display_headline_usd`: max of scenario high and benchmark low when `may_understate` is true. |
 
 ### Scenario Bands
 
@@ -83,9 +86,9 @@ Optional AI narrative, when enabled, summarizes the result in prose. It never se
 
 ## Calibration Status
 
-**Stage 3, rule-native model.** Monte Carlo uses 27 rule streams with expanded questionnaire drivers and disclosed industry context bands. Stage 2 simulation intensity parameters are retained (beta 9 affected rate, complexity base 2.05, family rho 0.48) so calibration fixtures stay within MAPE gates.
+**Stage 3, rule-native model.** Monte Carlo uses 27 posterior-scaled rule streams with expanded questionnaire drivers and disclosed industry context bands. Simulation intensity uses beta(2,6) affected rate, persistence divisor 9, family rho 0.35, overlap factor 0.30, and `simulation_intensity` 0.46 to preserve calibration against justified fixtures.
 
-Stage 3 does not replace billing evidence. Benchmark context is shown for comparison only and never overwrites `estimate.central`. As completed audits accumulate, priors will continue to be updated with documented backtests.
+Stage 3 does not replace billing evidence. Benchmark context is shown for comparison only and never overwrites `estimate.central`. When the model may understate, `display_headline_usd` floors the UI headline at the benchmark low band. As completed audits accumulate, priors will continue to be updated with documented backtests.
 
 ## Limitations
 

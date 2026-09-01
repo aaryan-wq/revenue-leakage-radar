@@ -13,8 +13,9 @@ benchmark_floors:
 monte_carlo:
   affected_rate:
     alpha: 2
-    beta: 8
-  persistence_divisor: 11
+    beta: 6
+  persistence_divisor: 9
+  simulation_intensity: 0.46
   complexity_scale:
     base: 2.05
     exponent: 0.33

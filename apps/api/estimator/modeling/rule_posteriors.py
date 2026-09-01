@@ -344,6 +344,12 @@ BILLING_EXECUTION_DRIVERS: dict[str, dict[str, float]] = {
 }
 
 
+# Minimum LR for control answers that over-suppress leakage (e.g. "always" auto-removal).
+DRIVER_LR_FLOORS: dict[str, dict[str, float]] = {
+    "expired_discount": {"discounts.auto_expiry_removal": 0.7},
+}
+
+
 def get_rule_ids(rule_priors: dict[str, Any] | None = None) -> list[str]:
     data = rule_priors or load_rule_priors()
     return sorted(data.get("rules", {}).keys())
@@ -374,9 +380,13 @@ def _likelihood_from_drivers(
             continue
         if isinstance(value, bool):
             key = "true" if value else "false"
-            lr *= mapping.get(key, 1.0)
+            mult = mapping.get(key, 1.0)
         else:
-            lr *= mapping.get(str(value), 1.0)
+            mult = mapping.get(str(value), 1.0)
+        floor = DRIVER_LR_FLOORS.get(rule_id, {}).get(question_key)
+        if floor is not None:
+            mult = max(mult, floor)
+        lr *= mult
 
     billing_conf = normalized.get("confidence.billing_confidence")
     if billing_conf is not None:

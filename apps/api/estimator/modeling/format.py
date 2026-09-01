@@ -3,6 +3,8 @@ def round_display_amount(value: float) -> float:
         return 0.0
     abs_val = abs(value)
     if abs_val < 10_000:
+        step = 500
+    elif abs_val < 50_000:
         step = 1_000
     elif abs_val < 100_000:
         step = 5_000

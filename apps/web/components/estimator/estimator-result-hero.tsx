@@ -13,7 +13,10 @@ interface EstimatorResultHeroProps {
 export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
   const arr = result.arr_usd ?? result.profile_summary?.arr_usd ?? 0;
   const headline = getEstimatorHeadlineUsd(result);
+  const modeledHigh = result.estimate.high;
+  const modeledLow = result.estimate.low;
   const pctOfArr = arr > 0 ? (headline / arr) * 100 : 0;
+  const mayUnderstate = result.benchmark_context?.may_understate ?? false;
 
   return (
     <HairlineCard padding="lg" className="overflow-hidden">
@@ -30,6 +33,12 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
             <CountUp to={headline} prefix="~$" />
             <span className="text-h4 text-muted-foreground"> /year</span>
           </p>
+          {mayUnderstate && modeledLow > 0 && modeledHigh > modeledLow ? (
+            <p className="text-body tabular-nums text-muted-foreground">
+              At least {formatCurrency(headline)} recoverable (modeled range {formatCurrency(modeledLow)} to{" "}
+              {formatCurrency(modeledHigh)})
+            </p>
+          ) : null}
           {arr > 0 ? (
             <p className="text-body tabular-nums text-muted-foreground">
               About {pctOfArr.toFixed(1)}% of your {formatCurrency(arr)} ARR

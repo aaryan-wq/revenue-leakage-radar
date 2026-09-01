@@ -33,7 +33,7 @@ def apply_correlation_adjustment(
             lj = hypothesis_amounts.get(hj, 0.0)
             if lj <= 0:
                 continue
-            overlap = rho * min(li, lj) * 0.42
+            overlap = rho * min(li, lj) * 0.30
             penalty += overlap
             pair_penalties[f"{hi}:{hj}"] = overlap
 
@@ -64,7 +64,7 @@ def apply_family_overlap(
         items.sort(key=lambda x: x[1], reverse=True)
         for i, (rule_i, li) in enumerate(items):
             for rule_j, lj in items[i + 1 :]:
-                overlap = rho * min(li, lj) * 0.42
+                overlap = rho * min(li, lj) * 0.30
                 penalty += overlap
                 pair_penalties[f"{rule_i}:{rule_j}"] = overlap
 
@@ -78,17 +78,40 @@ def _draw_distribution(rng: np.random.Generator, cfg: dict) -> float:
     return float(rng.beta(cfg.get("alpha", 2), cfg.get("beta", 6)))
 
 
+def _smb_grandfathering_scale(arr: float, normalized: dict) -> float:
+    """Lift estimates for small high-ACV companies with frequent grandfathering."""
+    if arr >= 1_000_000:
+        return 1.0
+    customers = normalized.get("profile.customer_count")
+    try:
+        if customers is not None and float(customers) > 20:
+            return 1.0
+    except (TypeError, ValueError):
+        pass
+    grandfathering = str(normalized.get("contracts.grandfathering", ""))
+    if grandfathering == "very_frequently":
+        return 1.75
+    if grandfathering == "frequently":
+        return 1.25
+    return 1.0
+
+
 def _tail_multiplier(normalized: dict, rule_priors: dict) -> float:
     cfg = rule_priors.get("tail_fattening", {})
     conf_max = int(cfg.get("billing_confidence_max", 2))
     complexity_min = int(cfg.get("complexity_min", 8))
     billing_conf = normalized.get("confidence.billing_confidence")
     complexity = int(normalized.get("complexity.total", 0))
+    grandfathering = str(normalized.get("contracts.grandfathering", ""))
+    high_grandfathering = grandfathering in ("frequently", "very_frequently")
+    severity_mult = float(cfg.get("severity_multiplier", 1.0))
     try:
         if billing_conf is not None and float(billing_conf) <= conf_max and complexity >= complexity_min:
-            return float(cfg.get("severity_multiplier", 1.0))
+            return severity_mult
     except (TypeError, ValueError):
         pass
+    if high_grandfathering:
+        return severity_mult
     return 1.0
 
 
@@ -119,10 +142,12 @@ def simulate_totals(
     affected_alpha = int(affected_cfg.get("alpha", 2))
     affected_beta = int(affected_cfg.get("beta", 20))
     persistence_divisor = float(mc_cfg.get("persistence_divisor", 12))
+    simulation_intensity = float(mc_cfg.get("simulation_intensity", 1.0))
     leakage_scale = complexity_leakage_scale(complexity_total, priors)
     tail_cfg = rule_priors.get("tail_fattening", {})
     persistence_tail = float(tail_cfg.get("persistence_multiplier", 1.0))
     tail_mult = _tail_multiplier(normalized or {}, rule_priors)
+    smb_scale = _smb_grandfathering_scale(arr, normalized or {})
 
     base_map = {
         "arr": segments["arr"],
@@ -157,10 +182,8 @@ def simulate_totals(
         for rule_id in rule_ids:
             cfg = rules_cfg.get(rule_id, {})
             posterior = rule_posteriors.get(rule_id, 0.03)
-            if rng.random() > posterior:
-                continue
             exposure_base = float(base_map.get(cfg.get("exposure_base", "arr"), arr))
-            if exposure_base <= 0:
+            if exposure_base <= 0 or posterior <= 0:
                 continue
             exposure = exposure_base * exposure_jitter
             affected = rng.beta(affected_alpha, affected_beta)
@@ -170,12 +193,21 @@ def simulate_totals(
             ) * (persistence_tail if tail_mult > 1.0 else 1.0)
             recoverability = _draw_distribution(rng, cfg.get("recoverability", {}))
             detectability = float(cfg.get("detectability", 0.7))
-            gross_leakage = exposure * affected * severity * persistence * leakage_scale
+            gross_leakage = (
+                exposure
+                * affected
+                * severity
+                * persistence
+                * leakage_scale
+                * posterior
+                * simulation_intensity
+                * smb_scale
+            )
             leakage = gross_leakage * recoverability
             rule_gross_amounts[rule_id] = gross_leakage
             rule_amounts[rule_id] = leakage
             rule_detectable[rule_id] = leakage * detectability
-            rule_recoverable[rule_id] = leakage * recoverability
+            rule_recoverable[rule_id] = leakage
             per_rule[rule_id][sim] = leakage
             per_recoverable[rule_id][sim] = rule_recoverable[rule_id]
 

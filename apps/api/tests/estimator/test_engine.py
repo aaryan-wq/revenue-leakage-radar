@@ -308,3 +308,30 @@ def test_meridian_moderate_min_pct():
     pct = (result["estimate"]["central"] / arr) * 100 if arr else 0
     assert pct >= 0.8
 
+
+def test_real_user_520k_min_pct():
+    from tests.estimator.calibration_fixtures import REAL_USER_520K
+
+    result = run_model(REAL_USER_520K, random_seed=42)
+    arr = result["arr_usd"]
+    pct = (result["estimate"]["central"] / arr) * 100 if arr else 0
+    assert pct >= 2.0
+
+
+def test_display_headline_usd_floor_when_understating():
+    from tests.estimator.calibration_fixtures import REAL_USER_520K
+
+    result = run_model(REAL_USER_520K, random_seed=42)
+    context = result.get("benchmark_context")
+    assert context is not None
+    assert context.get("may_understate") is True
+    assert result["estimate"]["display_headline_usd"] >= context["low_usd"]
+    assert result["estimate"]["display_headline_usd"] >= result["estimate"]["high"]
+
+
+def test_recoverable_lte_central_after_posterior_scaling():
+    from tests.estimator.calibration_fixtures import REAL_USER_520K
+
+    result = run_model(REAL_USER_520K, random_seed=42)
+    assert result["estimate"].get("recoverable", 0) <= result["estimate"]["central"]
+
