@@ -13,7 +13,7 @@ export function DemoBanner() {
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
           <p className="text-sm leading-relaxed text-muted-foreground">
             <span className="font-medium text-foreground">Sample report.</span> You are viewing a
-            verification report for AcmeCRM. All customer and invoice data is fictional.
+            verification report for Meridian Platform. All customer and invoice data is fictional.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">

@@ -4,7 +4,7 @@ import type {
   ReportDetailResponse,
 } from "@rlr/shared";
 
-import rawFixture from "./acmecrm-demo.fixture.json";
+import rawFixture from "./meridian-demo.fixture.json";
 
 type DemoFixture = {
   report: ReportDetailResponse;

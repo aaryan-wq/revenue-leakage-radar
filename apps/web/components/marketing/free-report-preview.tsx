@@ -11,31 +11,31 @@ import { PRODUCT_NAMES } from "@/lib/pricing-content";
 const SAMPLE_FINDINGS = [
   {
     id: "RLR-001",
-    title: "Legacy pricing on enterprise tier",
+    title: "Legacy pricing after catalog v2 increase",
     category: "Legacy Pricing",
     confidence: 0.94,
-    annualized: 48_000,
+    annualized: 96_000,
   },
   {
     id: "RLR-002",
-    title: "Expired discount still applied",
+    title: "Expired EOY25 discount still applied",
     category: "Expired Discount",
     confidence: 0.91,
-    annualized: 12_400,
+    annualized: 28_400,
   },
   {
     id: "RLR-003",
     title: "Renewal price below contract terms",
     category: "Renewal Drift",
     confidence: 0.88,
-    annualized: 31_200,
+    annualized: 64_200,
   },
 ] as const;
 
 const LOCKED_CARDS = [
-  { title: "Duplicate discount stacking", category: "Duplicate Discount", arr: 18_600 },
-  { title: "Invoice line item off catalog", category: "Price Catalog Mismatch", arr: 9_800 },
-  { title: "Seat count variance detected", category: "Seat Count Variance", arr: 14_200 },
+  { title: "Duplicate discount stacking", category: "Duplicate Discount", arr: 42_600 },
+  { title: "Invoice line item off catalog", category: "Price Catalog Mismatch", arr: 22_800 },
+  { title: "Cancelled subscription still billing", category: "Billing Error", arr: 32_400 },
 ] as const;
 
 interface FreeReportPreviewProps {

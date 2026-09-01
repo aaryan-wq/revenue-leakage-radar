@@ -221,7 +221,7 @@ export function ReportView({
           </p>
           <h2 className="mt-4 max-w-xl font-heading text-[clamp(1.7rem,3.5vw,2.6rem)] leading-[1.05] tracking-tight text-balance">
             {isDemo
-              ? "Sample findings from the AcmeCRM audit."
+              ? "Sample findings from the Meridian Platform audit."
               : "Each finding, ranked by recoverable impact."}
           </h2>
           {isDemo && (

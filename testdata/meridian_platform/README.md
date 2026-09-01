@@ -1,16 +1,16 @@
 # Meridian Platform (fictional)
 
-Synthetic billing export for a **~$24M ARR mid-market B2B SaaS** company (450 customers, hybrid per-seat + enterprise pricing).
+Synthetic billing export for a **~$27M ARR mid-market B2B SaaS** company (500 customers, hybrid per-seat + enterprise pricing).
 
-Designed for **realistic** verification outcomes (~3 to 6% recoverable ARR), not stress-test noise.
+Designed for **realistic** verification outcomes (~2.5 to 3.5% recoverable ARR), not stress-test noise.
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `customers.csv` | 450 customers with Salesforce IDs |
-| `subscriptions.csv` | 470 subscriptions (450 base + 20 migration duplicates) |
-| `invoices.csv` | ~5,000 invoices (Jun 2023 to Aug 2025) |
+| `customers.csv` | 500 customers with Salesforce IDs |
+| `subscriptions.csv` | 520 subscriptions (500 base + 20 migration duplicates) |
+| `invoices.csv` | ~5,500 invoices (Jun 2023 to Aug 2025) |
 | `invoice_line_items.csv` | One line item per invoice, USD only |
 | `price_catalog.csv` | v1/v2 USD catalog |
 | `coupons.csv` | EOY25, PARTNER15 |
@@ -35,6 +35,7 @@ Designed for **realistic** verification outcomes (~3 to 6% recoverable ARR), not
 ```bash
 python scripts/generate_meridian_dataset.py
 python scripts/verify_meridian_dataset.py
+python scripts/export_meridian_demo_fixture.py
 ```
 
-Expected primary recoverable ARR: **~$550k to $750k** (~2 to 3% of ARR), in line with the questionnaire calculator band.
+Expected primary recoverable ARR: **~$750k to $900k** (~3% of $27M ARR), in line with the questionnaire calculator band.

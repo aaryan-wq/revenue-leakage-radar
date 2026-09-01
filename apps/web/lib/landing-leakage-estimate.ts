@@ -6,7 +6,7 @@ import {
 
 export const LANDING_ARR_MIN = 1_000_000;
 export const LANDING_ARR_MAX = 100_000_000;
-export const LANDING_ARR_DEFAULT = 12_000_000;
+export const LANDING_ARR_DEFAULT = 27_000_000;
 
 export interface LandingLeakageEstimate {
   arr: number;

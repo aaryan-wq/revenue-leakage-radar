@@ -56,8 +56,8 @@ def main() -> None:
     print(f"  Primary recoverable ARR (deduped): ${primary_arr:,.2f}")
     print(f"  Secondary excluded ARR: ${secondary_arr:,.2f}")
     if ctx.subscriptions:
-        pct = (primary_arr / Decimal("25000000")) * 100
-        print(f"  Primary as pct of $25M ARR: {pct:.2f}%")
+        pct = (primary_arr / Decimal("27000000")) * 100
+        print(f"  Primary as pct of $27M ARR: {pct:.2f}%")
     print()
     print("Top rules by recoverable ARR:")
     for rule_id, stats in sorted(by_rule.items(), key=lambda item: -item[1]["arr"])[:15]:

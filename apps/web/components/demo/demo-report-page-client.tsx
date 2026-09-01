@@ -18,7 +18,7 @@ export function DemoReportPageClient() {
   const report = getDemoReport();
   const findings = getDemoFindings();
 
-  useTrackOnce(AnalyticsEvents.DEMO_REPORT_VIEWED, { company_name: report.company_name ?? "AcmeCRM" });
+  useTrackOnce(AnalyticsEvents.DEMO_REPORT_VIEWED, { company_name: report.company_name ?? "Meridian Platform" });
 
   return (
     <>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Meridian Platform CSV fixtures — realistic $25M ARR mid-market SaaS."""
+"""Generate Meridian Platform CSV fixtures — realistic $27M ARR mid-market SaaS."""
 
 from __future__ import annotations
 
@@ -20,8 +20,9 @@ HISTORY_END = date(2025, 8, 1)
 CATALOG_V1 = date(2023, 1, 1)
 CATALOG_V2 = date(2024, 7, 1)
 
-CUSTOMER_COUNT = 450
-SUBSCRIPTION_COUNT = 470
+CUSTOMER_COUNT = 500
+SUBSCRIPTION_COUNT = 520
+ARR_TARGET_USD = 27_000_000
 
 # Small, targeted leakage injections (~3% of ARR when audited).
 INJECT_EXPIRED_DISCOUNT = 6
@@ -53,11 +54,11 @@ class Plan:
 
 
 PLANS: list[Plan] = [
-    Plan("Starter", "prod_starter_mo", "prod_starter_yr", "SKU-STARTER", 49, 490),
-    Plan("Growth", "prod_growth_mo", "prod_growth_yr", "SKU-GROWTH", 99, 990),
-    Plan("Professional", "prod_professional_mo", "prod_professional_yr", "SKU-PRO", 199, 1990),
-    Plan("Business", "prod_business_mo", "prod_business_yr", "SKU-BIZ", 399, 3990),
-    Plan("Enterprise", "prod_enterprise_mo", "prod_enterprise_yr", "SKU-ENT", 699, 6990),
+    Plan("Starter", "prod_starter_mo", "prod_starter_yr", "SKU-STARTER", 52, 515),
+    Plan("Growth", "prod_growth_mo", "prod_growth_yr", "SKU-GROWTH", 104, 1040),
+    Plan("Professional", "prod_professional_mo", "prod_professional_yr", "SKU-PRO", 209, 2090),
+    Plan("Business", "prod_business_mo", "prod_business_yr", "SKU-BIZ", 419, 4190),
+    Plan("Enterprise", "prod_enterprise_mo", "prod_enterprise_yr", "SKU-ENT", 734, 7340),
 ]
 
 V2_INCREASE = Decimal("1.12")
@@ -146,12 +147,74 @@ def build_coupons() -> list[dict]:
     ]
 
 
+CUSTOMER_NAME_PARTS = (
+    (
+        "Northwind",
+        "Summit",
+        "Brightpath",
+        "Cascade",
+        "Harborview",
+        "Ironclad",
+        "Keystone",
+        "Lighthouse",
+        "Meridian",
+        "Oakridge",
+        "Pinnacle",
+        "Redwood",
+        "Sterling",
+        "Trident",
+        "Vantage",
+        "Westfield",
+        "Apex",
+        "Bluefin",
+        "Clearwater",
+        "Delta",
+    ),
+    (
+        "Logistics",
+        "Health",
+        "Analytics",
+        "Financial",
+        "Manufacturing",
+        "Systems",
+        "Solutions",
+        "Partners",
+        "Group",
+        "Technologies",
+        "Industries",
+        "Capital",
+        "Networks",
+        "Dynamics",
+        "Works",
+        "Labs",
+        "Holdings",
+        "Services",
+        "Corp",
+        "Co",
+    ),
+)
+
+
+def _customer_display_name(index: int) -> str:
+    first = CUSTOMER_NAME_PARTS[0][index % len(CUSTOMER_NAME_PARTS[0])]
+    second = CUSTOMER_NAME_PARTS[1][(index * 7 + 3) % len(CUSTOMER_NAME_PARTS[1])]
+    suffix_roll = (index * 13 + 5) % 100
+    if suffix_roll < 15:
+        return f"{first} {second}"
+    if suffix_roll < 35:
+        return f"{first} {second} LLC"
+    if suffix_roll < 55:
+        return f"{first} {second} Inc"
+    if suffix_roll < 75:
+        return f"{first} {second} Group"
+    return f"{first} {second} International"
+
+
 def build_customers() -> list[dict]:
-    industries = ["SaaS", "Fintech", "Healthcare", "Manufacturing", "Logistics"]
     return [
         {
             "customer_id": f"mer_cust_{index:04d}",
-            "name": f"Meridian Customer {index:04d} ({RNG.choice(industries)})",
+            "name": _customer_display_name(index),
             "crm_id": f"sf_acc_{index:04d}",
         }
         for index in range(1, CUSTOMER_COUNT + 1)
@@ -574,7 +637,7 @@ def main() -> None:
     arr_estimate = estimate_arr(invoices, subscription_rows)
     manifest = {
         "company": "Meridian Platform",
-        "profile": {"arr_target_usd": 25_000_000, "customer_count": CUSTOMER_COUNT},
+        "profile": {"arr_target_usd": ARR_TARGET_USD, "customer_count": CUSTOMER_COUNT},
         "estimated_billed_arr_usd": arr_estimate,
         "counts": counts,
         "injected_scenarios": {
