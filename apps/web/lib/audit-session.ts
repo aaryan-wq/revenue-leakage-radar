@@ -10,6 +10,12 @@ import type {
 } from "@rlr/shared";
 import { PROCESSING_STATUSES, SCAN_PROCESSING_STATUSES } from "@rlr/shared";
 
+import {
+  localStorageGetItem,
+  localStorageRemoveItem,
+  localStorageSetItem,
+} from "@/lib/browser-storage";
+
 import { apiFetch, ApiError } from "./api";
 import { API_URL } from "./api-url";
 
@@ -58,22 +64,24 @@ export interface AuditSession {
 export function getStoredAuditSession(): AuditSession | null {
   if (typeof window === "undefined") return null;
 
-  const auditId = localStorage.getItem(AUDIT_ID_KEY);
-  const sessionToken = localStorage.getItem(SESSION_KEY);
+  const auditId = localStorageGetItem(AUDIT_ID_KEY);
+  const sessionToken = localStorageGetItem(SESSION_KEY);
 
   if (!auditId || !sessionToken) return null;
   return { auditId, sessionToken };
 }
 
 export function storeAuditSession(session: AuditSession): void {
-  localStorage.setItem(AUDIT_ID_KEY, session.auditId);
-  localStorage.setItem(SESSION_KEY, session.sessionToken);
+  if (typeof window === "undefined") return;
+  localStorageSetItem(AUDIT_ID_KEY, session.auditId);
+  localStorageSetItem(SESSION_KEY, session.sessionToken);
 }
 
 export function clearAuditSession(): void {
-  localStorage.removeItem(AUDIT_ID_KEY);
-  localStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(AUDIT_ORIGIN_KEY);
+  if (typeof window === "undefined") return;
+  localStorageRemoveItem(AUDIT_ID_KEY);
+  localStorageRemoveItem(SESSION_KEY);
+  localStorageRemoveItem(AUDIT_ORIGIN_KEY);
 }
 
 /** Discard in-progress server data and clear the browser audit session. */
@@ -178,12 +186,13 @@ export async function abandonAuditOnExit(): Promise<void> {
 }
 
 export function setAuditOrigin(origin: AuditOrigin): void {
-  localStorage.setItem(AUDIT_ORIGIN_KEY, origin);
+  if (typeof window === "undefined") return;
+  localStorageSetItem(AUDIT_ORIGIN_KEY, origin);
 }
 
 export function getAuditOrigin(): AuditOrigin | null {
   if (typeof window === "undefined") return null;
-  const value = localStorage.getItem(AUDIT_ORIGIN_KEY);
+  const value = localStorageGetItem(AUDIT_ORIGIN_KEY);
   if (value === "workspace" || value === "public") return value;
   return null;
 }

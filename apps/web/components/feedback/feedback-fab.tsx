@@ -7,6 +7,7 @@ import { AnalyticsEvents } from "@rlr/shared";
 
 import { FeedbackModal } from "@/components/feedback/feedback-modal";
 import { captureEvent } from "@/lib/analytics/client";
+import { localStorageGetItem, localStorageSetItem } from "@/lib/browser-storage";
 import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 import { cn } from "@/lib/utils";
 
@@ -19,13 +20,13 @@ export function FeedbackFab() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setShowPulse(!localStorage.getItem(SEEN_KEY));
+    setShowPulse(!localStorageGetItem(SEEN_KEY));
   }, []);
 
   function handleOpen() {
     captureEvent(AnalyticsEvents.FEEDBACK_FAB_CLICKED);
     if (typeof window !== "undefined") {
-      localStorage.setItem(SEEN_KEY, "1");
+      localStorageSetItem(SEEN_KEY, "1");
     }
     setShowPulse(false);
     setOpen(true);

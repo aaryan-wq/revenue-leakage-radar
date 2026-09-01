@@ -4,6 +4,13 @@ import type { AnalyticsEventProperties } from "@rlr/shared";
 import posthog from "posthog-js";
 
 import { getAnonymousUserId, getMarketingContext } from "@/lib/analytics/context";
+import {
+  getLocalStorage,
+  getPostHogPersistence,
+  getSessionStorage,
+  localStorageGetItem,
+  localStorageSetItem,
+} from "@/lib/browser-storage";
 
 const POSTHOG_KEY_STORAGE = "rlr_posthog_project_key";
 
@@ -22,9 +29,14 @@ function isEnabled(): boolean {
 function clearStalePostHogPersistence(apiKey: string): void {
   if (typeof window === "undefined") return;
 
-  const previousKey = localStorage.getItem(POSTHOG_KEY_STORAGE);
+  const localStorage = getLocalStorage();
+  const sessionStorage = getSessionStorage();
+  if (!localStorage) return;
+
+  const previousKey = localStorageGetItem(POSTHOG_KEY_STORAGE);
   if (previousKey && previousKey !== apiKey) {
     for (const storage of [localStorage, sessionStorage]) {
+      if (!storage) continue;
       for (const key of [...Object.keys(storage)]) {
         if (key.startsWith("ph_") || key.includes("posthog")) {
           storage.removeItem(key);
@@ -33,7 +45,7 @@ function clearStalePostHogPersistence(apiKey: string): void {
     }
   }
 
-  localStorage.setItem(POSTHOG_KEY_STORAGE, apiKey);
+  localStorageSetItem(POSTHOG_KEY_STORAGE, apiKey);
 }
 
 function flushPendingCaptures(): void {
@@ -121,7 +133,7 @@ export function initAnalytics(): void {
     defaults: "2026-05-30",
     capture_pageview: false,
     capture_pageleave: false,
-    persistence: "localStorage+cookie",
+    persistence: getPostHogPersistence(),
     person_profiles: "identified_only",
     advanced_disable_flags: true,
     disable_surveys: true,

@@ -1,8 +1,18 @@
 import type { AnalyticsEventProperties } from "@rlr/shared";
 
+import {
+  getLocalStorage,
+  getSessionStorage,
+  localStorageGetItem,
+  localStorageSetItem,
+} from "@/lib/browser-storage";
+
 const SESSION_KEY = "rlr_analytics_session";
 const ANONYMOUS_USER_KEY = "rlr_anonymous_user_id";
 const UTM_KEY = "rlr_utm";
+
+let memorySessionId: string | null = null;
+let memoryAnonymousId: string | null = null;
 
 type UtmParams = {
   utm_source?: string;
@@ -19,22 +29,36 @@ function randomId(): string {
 
 export function getSessionId(): string {
   if (typeof window === "undefined") return "server";
-  let sessionId = sessionStorage.getItem(SESSION_KEY);
-  if (!sessionId) {
-    sessionId = randomId();
-    sessionStorage.setItem(SESSION_KEY, sessionId);
+
+  const storage = getSessionStorage();
+  if (storage) {
+    let sessionId = storage.getItem(SESSION_KEY);
+    if (!sessionId) {
+      sessionId = randomId();
+      storage.setItem(SESSION_KEY, sessionId);
+    }
+    return sessionId;
   }
-  return sessionId;
+
+  memorySessionId ??= randomId();
+  return memorySessionId;
 }
 
 export function getAnonymousUserId(): string {
   if (typeof window === "undefined") return "server";
-  let anonymousId = localStorage.getItem(ANONYMOUS_USER_KEY);
-  if (!anonymousId) {
-    anonymousId = randomId();
-    localStorage.setItem(ANONYMOUS_USER_KEY, anonymousId);
+
+  const storage = getLocalStorage();
+  if (storage) {
+    let anonymousId = storage.getItem(ANONYMOUS_USER_KEY);
+    if (!anonymousId) {
+      anonymousId = randomId();
+      storage.setItem(ANONYMOUS_USER_KEY, anonymousId);
+    }
+    return anonymousId;
   }
-  return anonymousId;
+
+  memoryAnonymousId ??= randomId();
+  return memoryAnonymousId;
 }
 
 export function captureUtmFromSearch(search: string | URLSearchParams): void {
@@ -46,14 +70,14 @@ export function captureUtmFromSearch(search: string | URLSearchParams): void {
     utm_campaign: params.get("utm_campaign") ?? undefined,
   };
   if (utm.utm_source || utm.utm_medium || utm.utm_campaign) {
-    localStorage.setItem(UTM_KEY, JSON.stringify(utm));
+    localStorageSetItem(UTM_KEY, JSON.stringify(utm));
   }
 }
 
 function getStoredUtm(): UtmParams {
   if (typeof window === "undefined") return {};
   try {
-    const raw = localStorage.getItem(UTM_KEY);
+    const raw = localStorageGetItem(UTM_KEY);
     return raw ? (JSON.parse(raw) as UtmParams) : {};
   } catch {
     return {};

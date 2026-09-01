@@ -6,34 +6,40 @@ import type {
 } from "@rlr/shared";
 
 import { apiFetch } from "@/lib/api";
+import {
+  localStorageGetItem,
+  localStorageRemoveItem,
+  localStorageSetItem,
+} from "@/lib/browser-storage";
 
 const SESSION_KEY = "rlr_estimator_session";
 const ASSESSMENT_KEY = "rlr_estimator_assessment_id";
 
 export function clearAssessmentSession(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(ASSESSMENT_KEY);
-  localStorage.removeItem(SESSION_KEY);
+  localStorageRemoveItem(ASSESSMENT_KEY);
+  localStorageRemoveItem(SESSION_KEY);
 }
 
 export function getStoredAssessmentId(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(ASSESSMENT_KEY);
+  return localStorageGetItem(ASSESSMENT_KEY);
 }
 
 export function storeAssessmentSession(assessmentId: string, sessionToken: string): void {
-  localStorage.setItem(ASSESSMENT_KEY, assessmentId);
-  localStorage.setItem(SESSION_KEY, sessionToken);
+  if (typeof window === "undefined") return;
+  localStorageSetItem(ASSESSMENT_KEY, assessmentId);
+  localStorageSetItem(SESSION_KEY, sessionToken);
 }
 
 export function storeAssessmentId(assessmentId: string): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(ASSESSMENT_KEY, assessmentId);
+  localStorageSetItem(ASSESSMENT_KEY, assessmentId);
 }
 
 export function getStoredSessionToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(SESSION_KEY);
+  return localStorageGetItem(SESSION_KEY);
 }
 
 export async function createAssessment(anonymousId?: string) {
