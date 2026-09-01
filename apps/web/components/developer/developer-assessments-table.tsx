@@ -122,7 +122,7 @@ export function DeveloperAssessmentsTable() {
                   <th className="px-6 py-4 font-medium">Lead / company</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium">Completed</th>
-                  <th className="px-6 py-4 font-medium text-right">Est. leakage</th>
+                  <th className="px-6 py-4 font-medium text-right">Recoverable</th>
                   <th className="px-6 py-4 font-medium text-right">ARR</th>
                   <th className="px-6 py-4 font-medium">User</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>

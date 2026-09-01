@@ -619,14 +619,17 @@ def list_support_notes(
 
 
 def _assessment_estimate(result: AssessmentResult | None, model_runs: list[AssessmentModelRun]) -> str | None:
+    from estimator.headline import estimator_headline_from_model_run, estimator_headline_from_result
+
     if result and isinstance(result.result_json, dict):
-        estimate = result.result_json.get("estimate")
-        if isinstance(estimate, dict) and estimate.get("central") is not None:
-            return str(estimate["central"])
+        headline = estimator_headline_from_result(result.result_json)
+        if headline is not None:
+            return str(headline)
     if model_runs:
         latest = max(model_runs, key=lambda run: run.created_at or datetime.min.replace(tzinfo=UTC))
-        if latest.central_estimate is not None:
-            return str(latest.central_estimate)
+        fallback = estimator_headline_from_model_run(latest)
+        if fallback is not None:
+            return str(fallback)
     return None
 
 
