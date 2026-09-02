@@ -883,8 +883,10 @@ def list_admin_accounts(
         .subquery()
     )
 
-    membership_ids = db.query(Membership.clerk_user_id)
-    audit_user_ids = db.query(Audit.clerk_user_id).filter(Audit.clerk_user_id.isnot(None))
+    membership_ids = db.query(Membership.clerk_user_id.label("clerk_user_id"))
+    audit_user_ids = db.query(Audit.clerk_user_id.label("clerk_user_id")).filter(
+        Audit.clerk_user_id.isnot(None)
+    )
     all_user_ids = membership_ids.union(audit_user_ids).subquery()
 
     base = (
@@ -931,9 +933,6 @@ def list_admin_accounts(
     else:
         total = base.count()
         page_rows = base.order_by(order_clause).offset((page - 1) * page_size).limit(page_size).all()
-        users = resolve_clerk_users({row.clerk_user_id for row in page_rows})
-
-    if q:
         users = resolve_clerk_users({row.clerk_user_id for row in page_rows})
 
     items = []

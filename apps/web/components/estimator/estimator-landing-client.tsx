@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, Clock, Loader2, Shield, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Clock, Loader2, Shield, Sparkles } from "lucide-react";
 
 import { glide, Reveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
@@ -34,55 +34,17 @@ const COMPANY_TYPE_OPTIONS = [
 
 const HEADLINE_LINES = ["Model your", "leakage exposure"];
 
-const MODEL_STEPS = [
-  { icon: Sparkles, label: "Your inputs" },
-  { icon: BarChart3, label: "Deterministic model" },
-  { icon: ShieldCheck, label: "Modeled range" },
-] as const;
-
 function MethodologyTeaser() {
   return (
-    <Link
-      href="/saas-revenue-leakage-calculator/methodology"
-      className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-    >
-      <HairlineCard
-        padding="md"
-        interactive
-        className="border-line bg-surface-glass-subtle transition-all duration-normal group-hover:border-primary/25 group-hover:shadow-[0_12px_40px_-28px_rgba(15,23,42,0.25)]"
+    <p className="text-small leading-relaxed text-muted-foreground">
+      <Link
+        href="/saas-revenue-leakage-calculator/methodology"
+        className="font-medium text-foreground underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
       >
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <BarChart3 className="h-5 w-5 text-primary" strokeWidth={1.75} aria-hidden />
-          </div>
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <p className="text-h4 text-foreground">How the model works</p>
-                <p className="text-small text-muted-foreground">
-                  Transparent assumptions, 18 leakage hypotheses, fixed-seed Monte Carlo.
-                </p>
-              </div>
-              <ArrowRight
-                className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-normal group-hover:translate-x-0.5 group-hover:text-foreground"
-                aria-hidden
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {MODEL_STEPS.map((step) => (
-                <span
-                  key={step.label}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-background/70 px-2.5 py-1 text-caption text-muted-foreground"
-                >
-                  <step.icon className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
-                  {step.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </HairlineCard>
-    </Link>
+        How the model works
+      </Link>
+      : transparent assumptions, 18 leakage hypotheses, fixed-seed Monte Carlo.
+    </p>
   );
 }
 
@@ -162,16 +124,6 @@ function AssessmentStartPicker() {
   return (
     <HairlineCard padding="md" className="relative overflow-hidden border-line bg-surface-glass-subtle">
       <div className="space-y-5">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-caption text-muted-foreground">Your company · Question 1</p>
-            <p className="text-caption tabular-nums text-muted-foreground">~5 min left</p>
-          </div>
-          <div className="h-1 overflow-hidden rounded-full bg-border/30">
-            <div className="h-full w-[12%] rounded-full bg-primary/70" />
-          </div>
-        </div>
-
         <div className="space-y-4">
           <p className="text-h4 text-foreground">What best describes your business?</p>
           <div className="space-y-2">
