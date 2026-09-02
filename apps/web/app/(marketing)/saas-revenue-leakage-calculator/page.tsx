@@ -13,7 +13,7 @@ export default function EstimatorLandingPage() {
   return (
     <>
       <EstimatorLandingClient />
-      <SiteFooter />
+      <SiteFooter variant="minimal" />
     </>
   );
 }
