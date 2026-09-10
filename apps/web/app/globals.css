@@ -137,12 +137,4 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-
-  .pb-safe {
-    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
-  }
-
-  .pr-safe {
-    padding-right: max(1.5rem, env(safe-area-inset-right));
-  }
 }

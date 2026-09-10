@@ -34,26 +34,30 @@ export function FeedbackFab() {
 
   return (
     <>
-      <div className="fixed bottom-0 right-0 z-50 p-4 pb-safe pr-safe sm:p-6">
-        {showPulse && motionEnabled && (
-          <motion.span
-            aria-hidden="true"
-            className="absolute inset-4 rounded-full bg-primary/20 sm:inset-6"
-            animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          />
-        )}
-        <button
-          type="button"
-          onClick={handleOpen}
-          className={cn(
-            "focus-ring relative inline-flex h-12 min-w-[44px] items-center justify-center gap-2 rounded-full border border-line bg-card px-3.5 text-[0.82rem] font-medium text-foreground shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-0.5 sm:h-14 sm:px-5 sm:text-[0.88rem]",
+      <div className="fixed bottom-4 right-4 z-50 sm:bottom-6 sm:right-6">
+        <div className="relative">
+          {showPulse && motionEnabled && (
+            <motion.span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-full bg-primary/20"
+              animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            />
           )}
-          aria-label="Open feedback form"
-        >
-          <MessageSquarePlus className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-          <span className="hidden sm:inline">Feedback</span>
-        </button>
+          <button
+            type="button"
+            onClick={handleOpen}
+            className={cn(
+              "focus-ring relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-card text-foreground shadow-[0_8px_28px_-12px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-0.5",
+              "sm:h-12 sm:w-auto sm:gap-2 sm:px-4 sm:text-[0.82rem] sm:font-medium",
+              "md:h-14 md:px-5 md:text-[0.88rem]",
+            )}
+            aria-label="Open feedback form"
+          >
+            <MessageSquarePlus className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" strokeWidth={1.75} />
+            <span className="hidden sm:inline">Feedback</span>
+          </button>
+        </div>
       </div>
 
       <FeedbackModal open={open} onClose={() => setOpen(false)} />
