@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 
 import { PostHogHeadScript } from "@/components/analytics/posthog-head-script";
@@ -31,6 +31,12 @@ export const metadata: Metadata = {
     icon: "/brand/logo-short.png",
     apple: "/brand/logo-short.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

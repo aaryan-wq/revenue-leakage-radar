@@ -77,19 +77,19 @@ export function AuditFunnelProgress() {
             <Logo variant="short" className={NAV_LOGO_CLASS.short} />
           </button>
 
-          <div className="flex items-center gap-4 self-center">
+          <div className="flex items-center gap-2 self-center sm:gap-4">
             {funnelAction && (
               <Button
                 type="button"
                 size="sm"
-                className="h-9 rounded-full px-5"
+                className="h-9 rounded-full px-4 sm:px-5"
                 disabled={funnelAction.disabled || funnelAction.loading}
                 onClick={invokeFunnelAction}
               >
                 {funnelAction.loading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.75} />
                 )}
-                {funnelAction.label}
+                <span className="max-w-[9rem] truncate sm:max-w-none">{funnelAction.label}</span>
               </Button>
             )}
             <button
@@ -97,7 +97,8 @@ export function AuditFunnelProgress() {
               onClick={() => void handleExit()}
               className="inline-flex h-9 items-center text-[0.78rem] text-muted-foreground transition-colors hover:text-foreground"
             >
-              Exit audit
+              <span className="sm:hidden">Exit</span>
+              <span className="hidden sm:inline">Exit audit</span>
             </button>
           </div>
         </div>

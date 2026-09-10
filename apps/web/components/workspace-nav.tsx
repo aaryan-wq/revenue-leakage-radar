@@ -97,7 +97,7 @@ export function WorkspaceNav() {
           </div>
         </div>
 
-        <div className="-mx-2 mb-3 flex items-center gap-0.5 overflow-x-auto pb-2 scrollbar-none">
+        <div className="-mx-2 mb-3 flex items-center gap-0.5 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] scrollbar-none">
           {links.map((link) => {
             const active = isLinkActive(pathname, link.href);
             return (
@@ -105,7 +105,7 @@ export function WorkspaceNav() {
                 key={link.href}
                 href={link.href}
                 prefetch={link.prefetch}
-                className="relative shrink-0 px-3 py-2 text-[0.78rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                className="relative shrink-0 px-3 py-2.5 text-[0.78rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
               >
                 {active && (
                   <motion.span

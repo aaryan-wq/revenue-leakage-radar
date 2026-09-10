@@ -104,11 +104,11 @@ function HeroUploadZone() {
           }}
         />
 
-        <div className="relative flex flex-col items-center px-8 py-16 text-center">
+        <div className="relative flex flex-col items-center px-5 py-10 text-center sm:px-8 sm:py-16">
           <motion.div
             animate={{ y: hover ? -5 : 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 18 }}
-            className="relative mb-7 flex h-16 w-16 items-center justify-center"
+            className="relative mb-5 flex h-14 w-14 items-center justify-center sm:mb-7 sm:h-16 sm:w-16"
           >
             <motion.span
               className="absolute inset-0 rounded-xl border border-primary/25"
@@ -134,10 +134,10 @@ function HeroUploadZone() {
             </div>
           </motion.div>
 
-          <p className="font-heading text-xl tracking-tight">
+          <p className="font-heading text-lg tracking-tight sm:text-xl">
             {dragActive ? "Release to begin" : "Drop your billing and CRM CSVs here"}
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
             or{" "}
             <span className="text-foreground/70 underline decoration-primary/50 underline-offset-2">
               click to browse
@@ -145,7 +145,7 @@ function HeroUploadZone() {
             Invoice line items and price catalog to start; CRM exports for contract checks
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.75rem] text-muted-foreground">
+          <div className="mt-6 flex flex-col items-center gap-2 text-[0.75rem] text-muted-foreground sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-5 sm:gap-y-2">
             {[
               "Encrypted in transit",
               "Raw CSVs deleted after processing",
@@ -160,9 +160,9 @@ function HeroUploadZone() {
         </div>
       </motion.div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <RunFreeAuditCta size="lg" />
-        <ViewSampleReportCta size="lg" analyticsSource="landing_upload" />
+      <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+        <RunFreeAuditCta size="lg" className="w-full justify-center sm:w-auto" />
+        <ViewSampleReportCta size="lg" analyticsSource="landing_upload" className="w-full justify-center sm:w-auto" />
       </div>
     </motion.div>
   );
@@ -170,7 +170,7 @@ function HeroUploadZone() {
 
 function MethodSection() {
   return (
-    <section className="mx-auto max-w-marketing px-6 py-28 md:px-10">
+    <section className="mx-auto max-w-marketing px-6 py-16 md:px-10 md:py-28">
       <Reveal>
         <p className="mb-3 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
           The method
@@ -180,7 +180,7 @@ function MethodSection() {
         </h2>
       </Reveal>
 
-      <Stagger className="mt-20 grid gap-x-12 gap-y-16 md:grid-cols-3">
+      <Stagger className="mt-12 grid gap-x-12 gap-y-12 md:mt-20 md:grid-cols-3 md:gap-y-16">
         {METHOD_STEPS.map((s) => (
           <StaggerItem key={s.n}>
             <div>
@@ -204,33 +204,35 @@ export function LandingPageClient() {
       <ArrLeakageHero />
 
       <section className="border-t border-line">
-        <div className="mx-auto max-w-marketing px-6 py-20 md:px-10 md:py-28">
+        <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-28">
           <Reveal className="mx-auto max-w-readable text-center">
             <p className="text-overline text-muted-foreground">Free deterministic audit</p>
             <h2 className="mt-4 font-heading text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] tracking-tight text-balance">
               Ready to find the exact dollars?
             </h2>
-            <p className="mt-6 text-pretty text-body leading-relaxed text-muted-foreground">
+            <p className="mt-5 text-pretty text-body leading-relaxed text-muted-foreground md:mt-6">
               Upload billing and CRM CSV exports. Our engine reconciles every row and surfaces missed
               revenue, duplicate charges, and pricing drift in minutes.
             </p>
           </Reveal>
 
-          <div className="mx-auto mt-12 max-w-2xl">
+          <div className="mx-auto mt-10 max-w-2xl md:mt-12">
             <HeroUploadZone />
           </div>
 
-          <Reveal delay={0.1} className="mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4">
+          <Reveal delay={0.1} className="mt-10 grid grid-cols-3 gap-3 sm:mt-12 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-4">
             {[
               [String(VERIFICATION_RULE_COUNT), "verification checks"],
               ["9", "CSV export types"],
               ["< 90 s", "average runtime"],
             ].map(([val, label]) => (
               <div key={label} className="text-center">
-                <p className="font-heading text-xl tracking-tight text-foreground tnum md:text-2xl">
+                <p className="font-heading text-lg tracking-tight text-foreground tnum sm:text-xl md:text-2xl">
                   {val}
                 </p>
-                <p className="mt-1 text-[0.78rem] text-muted-foreground">{label}</p>
+                <p className="mt-1 text-[0.7rem] leading-snug text-muted-foreground sm:text-[0.78rem]">
+                  {label}
+                </p>
               </div>
             ))}
           </Reveal>
@@ -238,9 +240,9 @@ export function LandingPageClient() {
       </section>
 
       <section className="border-b border-line">
-        <div className="mx-auto grid max-w-marketing grid-cols-2 gap-px bg-line md:grid-cols-4">
+        <div className="mx-auto grid max-w-marketing grid-cols-1 gap-px bg-line sm:grid-cols-2 md:grid-cols-4">
           {STATS.map((s, i) => (
-            <Reveal key={s.label} delay={i * 0.08} className="bg-background px-6 py-10 md:px-10">
+            <Reveal key={s.label} delay={i * 0.08} className="bg-background px-6 py-8 sm:py-10 md:px-10">
               <div className="font-heading text-3xl tracking-tight tnum md:text-4xl">
                 <CountUp
                   to={s.value}
@@ -249,7 +251,7 @@ export function LandingPageClient() {
                   decimals={s.decimals}
                 />
               </div>
-              <p className="mt-3 text-[0.82rem] leading-relaxed text-muted-foreground">
+              <p className="mt-3 max-w-[16rem] text-[0.82rem] leading-relaxed text-muted-foreground">
                 {s.label}
               </p>
             </Reveal>

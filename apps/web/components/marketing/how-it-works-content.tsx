@@ -48,7 +48,7 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
   const isPage = variant === "page";
 
   return (
-    <div className={isPage ? "mx-auto max-w-marketing px-6 py-28 md:px-10" : "mx-auto max-w-marketing px-6 py-20 md:px-10"}>
+    <div className={isPage ? "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-28" : "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20"}>
       <Reveal>
         <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
           How it works
@@ -56,8 +56,8 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
         <h2
           className={
             isPage
-              ? "mt-4 font-heading text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.02] tracking-tight text-balance"
-              : "mt-3 max-w-2xl font-heading text-[clamp(1.9rem,4vw,3rem)] leading-[1.05] tracking-tight text-balance"
+              ? "mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]"
+              : "mt-3 max-w-2xl font-heading text-[clamp(1.75rem,6vw,3rem)] leading-[1.05] tracking-tight text-balance md:text-[clamp(1.9rem,4vw,3rem)]"
           }
         >
           From CSV export to recoverable revenue in minutes.
@@ -68,13 +68,13 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
         </p>
       </Reveal>
 
-      <Stagger className="mt-16 space-y-0">
+      <Stagger className="mt-12 space-y-0 md:mt-16">
         {AUDIT_WORKFLOW.map((item) => (
           <StaggerItem key={item.step}>
-            <div className="grid gap-4 border-t border-line py-8 md:grid-cols-[4rem_1fr]">
+            <div className="grid gap-3 border-t border-line py-6 md:grid-cols-[4rem_1fr] md:gap-4 md:py-8">
               <span className="font-heading text-sm text-primary tnum">{item.step}</span>
               <div>
-                <h3 className="font-heading text-xl tracking-tight">{item.title}</h3>
+                <h3 className="font-heading text-lg tracking-tight md:text-xl">{item.title}</h3>
                 <p className="mt-2 leading-relaxed text-muted-foreground">{item.body}</p>
               </div>
             </div>

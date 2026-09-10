@@ -390,7 +390,7 @@ export function UploadPageClient() {
   }
 
   return (
-    <section className="mx-auto max-w-upload px-6 pt-16 pb-28 md:px-10 md:pt-24">
+    <section className="mx-auto max-w-upload px-6 pt-10 pb-24 md:px-10 md:pt-24 md:pb-28">
       {assessmentId ? <AssessmentContextBanner assessmentId={assessmentId} /> : null}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -400,10 +400,10 @@ export function UploadPageClient() {
         <p className="mb-4 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
           Step one · Provide your data
         </p>
-        <h1 className="max-w-2xl font-heading text-[clamp(2.1rem,5vw,3.4rem)] leading-[1.02] tracking-tight text-balance">
+        <h1 className="max-w-2xl font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2.1rem,5vw,3.4rem)]">
           Hand us the records. We&apos;ll find what&apos;s missing.
         </h1>
-        <p className="mt-6 max-w-lg text-pretty leading-relaxed text-muted-foreground">
+        <p className="mt-5 max-w-lg text-pretty leading-relaxed text-muted-foreground md:mt-6">
           Upload any billing CSV export to start a free revenue verification scan. Add more files
           anytime to unlock additional checks. We run every rule your data supports.
         </p>
@@ -413,7 +413,7 @@ export function UploadPageClient() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: glide, delay: 0.15 }}
-        className="mt-12 space-y-10"
+        className="mt-8 space-y-8 md:mt-12 md:space-y-10"
       >
         <div className="w-full">
           <UploadZone

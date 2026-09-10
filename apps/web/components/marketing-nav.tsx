@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { useEffect, useId, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
 
 import { Logo, NAV_LOGO_CLASS } from "@/components/brand/logo";
 import { MarketingAuthActions } from "@/components/marketing-auth-actions";
@@ -26,6 +28,38 @@ function isLinkActive(pathname: string, href: string): boolean {
 
 export function MarketingNav() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const onChange = () => {
+      if (media.matches) setMenuOpen(false);
+    };
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50">
@@ -64,8 +98,66 @@ export function MarketingNav() {
           </div>
         </div>
 
-        <MarketingAuthActions className="shrink-0 items-center" />
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <MarketingAuthActions className="shrink-0 items-center" />
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary md:hidden"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X className="h-5 w-5" strokeWidth={1.75} /> : <Menu className="h-5 w-5" strokeWidth={1.75} />}
+          </button>
+        </div>
       </nav>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            id={menuId}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden border-t border-line/60 md:hidden"
+          >
+            <div className="max-h-[calc(100dvh-72px)] overflow-y-auto bg-background/95 px-6 pb-8 pt-4 backdrop-blur-xl">
+              <ul className="space-y-1">
+                {links.map((link, index) => {
+                  const active = isLinkActive(pathname, link.href);
+                  return (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.28,
+                        delay: 0.04 + index * 0.03,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                    >
+                      <Link
+                        href={link.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                          "flex min-h-[44px] items-center rounded-xl px-4 text-[0.95rem] tracking-wide transition-colors",
+                          active
+                            ? "bg-secondary text-foreground"
+                            : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

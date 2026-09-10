@@ -49,12 +49,12 @@ export function SummaryHero({ summary }: SummaryHeroProps) {
       </Reveal>
 
       <Reveal delay={0.1}>
-        <div className="mt-12 grid items-end gap-10 border-t border-line pt-12 md:grid-cols-[1.3fr_1fr]">
+        <div className="mt-12 grid items-end gap-8 border-t border-line pt-8 md:grid-cols-[1.3fr_1fr] md:gap-10 md:pt-12">
           <div>
             <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
               Total recoverable revenue
             </p>
-            <div className="mt-4 font-heading text-[clamp(3rem,9vw,6rem)] leading-none tracking-tight tnum">
+            <div className="mt-4 font-heading text-[clamp(2.5rem,12vw,6rem)] leading-none tracking-tight tnum md:text-[clamp(3rem,9vw,6rem)]">
               <CountUp
                 to={countUp.to}
                 decimals={countUp.decimals}
@@ -74,11 +74,11 @@ export function SummaryHero({ summary }: SummaryHeroProps) {
 
           <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">
             {stats.slice(0, 4).map((stat) => (
-              <div key={stat.label} className="bg-card px-5 py-6">
-                <dt className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+              <div key={stat.label} className="bg-card px-4 py-5 sm:px-5 sm:py-6">
+                <dt className="text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground sm:text-[0.72rem]">
                   {stat.label}
                 </dt>
-                <dd className="mt-2 font-heading text-2xl tracking-tight tnum">{stat.value}</dd>
+                <dd className="mt-2 font-heading text-xl tracking-tight tnum sm:text-2xl">{stat.value}</dd>
               </div>
             ))}
           </dl>

@@ -34,11 +34,11 @@ export function FeedbackFab() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-0 right-0 z-50 p-4 pb-safe pr-safe sm:p-6">
         {showPulse && motionEnabled && (
           <motion.span
             aria-hidden="true"
-            className="absolute inset-0 rounded-full bg-primary/20"
+            className="absolute inset-4 rounded-full bg-primary/20 sm:inset-6"
             animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -47,7 +47,7 @@ export function FeedbackFab() {
           type="button"
           onClick={handleOpen}
           className={cn(
-            "focus-ring relative inline-flex h-12 items-center gap-2 rounded-full border border-line bg-card px-4 text-[0.82rem] font-medium text-foreground shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-0.5 sm:h-14 sm:px-5 sm:text-[0.88rem]",
+            "focus-ring relative inline-flex h-12 min-w-[44px] items-center justify-center gap-2 rounded-full border border-line bg-card px-3.5 text-[0.82rem] font-medium text-foreground shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-0.5 sm:h-14 sm:px-5 sm:text-[0.88rem]",
           )}
           aria-label="Open feedback form"
         >

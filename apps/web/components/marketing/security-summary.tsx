@@ -13,7 +13,7 @@ const POINTS = [
 export function SecuritySummary() {
   return (
     <section className="border-t border-line bg-secondary/30">
-      <div className="mx-auto max-w-marketing px-6 py-20 md:px-10">
+      <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20">
         <Reveal>
           <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
             Security
@@ -23,9 +23,9 @@ export function SecuritySummary() {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-8 grid gap-3 sm:mt-10 sm:gap-4 md:grid-cols-3">
           {POINTS.map(({ icon: Icon, text }) => (
-            <HairlineCard key={text} padding="md">
+            <HairlineCard key={text} padding="none" className="p-5 md:p-8">
               <Icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text}</p>
             </HairlineCard>

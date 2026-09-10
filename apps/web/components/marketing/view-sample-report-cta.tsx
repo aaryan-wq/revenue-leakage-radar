@@ -39,7 +39,7 @@ export function ViewSampleReportCta({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          "inline-flex items-center gap-2 rounded-full border border-line bg-card/80 font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary",
+          "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-card/80 font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary",
           sizeClasses[size],
         )}
       >

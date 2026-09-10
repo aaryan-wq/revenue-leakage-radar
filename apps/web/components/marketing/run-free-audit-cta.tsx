@@ -46,7 +46,7 @@ export function RunFreeAuditCta({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          "group inline-flex items-center gap-2 rounded-full bg-primary font-medium text-primary-foreground shadow-[0_12px_40px_-10px] shadow-primary/40 transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50",
+          "group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary font-medium text-primary-foreground shadow-[0_12px_40px_-10px] shadow-primary/40 transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50",
           sizeClasses[size],
         )}
       >

@@ -59,9 +59,9 @@ export function ReportView({
 
   return (
     <div className="min-h-screen">
-      <section className="mx-auto max-w-report px-6 pt-16 pb-20 md:px-10 md:pt-24">
+      <section className="mx-auto max-w-report px-6 pt-10 pb-14 md:px-10 md:pt-24 md:pb-20">
         <Reveal>
-          <Logo variant="full" href={isDemo ? "/" : null} className="mb-10 h-12 sm:h-14" />
+          <Logo variant="full" href={isDemo ? "/" : null} className="mb-8 h-10 sm:mb-10 sm:h-12 md:h-14" />
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
             <span>{isDemo ? "Sample" : "Confidential"}</span>
             <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
@@ -69,10 +69,10 @@ export function ReportView({
             <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
             <span>{periodLabel}</span>
           </div>
-          <h1 className="mt-8 max-w-3xl font-heading text-[clamp(2.4rem,6vw,4.4rem)] leading-[0.98] tracking-tight text-balance">
+          <h1 className="mt-6 max-w-3xl font-heading text-[clamp(2rem,8vw,4.4rem)] leading-[0.98] tracking-tight text-balance md:mt-8 md:text-[clamp(2.4rem,6vw,4.4rem)]">
             Revenue Leakage Findings
           </h1>
-          <p className="mt-7 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:mt-7 md:text-lg">
             An examination of billing, CRM, pricing, and subscription data, isolating
             recoverable revenue lost to verification failures over the reporting
             period.
@@ -80,12 +80,12 @@ export function ReportView({
         </Reveal>
 
         <Reveal delay={0.15}>
-          <div className="mt-16 grid items-end gap-10 border-t border-line pt-12 md:grid-cols-[1.3fr_1fr]">
+          <div className="mt-10 grid items-end gap-8 border-t border-line pt-8 md:mt-16 md:grid-cols-[1.3fr_1fr] md:gap-10 md:pt-12">
             <div>
               <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
                 Total recoverable revenue
               </p>
-              <div className="mt-4 font-heading text-[clamp(3rem,9vw,6rem)] leading-none tracking-tight tnum">
+              <div className="mt-4 font-heading text-[clamp(2.5rem,12vw,6rem)] leading-none tracking-tight tnum md:text-[clamp(3rem,9vw,6rem)]">
                 <CountUp to={recoverable} prefix="$" duration={1.6} />
               </div>
               <p className="mt-5 max-w-md leading-relaxed text-muted-foreground">
@@ -96,7 +96,7 @@ export function ReportView({
                 . The headline sums primary-attributed forward recoverable ARR only.
               </p>
               {summary.reconciliation && (
-                <div className="mt-6 rounded-xl border border-line bg-secondary/20 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
+                <div className="mt-6 rounded-xl border border-line bg-secondary/20 px-4 py-4 text-sm leading-relaxed text-muted-foreground sm:px-5">
                   <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
                     ARR reconciliation
                   </p>
@@ -130,11 +130,11 @@ export function ReportView({
                   v: formatCurrency(summary.high_confidence_arr),
                 },
               ].map((stat) => (
-                <div key={stat.k} className="bg-card px-5 py-6">
-                  <dt className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                <div key={stat.k} className="bg-card px-4 py-5 sm:px-5 sm:py-6">
+                  <dt className="text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground sm:text-[0.72rem]">
                     {stat.k}
                   </dt>
-                  <dd className="mt-2 font-heading text-2xl tracking-tight tnum">
+                  <dd className="mt-2 font-heading text-xl tracking-tight tnum sm:text-2xl">
                     {stat.v}
                   </dd>
                 </div>
@@ -144,9 +144,10 @@ export function ReportView({
         </Reveal>
 
         <Reveal delay={0.2}>
-          <div className="mt-12 flex flex-wrap gap-3">
+          <div className="mt-10 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:flex-wrap">
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => handleExportClick("pdf")}
               disabled={!exportsEnabled || isExporting !== null}
               title={isDemo ? "Run your own audit to export PDF" : undefined}
@@ -156,6 +157,7 @@ export function ReportView({
             </Button>
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => handleExportClick("csv")}
               disabled={!exportsEnabled || isExporting !== null}
               title={isDemo ? "Run your own audit to export CSV" : undefined}
@@ -165,6 +167,7 @@ export function ReportView({
             </Button>
             <Button
               variant="secondary"
+              className="w-full sm:w-auto"
               onClick={() => handleExportClick("evidence")}
               disabled={!exportsEnabled || isExporting !== null}
               title={isDemo ? "Run your own audit to export evidence" : undefined}

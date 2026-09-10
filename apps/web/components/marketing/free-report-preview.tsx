@@ -48,7 +48,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
 
   return (
     <section className={isCompact ? "mt-16 border-t border-line pt-16" : "border-t border-line bg-secondary/40"}>
-      <div className={isCompact ? "" : "mx-auto max-w-marketing px-6 py-20 md:px-10 md:py-24"}>
+      <div className={isCompact ? "" : "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-24"}>
         <Reveal>
           <p className="mb-3 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
             Your free audit
@@ -65,8 +65,8 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
           </p>
         </Reveal>
 
-        <Stagger className="mt-12">
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-line pb-3 text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground md:grid-cols-[auto_1fr_auto_auto]">
+        <Stagger className="mt-10 md:mt-12">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-line pb-3 text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground md:grid-cols-[auto_1fr_auto_auto] md:gap-4">
             <span className="hidden md:block">Ref</span>
             <span>Finding</span>
             <span className="hidden text-right md:block">Confidence</span>
@@ -74,12 +74,14 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
           </div>
           {SAMPLE_FINDINGS.map((finding) => (
             <StaggerItem key={finding.id} y={14}>
-              <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-line py-4 transition-colors hover:bg-background/50 md:grid-cols-[auto_1fr_auto_auto]">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-4 transition-colors hover:bg-background/50 md:grid-cols-[auto_1fr_auto_auto] md:gap-4">
                 <span className="hidden font-mono text-xs text-muted-foreground md:block">
                   {finding.id}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-[0.98rem] text-foreground">{finding.title}</p>
+                  <p className="text-[0.92rem] text-foreground sm:truncate sm:text-[0.98rem]">
+                    {finding.title}
+                  </p>
                   <p className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">
                     {finding.category}
                   </p>
@@ -87,7 +89,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
                 <span className="hidden text-right text-sm text-muted-foreground tnum md:block">
                   {Math.round(finding.confidence * 100)}%
                 </span>
-                <span className="text-right font-heading text-lg tracking-tight tnum">
+                <span className="shrink-0 text-right font-heading text-base tracking-tight tnum sm:text-lg">
                   {formatCurrency(finding.annualized)}
                 </span>
               </div>
@@ -97,7 +99,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
 
         <Reveal delay={0.1} className="mt-10">
           <div className="flex items-center gap-3">
-            <Lock className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+            <Lock className="h-5 w-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
             <h3 className="font-heading text-xl tracking-tight text-foreground">
               Detailed findings preview
             </h3>
@@ -108,7 +110,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
           </p>
         </Reveal>
 
-        <Stagger className="mt-8 grid gap-4 md:grid-cols-3">
+        <Stagger className="mt-8 grid gap-3 sm:gap-4 md:grid-cols-3">
           {LOCKED_CARDS.map((item) => (
             <StaggerItem key={item.title}>
               <GlassCard padding="sm" subtle className="relative overflow-hidden">
@@ -128,19 +130,19 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
         </Stagger>
 
         {showCta && (
-          <Reveal delay={0.15} className="mt-10 flex flex-wrap items-center gap-4">
+          <Reveal delay={0.15} className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <p className="text-sm text-muted-foreground">
               Customer names blurred in the free audit. Unlock for full evidence.
             </p>
             <Link
               href="/demo"
-              className="inline-flex items-center gap-2 rounded-full border border-foreground/15 px-5 py-2.5 text-[0.85rem] transition-colors hover:bg-foreground hover:text-background"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-foreground/15 px-5 py-2.5 text-center text-[0.85rem] transition-colors hover:bg-foreground hover:text-background"
             >
               Explore the full sample report →
             </Link>
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[0.85rem] text-muted-foreground transition-colors hover:border-foreground/15 hover:text-foreground"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-line px-5 py-2.5 text-center text-[0.85rem] text-muted-foreground transition-colors hover:border-foreground/15 hover:text-foreground"
             >
               View pricing
             </Link>

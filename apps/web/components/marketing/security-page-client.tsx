@@ -47,10 +47,10 @@ export function SecurityPageClient() {
   return (
     <>
       <SecurityPageTracker />
-      <div className="mx-auto max-w-reading px-6 py-28 md:px-10">
+      <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-28">
         <Reveal>
           <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Security</p>
-          <h1 className="mt-4 font-heading text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.02] tracking-tight text-balance">
+          <h1 className="mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]">
             Built for sensitive billing and CRM data.
           </h1>
           <p className="mt-4 leading-relaxed text-muted-foreground">
@@ -59,26 +59,26 @@ export function SecurityPageClient() {
           </p>
         </Reveal>
 
-        <Stagger className="mt-16 space-y-6">
+        <Stagger className="mt-12 space-y-4 md:mt-16 md:space-y-6">
           {SECTIONS.map((section) => (
             <StaggerItem key={section.title}>
-              <HairlineCard padding="md">
+              <HairlineCard padding="none" className="p-5 md:p-8">
                 <div className="flex items-center gap-3">
-                  <section.icon className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                  <h2 className="font-heading text-xl tracking-tight">{section.title}</h2>
+                  <section.icon className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
+                  <h2 className="font-heading text-lg tracking-tight md:text-xl">{section.title}</h2>
                 </div>
-                <p className="mt-4 leading-relaxed text-muted-foreground">{section.body}</p>
+                <p className="mt-3 leading-relaxed text-muted-foreground md:mt-4">{section.body}</p>
               </HairlineCard>
             </StaggerItem>
           ))}
 
           <StaggerItem>
-            <HairlineCard padding="md">
+            <HairlineCard padding="none" className="p-5 md:p-8">
               <div className="flex items-center gap-3">
-                <Check className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                <h2 className="font-heading text-xl tracking-tight">Automatic deletion after processing</h2>
+                <Check className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
+                <h2 className="font-heading text-lg tracking-tight md:text-xl">Automatic deletion after processing</h2>
               </div>
-              <p className="mt-4 leading-relaxed text-muted-foreground">
+              <p className="mt-3 leading-relaxed text-muted-foreground md:mt-4">
                 Canonical normalized records and audit metadata are retained only to support purchased
                 reports and your workspace history. Raw CSV uploads are never kept longer than required
                 for processing.
@@ -87,12 +87,12 @@ export function SecurityPageClient() {
           </StaggerItem>
 
           <StaggerItem>
-            <HairlineCard padding="md" id="anonymize-before-upload">
+            <HairlineCard padding="none" className="p-5 md:p-8" id="anonymize-before-upload">
               <div className="flex items-center gap-3">
-                <EyeOff className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                <h2 className="font-heading text-xl tracking-tight">Optional: anonymize before upload</h2>
+                <EyeOff className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
+                <h2 className="font-heading text-lg tracking-tight md:text-xl">Optional: anonymize before upload</h2>
               </div>
-              <p className="mt-4 leading-relaxed text-muted-foreground">
+              <p className="mt-3 leading-relaxed text-muted-foreground md:mt-4">
                 Anonymizing is optional. It is not required for a valid audit. If blanking names and
                 emails helps your team feel more comfortable, that is enough for most exports.
               </p>
@@ -118,12 +118,12 @@ export function SecurityPageClient() {
           </StaggerItem>
 
           <StaggerItem>
-            <HairlineCard padding="md">
+            <HairlineCard padding="none" className="p-5 md:p-8">
               <div className="flex items-center gap-3">
-                <Mail className="h-6 w-6 text-primary" strokeWidth={1.75} />
-                <h2 className="font-heading text-xl tracking-tight">Security questionnaire</h2>
+                <Mail className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
+                <h2 className="font-heading text-lg tracking-tight md:text-xl">Security questionnaire</h2>
               </div>
-              <p className="mt-4 text-muted-foreground">
+              <p className="mt-3 text-muted-foreground md:mt-4">
                 Need documentation for vendor review? Email{" "}
                 <a
                   href={`mailto:${SUPPORT_EMAIL}`}
@@ -141,8 +141,8 @@ export function SecurityPageClient() {
           </StaggerItem>
         </Stagger>
 
-        <Reveal delay={0.1} className="mt-16">
-          <RunFreeAuditCta size="md" />
+        <Reveal delay={0.1} className="mt-12 md:mt-16">
+          <RunFreeAuditCta size="md" className="w-full sm:w-auto" />
         </Reveal>
       </div>
     </>

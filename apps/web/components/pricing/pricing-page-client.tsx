@@ -53,7 +53,7 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative flex h-full flex-col rounded-xl bg-card p-8 ${
+      className={`relative flex h-full flex-col rounded-xl bg-card p-6 md:p-8 ${
         highlighted ? "border-2 border-foreground" : "border border-line"
       }`}
     >
@@ -62,11 +62,11 @@ function PricingCard({
           Most popular
         </span>
       )}
-      <h2 className="min-h-16 font-heading text-xl leading-snug tracking-tight">{label}</h2>
-      <div className="mt-4 flex min-h-20 items-end border-b border-line pb-6">
+      <h2 className="min-h-0 font-heading text-xl leading-snug tracking-tight md:min-h-16">{label}</h2>
+      <div className="mt-4 flex min-h-0 items-end border-b border-line pb-5 md:min-h-20 md:pb-6">
         <span
           className={`font-heading tracking-tight tnum ${
-            compactPrice ? "text-2xl" : "text-4xl"
+            compactPrice ? "text-2xl" : "text-3xl md:text-4xl"
           }`}
         >
           {price}
@@ -75,7 +75,7 @@ function PricingCard({
           <span className="ml-2 text-sm text-muted-foreground">{priceNote}</span>
         )}
       </div>
-      <p className="mt-4 min-h-24 text-sm leading-relaxed text-muted-foreground">{description}</p>
+      <p className="mt-4 min-h-0 text-sm leading-relaxed text-muted-foreground md:min-h-24">{description}</p>
       <FeatureList items={features} />
       <div className="mt-auto">{cta}</div>
     </div>
@@ -154,14 +154,14 @@ export function PricingPageClient() {
   return (
     <section className="border-t border-line">
       <PricingPageTracker />
-      <div className="mx-auto max-w-marketing px-6 py-24 md:px-10 lg:py-32">
+      <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-24 lg:py-32">
         <Reveal>
-          <div className="mb-16 max-w-3xl">
+          <div className="mb-10 max-w-3xl md:mb-16">
             <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Pricing</p>
-            <h1 className="mt-6 font-heading text-[clamp(2.5rem,5vw,4rem)] leading-[1.05] tracking-tight text-balance">
+            <h1 className="mt-4 font-heading text-[clamp(2rem,8vw,4rem)] leading-[1.05] tracking-tight text-balance md:mt-6 md:text-[clamp(2.5rem,5vw,4rem)]">
               Start free. Buy the report when the evidence justifies it.
             </h1>
-            <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+            <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
               Start with a free topline leakage scan. Unlock a {PRODUCT_NAMES.verificationReport}{" "}
               when you need evidence-backed findings and remediation guidance.
             </p>

@@ -52,7 +52,7 @@ const TIER_SECTIONS: TierSection[] = [
 ];
 
 const FILE_GRID_CLASS =
-  "mt-4 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
+  "mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
 
 function filenameHint(fileType: FileType): string | null {
   const names = FILE_TYPE_FILENAMES[fileType];
