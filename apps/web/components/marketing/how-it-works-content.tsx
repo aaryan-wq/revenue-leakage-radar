@@ -47,17 +47,20 @@ interface HowItWorksContentProps {
 export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) {
   const isPage = variant === "page";
 
+  const frame = isPage
+    ? "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-24"
+    : "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20";
+
   return (
-    <div className={isPage ? "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-28" : "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20"}>
+    <div>
+    <div className={isPage ? "bg-field" : undefined}>
+    <div className={frame}>
       <Reveal>
-        <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-          How it works
-        </p>
         <h2
           className={
             isPage
-              ? "mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]"
-              : "mt-3 max-w-2xl font-heading text-[clamp(1.75rem,6vw,3rem)] leading-[1.05] tracking-tight text-balance md:text-[clamp(1.9rem,4vw,3rem)]"
+              ? "text-h1 max-w-3xl text-balance text-foreground"
+              : "text-h2 max-w-2xl text-balance text-foreground"
           }
         >
           From CSV export to recoverable revenue in minutes.
@@ -81,12 +84,12 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
           </StaggerItem>
         ))}
       </Stagger>
+    </div>
+    </div>
 
-      <Reveal delay={0.08} className="mt-20">
-        <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-          Verification engine
-        </p>
-        <h3 className="mt-4 max-w-2xl font-heading text-[clamp(1.6rem,3.5vw,2.4rem)] leading-[1.05] tracking-tight text-balance">
+    <div className={frame}>
+      <Reveal delay={0.08}>
+        <h3 className="text-h2 max-w-2xl text-balance text-foreground">
           {VERIFICATION_RULE_COUNT} deterministic checks. Zero guesswork.
         </h3>
         <p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">
@@ -96,7 +99,7 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
           the free scan when data is partial.
         </p>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          <span className="font-medium tabular-nums text-foreground">{VERIFICATION_RULE_COUNT}</span>{" "}
+          <span className="font-medium tabular-nums text-primary">{VERIFICATION_RULE_COUNT}</span>{" "}
           rules ship in the product today, grouped across pricing, discounts, billing, credits, and
           data quality.
         </p>
@@ -105,7 +108,7 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
       <Stagger className="mt-12 grid gap-8 md:grid-cols-2">
         {VERIFICATION_RULE_CATEGORIES.map((category) => (
           <StaggerItem key={category.label}>
-            <div className="h-full rounded-xl border border-line p-6">
+            <div className="h-full rounded-xl border border-line border-t-2 border-t-primary bg-card p-6">
               <h4 className="font-heading text-lg tracking-tight">{category.label}</h4>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {category.description}
@@ -124,9 +127,6 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
       </Stagger>
 
       <Reveal delay={0.1} className="mt-12">
-        <p className="mb-6 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-          The method
-        </p>
         <div className="grid gap-10 md:grid-cols-3">
           {METHOD_STEPS.map((s) => (
             <div key={s.n}>
@@ -151,6 +151,7 @@ export function HowItWorksContent({ variant = "page" }: HowItWorksContentProps) 
           </Link>
         </Reveal>
       )}
+    </div>
     </div>
   );
 }

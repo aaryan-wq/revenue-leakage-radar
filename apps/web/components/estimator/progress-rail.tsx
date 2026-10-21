@@ -15,7 +15,7 @@ export function ProgressRail({ sectionLabel, completionRate }: ProgressRailProps
   const displayPercent = completionRate > 0 ? Math.round(percent) : null;
 
   return (
-    <div className="sticky top-[72px] z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+    <div className="sticky top-16 z-40 border-b border-line bg-background">
       <div className="mx-auto max-w-marketing px-6 md:px-10">
         <div className="flex h-10 items-center justify-between gap-4">
           <p className="truncate text-caption text-muted-foreground">{sectionLabel ?? "Getting started"}</p>

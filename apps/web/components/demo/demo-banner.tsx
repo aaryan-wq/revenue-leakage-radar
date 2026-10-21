@@ -7,7 +7,7 @@ import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 
 export function DemoBanner() {
   return (
-    <div className="border-b border-line bg-secondary/40 backdrop-blur-lg">
+    <div className="border-b border-line bg-field">
       <div className="mx-auto flex max-w-report flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10">
         <div className="flex items-start gap-3">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />

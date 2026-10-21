@@ -24,7 +24,7 @@ function FeatureList({ items }: { items: string[] }) {
     <ul className="mb-8 mt-8 space-y-3">
       {items.map((item) => (
         <li key={item} className="flex items-start gap-3">
-          <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" strokeWidth={1.75} />
+          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
           <span className="text-sm text-muted-foreground">{item}</span>
         </li>
       ))}
@@ -54,11 +54,11 @@ function PricingCard({
   return (
     <div
       className={`relative flex h-full flex-col rounded-xl bg-card p-6 md:p-8 ${
-        highlighted ? "border-2 border-foreground" : "border border-line"
+        highlighted ? "border-2 border-primary" : "border border-line"
       }`}
     >
       {highlighted && (
-        <span className="absolute -top-3 left-6 bg-foreground px-3 py-1 text-[0.65rem] uppercase tracking-widest text-primary-foreground">
+        <span className="absolute -top-3 left-6 rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground">
           Most popular
         </span>
       )}
@@ -66,8 +66,8 @@ function PricingCard({
       <div className="mt-4 flex min-h-0 items-end border-b border-line pb-5 md:min-h-20 md:pb-6">
         <span
           className={`font-heading tracking-tight tnum ${
-            compactPrice ? "text-2xl" : "text-3xl md:text-4xl"
-          }`}
+            highlighted ? "text-primary" : ""
+          } ${compactPrice ? "text-2xl" : "text-3xl md:text-4xl"}`}
         >
           {price}
         </span>
@@ -152,22 +152,25 @@ export function PricingPageClient() {
   };
 
   return (
-    <section className="border-t border-line">
+    <>
       <PricingPageTracker />
-      <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-24 lg:py-32">
-        <Reveal>
-          <div className="mb-10 max-w-3xl md:mb-16">
-            <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Pricing</p>
-            <h1 className="mt-4 font-heading text-[clamp(2rem,8vw,4rem)] leading-[1.05] tracking-tight text-balance md:mt-6 md:text-[clamp(2.5rem,5vw,4rem)]">
-              Start free. Buy the report when the evidence justifies it.
-            </h1>
-            <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
-              Start with a free topline leakage scan. Unlock a {PRODUCT_NAMES.verificationReport}{" "}
-              when you need evidence-backed findings and remediation guidance.
-            </p>
-          </div>
-        </Reveal>
-
+      <section className="bg-field">
+        <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20">
+          <Reveal>
+            <div className="max-w-3xl">
+              <h1 className="text-h1 text-balance text-foreground">
+                Start free. Buy the report when the evidence justifies it.
+              </h1>
+              <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
+                Start with a free topline leakage scan. Unlock a {PRODUCT_NAMES.verificationReport}{" "}
+                when you need evidence-backed findings and remediation guidance.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+      <section>
+      <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20">
         <Stagger className="grid items-stretch gap-4 lg:grid-cols-3">
           <StaggerItem className="h-full">
             <PricingCard
@@ -232,6 +235,7 @@ export function PricingPageClient() {
           <LegalConsent action="purchasing a plan" className="text-center" />
         </Reveal>
       </div>
-    </section>
+      </section>
+    </>
   );
 }

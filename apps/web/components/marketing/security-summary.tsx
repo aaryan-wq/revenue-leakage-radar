@@ -12,13 +12,10 @@ const POINTS = [
 
 export function SecuritySummary() {
   return (
-    <section className="border-t border-line bg-secondary/30">
+    <section className="border-t border-line bg-field">
       <div className="mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-20">
         <Reveal>
-          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Security
-          </p>
-          <h2 className="mt-3 max-w-xl font-heading text-[clamp(1.6rem,3.5vw,2.4rem)] leading-[1.05] tracking-tight">
+          <h2 className="text-h2 max-w-xl text-balance text-foreground">
             Your billing and CRM data stays yours.
           </h2>
         </Reveal>

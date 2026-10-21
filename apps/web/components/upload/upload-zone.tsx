@@ -51,7 +51,7 @@ export function UploadZone({
 
   return (
     <div>
-      <motion.div
+      <div
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -68,58 +68,15 @@ export function UploadZone({
           handleFiles(e.dataTransfer.files);
         }}
         onClick={() => !disabled && inputRef.current?.click()}
-        animate={{
-          scale: hover && !disabled ? 1.012 : 1,
-          rotateX: hover && !disabled ? -2 : 0,
-        }}
-        transition={{ type: "spring", stiffness: 220, damping: 22 }}
-        style={{ transformPerspective: 1200 }}
         className={cn(
-          "group relative overflow-hidden rounded-2xl border border-line bg-card",
+          "rounded-lg border bg-background transition-colors",
+          hover && !disabled ? "border-foreground" : "border-line",
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         )}
       >
-        <motion.div
-          className="pointer-events-none absolute inset-0"
-          animate={{ opacity: hover && !disabled ? 1 : 0 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            background:
-              "radial-gradient(120% 80% at 50% 0%, color-mix(in oklch, var(--primary) 8%, transparent), transparent 60%)",
-          }}
-        />
-
-        <div className="relative flex flex-col items-center px-8 py-20 text-center">
-          <motion.div
-            animate={{ y: hover && !disabled ? -6 : 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 18 }}
-            className="relative mb-8 flex h-20 w-20 items-center justify-center"
-          >
-            <motion.span
-              className="absolute inset-0 rounded-2xl border border-primary/30"
-              animate={{
-                scale: hover && !disabled ? [1, 1.18, 1] : 1,
-                opacity: hover && !disabled ? [0.6, 0, 0.6] : 0.4,
-              }}
-              transition={{ duration: 2, repeat: hover && !disabled ? Infinity : 0 }}
-            />
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-7 w-7 text-primary"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 16V4m0 0L7 9m5-5l5 5" />
-                <path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" />
-              </svg>
-            </div>
-          </motion.div>
-
-          <h3 className="font-heading text-2xl tracking-tight">Place your data here</h3>
+        <div className="flex flex-col items-center px-8 py-16 text-center">
+          <FileUp className="h-6 w-6 text-foreground" strokeWidth={1.75} />
+          <h3 className="text-h4 mt-4 text-foreground">Place your data here</h3>
           <p className="mt-3 max-w-sm text-pretty leading-relaxed text-muted-foreground">
             Drop billing and CRM CSV exports, or click to browse. Files upload immediately and
             coverage updates as each export is added.
@@ -135,7 +92,7 @@ export function UploadZone({
             onChange={(e) => handleFiles(e.target.files)}
           />
         </div>
-      </motion.div>
+      </div>
 
       <AnimatePresence>
         {files.length > 0 && (

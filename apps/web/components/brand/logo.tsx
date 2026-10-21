@@ -12,17 +12,16 @@ type LogoProps = {
   priority?: boolean;
 };
 
-/** Shared top row for every sticky nav. Aligns logo and button tops. */
-export const NAV_ROW_CLASS = "flex h-[72px] items-start pt-5";
+/** Shared top row for every sticky nav. */
+export const NAV_ROW_CLASS = "flex h-16 items-center";
 
 export const NAV_LOGO_CLASS = {
-  full: "h-9 w-auto",
-  short: "h-9 w-9",
+  full: "h-7 w-auto sm:h-7",
+  short: "h-7 w-7 sm:h-7 sm:w-7",
 } as const;
 
-/** Matches NAV_LOGO_CLASS.short height for paired workspace greeting. */
-export const NAV_GREETING_CLASS =
-  "hidden h-9 shrink-0 font-heading text-[2.25rem] leading-none tracking-tight text-foreground lg:block";
+/** Quiet label beside workspace actions. */
+export const NAV_GREETING_CLASS = "hidden shrink-0 text-sm text-muted-foreground lg:block";
 
 const LOGO_CONFIG: Record<
   LogoVariant,
@@ -54,13 +53,13 @@ export function Logo({ variant = "full", className, href = "/", priority = false
       width={width}
       height={height}
       priority={priority}
-      className={cn("object-contain object-left-top", sizeClass, className)}
+      className={cn("object-contain object-left", sizeClass, className)}
     />
   );
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex shrink-0 items-start" aria-label="Paevo home">
+      <Link href={href} className="inline-flex shrink-0 items-center" aria-label="Paevo home">
         {image}
       </Link>
     );

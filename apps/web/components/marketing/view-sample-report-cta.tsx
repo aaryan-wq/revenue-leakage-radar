@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { AnalyticsEvents } from "@rlr/shared";
 
 import { captureEvent } from "@/lib/analytics/client";
@@ -11,18 +10,20 @@ interface ViewSampleReportCtaProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   analyticsSource?: string;
+  label?: string;
 }
 
 const sizeClasses = {
-  sm: "h-9 px-4 text-[0.8rem]",
-  md: "px-6 py-3.5 text-[0.92rem]",
-  lg: "px-7 py-4 text-[0.95rem]",
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
+  lg: "h-10 px-5 text-sm",
 };
 
 export function ViewSampleReportCta({
   size = "md",
   className,
   analyticsSource = "hero",
+  label = "View sample report",
 }: ViewSampleReportCtaProps) {
   return (
     <Link
@@ -35,16 +36,14 @@ export function ViewSampleReportCta({
         })
       }
     >
-      <motion.span
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      <span
         className={cn(
-          "inline-flex w-full items-center justify-center gap-2 rounded-full border border-line bg-card/80 font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-secondary",
+          "inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background font-medium text-foreground transition-colors hover:bg-secondary",
           sizeClasses[size],
         )}
       >
-        View sample report
-      </motion.span>
+        {label}
+      </span>
     </Link>
   );
 }

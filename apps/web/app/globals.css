@@ -5,28 +5,29 @@
 @layer base {
   :root {
     color-scheme: light;
-    --background: oklch(0.985 0.005 95);
-    --foreground: oklch(0.235 0.012 75);
-    --card: oklch(0.997 0.003 95);
-    --card-foreground: oklch(0.235 0.012 75);
-    --popover: oklch(0.997 0.003 95);
-    --popover-foreground: oklch(0.235 0.012 75);
-    --primary: oklch(0.455 0.078 165);
-    --primary-foreground: oklch(0.985 0.01 110);
-    --secondary: oklch(0.955 0.008 95);
-    --secondary-foreground: oklch(0.3 0.015 75);
-    --muted: oklch(0.955 0.006 95);
-    --muted-foreground: oklch(0.53 0.012 80);
-    --accent: oklch(0.95 0.01 95);
-    --accent-foreground: oklch(0.3 0.015 75);
-    --destructive: oklch(0.55 0.18 28);
-    --destructive-foreground: oklch(0.985 0.01 95);
-    --leak: oklch(0.68 0.135 55);
-    --leak-foreground: oklch(0.985 0.01 95);
-    --border: oklch(0.905 0.006 90);
-    --line: oklch(0.88 0.007 90);
-    --input: oklch(0.9 0.006 90);
-    --ring: oklch(0.455 0.078 165);
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.18 0.01 160);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.18 0.01 160);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.18 0.01 160);
+    --primary: oklch(0.4 0.085 163);
+    --primary-foreground: oklch(0.99 0 0);
+    --field: oklch(0.955 0.028 163);
+    --secondary: oklch(0.965 0.014 163);
+    --secondary-foreground: oklch(0.22 0.02 163);
+    --muted: oklch(0.96 0.01 163);
+    --muted-foreground: oklch(0.46 0.02 160);
+    --accent: oklch(0.955 0.02 163);
+    --accent-foreground: oklch(0.22 0 0);
+    --destructive: oklch(0.55 0.2 25);
+    --destructive-foreground: oklch(0.99 0 0);
+    --leak: oklch(0.62 0.14 55);
+    --leak-foreground: oklch(0.99 0 0);
+    --border: oklch(0.9 0 0);
+    --line: oklch(0.9 0 0);
+    --input: oklch(0.9 0 0);
+    --ring: oklch(0.4 0.085 163);
     --radius: 0.5rem;
     --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -53,7 +54,73 @@
 
 @layer utilities {
   .font-heading {
-    font-family: var(--font-fraunces), Georgia, serif;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+
+  .text-display {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+  }
+
+  .text-h1 {
+    font-size: clamp(2.25rem, 4vw, 3.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-weight: 500;
+  }
+
+  .text-h2 {
+    font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 500;
+  }
+
+  .text-h3 {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+  }
+
+  .text-h4 {
+    font-size: 1.125rem;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+  }
+
+  .text-body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .text-small {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .text-caption {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .text-overline {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .text-metric-xl {
+    font-size: clamp(2.5rem, 4.5vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
   .tnum {

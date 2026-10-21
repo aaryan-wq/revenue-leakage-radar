@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { motion } from "framer-motion";
 
-import { Logo, NAV_GREETING_CLASS, NAV_LOGO_CLASS, NAV_ROW_CLASS } from "@/components/brand/logo";
+import { Logo, NAV_GREETING_CLASS, NAV_LOGO_CLASS } from "@/components/brand/logo";
 import { RunFreeAuditCta } from "@/components/marketing/run-free-audit-cta";
 import { isAdminUser } from "@/lib/admin-access";
 import { formatGreeting } from "@/lib/greeting";
@@ -65,39 +64,11 @@ export function WorkspaceNav() {
     : [...baseLinks];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/60">
-      <div className="absolute inset-0 -z-10 bg-background/85 backdrop-blur-xl" />
-      <nav className="mx-auto max-w-marketing px-6 md:px-10">
-        <div className={cn("justify-between gap-4", NAV_ROW_CLASS)}>
-          <div className="flex min-w-0 items-start gap-4">
-            <Logo variant="short" href="/dashboard" className={NAV_LOGO_CLASS.short} />
-            {clerkReady ? (
-              <WorkspaceGreeting />
-            ) : (
-              <p className={NAV_GREETING_CLASS}>{formatGreeting("there")}</p>
-            )}
-          </div>
+    <header className="sticky top-0 z-50 border-b border-line bg-background">
+      <nav className="mx-auto flex h-16 max-w-marketing items-center gap-4 px-6 md:gap-6 md:px-10">
+        <Logo variant="short" href="/dashboard" className={NAV_LOGO_CLASS.short} />
 
-          <div className="flex shrink-0 items-start gap-2 sm:gap-3">
-            <RunFreeAuditCta
-              size="sm"
-              fromWorkspace
-              className="hidden h-9 items-center md:inline-flex"
-            />
-            {clerkReady ? (
-              <UserButton appearance={clerkAppearance} />
-            ) : (
-              <Link
-                href="/sign-in"
-                className="inline-flex h-9 items-center rounded-full bg-primary px-4 text-[0.8rem] font-medium text-primary-foreground"
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="-mx-2 mb-3 flex items-center gap-0.5 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] scrollbar-none">
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scrollbar-none">
           {links.map((link) => {
             const active = isLinkActive(pathname, link.href);
             return (
@@ -105,21 +76,30 @@ export function WorkspaceNav() {
                 key={link.href}
                 href={link.href}
                 prefetch={link.prefetch}
-                className="relative shrink-0 px-3 py-2.5 text-[0.78rem] tracking-wide text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {active && (
-                  <motion.span
-                    layoutId="workspace-nav-pill"
-                    className="absolute inset-0 rounded-full bg-secondary"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
+                className={cn(
+                  "shrink-0 px-3 py-2 text-sm transition-colors",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
-                <span className={active ? "relative text-foreground" : "relative"}>
-                  {link.label}
-                </span>
+              >
+                {link.label}
               </Link>
             );
           })}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-3">
+          {clerkReady ? <WorkspaceGreeting /> : <p className={NAV_GREETING_CLASS}>{formatGreeting("there")}</p>}
+          <RunFreeAuditCta size="sm" fromWorkspace className="hidden md:inline-flex" />
+          {clerkReady ? (
+            <UserButton appearance={clerkAppearance} />
+          ) : (
+            <Link
+              href="/sign-in"
+              className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </nav>
     </header>

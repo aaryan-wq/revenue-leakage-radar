@@ -257,7 +257,9 @@ Always prefer explicit types.
 
 # UI Rules
 
-Always follow the Design System.
+Always follow `docs/design-system.md`.
+
+The look is a light SaaS product in the Stripe, Vercel, and Linear family: Geist, white surfaces, a pale green field, forest green as the only accent, a thin solid nav. Do not restore serifs, warm paper, glass, glow, tracked eyebrows, or the historical prototypes in `docs/design/`.
 
 Never invent colors.
 

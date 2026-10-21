@@ -47,13 +47,10 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
   const isCompact = variant === "compact";
 
   return (
-    <section className={isCompact ? "mt-16 border-t border-line pt-16" : "border-t border-line bg-secondary/40"}>
+    <section className={isCompact ? "mt-16 border-t border-line pt-16" : "border-t border-line bg-background"}>
       <div className={isCompact ? "" : "mx-auto max-w-marketing px-6 py-14 md:px-10 md:py-24"}>
         <Reveal>
-          <p className="mb-3 text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Your free audit
-          </p>
-          <h2 className="max-w-xl font-heading text-[clamp(1.6rem,3.5vw,2.4rem)] leading-[1.05] tracking-tight text-balance">
+          <h2 className="text-h2 max-w-xl text-balance text-foreground">
             {isCompact
               ? "Every upload includes a free audit summary."
               : "See recoverable revenue before you pay for anything."}
@@ -66,7 +63,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
         </Reveal>
 
         <Stagger className="mt-10 md:mt-12">
-          <div className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-line pb-3 text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground md:grid-cols-[auto_1fr_auto_auto] md:gap-4">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-line pb-3 text-sm text-muted-foreground md:grid-cols-[auto_1fr_auto_auto] md:gap-4">
             <span className="hidden md:block">Ref</span>
             <span>Finding</span>
             <span className="hidden text-right md:block">Confidence</span>
@@ -89,7 +86,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
                 <span className="hidden text-right text-sm text-muted-foreground tnum md:block">
                   {Math.round(finding.confidence * 100)}%
                 </span>
-                <span className="shrink-0 text-right font-heading text-base tracking-tight tnum sm:text-lg">
+                <span className="shrink-0 text-right font-heading text-base tracking-tight text-primary tnum sm:text-lg">
                   {formatCurrency(finding.annualized)}
                 </span>
               </div>
@@ -117,7 +114,7 @@ export function FreeReportPreview({ variant = "full", showCta = true }: FreeRepo
                 <div className="select-none blur-sm">
                   <p className="text-sm font-medium text-foreground">{item.title}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{item.category}</p>
-                  <p className="mt-4 font-heading text-xl tracking-tight tnum">
+                  <p className="mt-4 font-heading text-xl tracking-tight text-primary tnum">
                     {formatCurrency(item.arr)}
                   </p>
                 </div>

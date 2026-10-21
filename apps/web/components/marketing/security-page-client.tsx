@@ -47,22 +47,24 @@ export function SecurityPageClient() {
   return (
     <>
       <SecurityPageTracker />
-      <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-28">
-        <Reveal>
-          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Security</p>
-          <h1 className="mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]">
-            Built for sensitive billing and CRM data.
-          </h1>
-          <p className="mt-4 leading-relaxed text-muted-foreground">
-            Finance teams trust us with invoice exports, subscription records, pricing catalogs, and CRM contracts.
-            Security is not a feature. It is the foundation.
-          </p>
-        </Reveal>
-
-        <Stagger className="mt-12 space-y-4 md:mt-16 md:space-y-6">
+      <div className="bg-field">
+        <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-20">
+          <Reveal>
+            <h1 className="text-h1 text-balance text-foreground">
+              Built for sensitive billing and CRM data.
+            </h1>
+            <p className="mt-4 leading-relaxed text-muted-foreground">
+              Finance teams trust us with invoice exports, subscription records, pricing catalogs, and CRM contracts.
+              Security is not a feature. It is the foundation.
+            </p>
+          </Reveal>
+        </div>
+      </div>
+      <div className="mx-auto max-w-reading px-6 py-12 md:px-10 md:py-20">
+        <Stagger className="space-y-4 md:space-y-6">
           {SECTIONS.map((section) => (
             <StaggerItem key={section.title}>
-              <HairlineCard padding="none" className="p-5 md:p-8">
+              <HairlineCard padding="none" className="border-l-2 border-l-primary p-5 md:p-8">
                 <div className="flex items-center gap-3">
                   <section.icon className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
                   <h2 className="font-heading text-lg tracking-tight md:text-xl">{section.title}</h2>
@@ -73,7 +75,7 @@ export function SecurityPageClient() {
           ))}
 
           <StaggerItem>
-            <HairlineCard padding="none" className="p-5 md:p-8">
+            <HairlineCard padding="none" className="border-l-2 border-l-primary p-5 md:p-8">
               <div className="flex items-center gap-3">
                 <Check className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
                 <h2 className="font-heading text-lg tracking-tight md:text-xl">Automatic deletion after processing</h2>
@@ -87,7 +89,7 @@ export function SecurityPageClient() {
           </StaggerItem>
 
           <StaggerItem>
-            <HairlineCard padding="none" className="p-5 md:p-8" id="anonymize-before-upload">
+            <HairlineCard padding="none" className="border-l-2 border-l-primary p-5 md:p-8" id="anonymize-before-upload">
               <div className="flex items-center gap-3">
                 <EyeOff className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
                 <h2 className="font-heading text-lg tracking-tight md:text-xl">Optional: anonymize before upload</h2>
@@ -118,7 +120,7 @@ export function SecurityPageClient() {
           </StaggerItem>
 
           <StaggerItem>
-            <HairlineCard padding="none" className="p-5 md:p-8">
+            <HairlineCard padding="none" className="border-l-2 border-l-primary p-5 md:p-8">
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 shrink-0 text-primary md:h-6 md:w-6" strokeWidth={1.75} />
                 <h2 className="font-heading text-lg tracking-tight md:text-xl">Security questionnaire</h2>

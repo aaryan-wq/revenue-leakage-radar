@@ -26,14 +26,11 @@ export function AuditRoiSection() {
     <Reveal delay={0.1}>
       <HairlineCard padding="lg" elevated className="border-line">
         <div className="flex items-start gap-4">
-          <div className="hidden rounded-full border border-line bg-secondary/40 p-3 sm:block">
-            <TrendingUp className="h-5 w-5 text-foreground" strokeWidth={1.75} aria-hidden />
+          <div className="hidden rounded-full border border-line bg-field p-3 sm:block">
+            <TrendingUp className="h-5 w-5 text-primary" strokeWidth={1.75} aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">
-              Return on investment
-            </p>
-            <h2 className="mt-4 font-heading text-[clamp(1.75rem,4vw,2.25rem)] leading-tight tracking-tight text-foreground">
+            <h2 className="text-h2 text-balance text-foreground">
               {buildPricingRoiHeadline(metrics)}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
@@ -43,10 +40,10 @@ export function AuditRoiSection() {
             <dl className="mt-8 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat) => (
                 <div key={stat.label} className="bg-card px-5 py-5">
-                  <dt className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  <dt className="text-sm text-muted-foreground">
                     {stat.label}
                   </dt>
-                  <dd className="mt-2 font-heading text-xl tracking-tight tnum text-foreground lg:text-2xl">
+                  <dd className="mt-2 font-heading text-xl tracking-tight text-primary tnum lg:text-2xl">
                     {stat.value}
                   </dd>
                   {stat.detail ? (

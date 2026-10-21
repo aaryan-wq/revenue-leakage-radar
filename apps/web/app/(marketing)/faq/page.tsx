@@ -107,7 +107,7 @@ function FaqItem({ question, answer }: { question: string; answer: ReactNode }) 
       >
         <span className="pr-2 text-[0.95rem] font-medium leading-snug text-foreground md:text-base">{question}</span>
         <ChevronDown
-          className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-normal ${open ? "rotate-180" : ""}`}
+          className={`h-5 w-5 shrink-0 text-primary transition-transform duration-normal ${open ? "rotate-180" : ""}`}
           strokeWidth={1.75}
         />
       </button>
@@ -132,18 +132,18 @@ export default function FaqPage() {
   return (
     <>
       <FaqPageTracker />
-      <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-28">
+      <div className="bg-field">
+        <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-20">
+          <Reveal>
+            <h1 className="text-h1 text-balance text-foreground">Frequently Asked Questions</h1>
+            <p className="mt-4 leading-relaxed text-muted-foreground">
+              Common questions about uploads, pricing, and data handling.
+            </p>
+          </Reveal>
+        </div>
+      </div>
+      <div className="mx-auto max-w-reading px-6 py-12 md:px-10 md:pb-28">
         <Reveal>
-          <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">FAQ</p>
-          <h1 className="mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]">
-            Frequently Asked Questions
-          </h1>
-          <p className="mt-4 leading-relaxed text-muted-foreground">
-            Common questions about uploads, pricing, and data handling.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.1} className="mt-10 md:mt-12">
           <HairlineCard padding="none" className="p-5 md:p-8">
             {FAQ_ITEMS.map((item) => (
               <FaqItem key={item.q} question={item.q} answer={item.a} />

@@ -140,7 +140,7 @@ export function DataTierFilesChecklist({
       <HairlineCard padding="sm" className="mt-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Accepted exports
             </p>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
@@ -150,7 +150,7 @@ export function DataTierFilesChecklist({
           </div>
           {dataTier && hasUpload && (
             <div className="rounded-lg border border-line bg-secondary/30 px-4 py-3 text-right">
-              <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Data tier
               </p>
               <p className="mt-1 font-heading text-lg tracking-tight text-foreground">

@@ -127,6 +127,8 @@ Dashboard
 
 Get upload started immediately.
 
+Visual treatment, type, color, and motion follow `docs/design-system.md`. This section lists the content. It does not set the look.
+
 ----------
 
 ## Sections

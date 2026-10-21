@@ -5,23 +5,15 @@ alwaysApply: true
 
 # Revenue Leakage Radar, UI Rules
 
-> **Canonical source:** [docs/design/design-language.md](docs/design/design-language.md) and reference implementations in [docs/design/revenue-leakage-radar/](docs/design/revenue-leakage-radar/). This file enforces agent rules. When in conflict, `/docs/design` always wins.
+> **Canonical source:** [docs/design-system.md](docs/design-system.md), then [docs/design/design-language.md](docs/design/design-language.md), then the live UI in `apps/web`. Prototype folders under `docs/design/` are historical. Do not copy them. When they conflict with the design system, the design system wins.
 
 ## Core Design Philosophy
 
-The UI should feel like **Apple built Stripe for enterprise finance teams**.
-
-Primary inspirations (principles only, never copy):
-
-- Apple → Precision, glass, depth, intentional motion
-- Stripe → Clarity, density when needed, hierarchy
-- Hermès → Luxury through restraint
-- Squarespace → Editorial whitespace
-- itsoffbrand → Fluid interactions, reactive layouts
+The UI should feel like a light, large-scale SaaS product: Stripe's scale, Vercel's restraint, Linear's precision. Do not copy their dark canvases, gradients, or marks.
 
 Users should trust the product within 10 seconds.
 
-The interface should feel **expensive before it feels technical**, executive financial software, not generic SaaS.
+The interface should feel precise and current. Type and numbers do the work. Decoration does not.
 
 ---
 
@@ -43,14 +35,12 @@ Motion serves clarity and confidence. It is intentional, never flashy.
 
 Prefer:
 
-- Soft glass surfaces
-- Layered depth
-- Thin borders
-- Gentle shadows
-- Large border radii
+- White surfaces on a pale green field
+- Thin hairline borders
+- 8px radii
 - Premium whitespace
 - Alignment and typography
-- Intentional motion (Framer Motion)
+- Forest green on the primary action, links, and key figures
 
 Avoid:
 
@@ -75,7 +65,7 @@ Every pixel should have a purpose.
 | Framework | Next.js 15 |
 | Styling | Tailwind CSS |
 | Components | shadcn/ui |
-| Motion | Framer Motion (required for all UI animation) |
+| Motion | Framer Motion only where state needs it |
 | Icons | Lucide |
 | Toasts | Sonner |
 | Smooth scroll | Lenis (landing + report views only) |
@@ -88,13 +78,11 @@ Use design tokens from `docs/design-system.md` only. Never invent arbitrary Tail
 
 Only use colors defined in the Design System.
 
-Primary: Slate (`primary` tokens)
+Primary: Forest green (`primary` tokens). Use it on the primary button, links, and rare emphasis.
 
-Primary Action / Accent: Blue
+Surfaces: white background, white cards, 1px neutral hairline. `field` is a pale forest tint for page intros, alternating bands, and the footer. Forest green marks key figures and rules. No cream wash, no glass blur, no gradients.
 
-Semantic: Success (green), Warning (amber), Error (red), Info (blue)
-
-Surfaces: `surface/glass`, `surface/glass-elevated`, `surface/glass-subtle`
+Semantic: Success (green), Warning (amber), Error (red).
 
 Never invent colors. Never use arbitrary Tailwind colors. Never exceed three accent colors on a page.
 
@@ -102,9 +90,9 @@ Never invent colors. Never use arbitrary Tailwind colors. Never exceed three acc
 
 # Typography
 
-Font: Inter
+Font: Geist for headlines and body. No second display face.
 
-Use only the typography scale from the Design System. Never manually choose font sizes. Always use semantic typography tokens (`display-hero`, `metric-xl`, `h1`–`h4`, `body`, `small`, `caption`, `overline`).
+Use the shared scale (`text-display`, `text-h1` through `text-h4`, `text-body`, `text-small`, `text-caption`). Section labels are sentence case. No uppercase tracking.
 
 Financial numbers must use:
 
@@ -160,25 +148,24 @@ Maintain consistent gutters. Layout changes only on responsive, never change bus
 
 ---
 
-# Soft Glass
+# Surfaces
 
-Default surfaces use the soft glass recipe from the design system:
+Default surfaces are flat:
 
-- `surface/glass` + `blur/lg` + `border/glass`
-- Inner top highlight on cards
-- Elevation tokens for depth
+- White background
+- 1px `border-line`
+- 8px radius on controls and cards
+- No blur, glow, dashed frames, or radial washes
 
-Use `surface/glass-elevated` for navigation, modals, and dropdowns.
-
-Never stack heavy blur + high transparency + strong glow.
+Modals and dropdowns use the same white surface with a hairline border.
 
 ---
 
 # Navigation
 
-Top navigation only. Sticky. 72px. Frosted glass (`surface/glass-elevated`).
+Top navigation only. Sticky. 64px (`h-16`). Solid background, 1px bottom border, no blur.
 
-Minimal chrome. Logo left, actions right. Hairline bottom border.
+Logo left, links beside it, actions right. No centered pill indicator.
 
 Never use sidebars during MVP unless specified. Navigation should never compete with page content.
 
@@ -190,18 +177,18 @@ Cards are the primary layout primitive.
 
 Rules:
 
-- Glass surface (`surface/glass` + `blur/lg`)
-- Generous padding (32px)
+- White surface, 1px border, 8px radius
+- Generous padding
 - Single primary metric
 - Clear hierarchy
-- Elevation on hover with lift (`y: -4px`)
+- Hover changes background color. No lift.
 - Avoid clutter
 
 ---
 
 # Tables
 
-Tables prioritize readability inside glass containers.
+Tables prioritize readability on a white surface.
 
 Rules:
 
@@ -218,9 +205,9 @@ Rules:
 
 Every page has one Primary CTA. Unlimited Secondary.
 
-Variants: Primary, Secondary, Ghost, Danger, Glass
+Variants: Primary, Outline, Secondary, Ghost, Danger, Link
 
-Never invent new button styles. Primary uses dark slate, not blue-filled.
+Never invent new button styles. Primary is solid forest green, 8px radius, about 40px tall, with no glow. Secondary is an outline.
 
 ---
 
@@ -230,19 +217,17 @@ Always use: Label, Input, Helper text, Validation, Error message
 
 Never rely on placeholders as labels.
 
-Inputs use glass-subtle background with focus ring (`border/focus` + soft blue glow).
+Inputs use a white background with a forest green focus ring (2px ring, 2px offset).
 
 ---
 
 # Upload UI
 
-Upload is the centerpiece on landing. Above fold on desktop.
+The landing hero is a headline and a leakage figure. Upload is one click away through the primary button.
 
-Large glass hero panel (`radius/hero`). Interactive drag lighting.
+The upload page keeps a flat bordered drop target. Hover changes the border color. No pulse, tilt, or radial wash.
 
-States: Idle, Drag enter, Uploading, Processing (6-step stepper), Uploaded, Error
-
-Motion: Border pulse on drag, progress fill, check morph on success, subtle shake on error.
+States: Idle, Drag enter, Uploading, Processing, Uploaded, Error.
 
 ---
 
@@ -304,7 +289,7 @@ Prefer: Bar, Line, Simple donut
 
 Restrained enter animations allowed (bar grow, 300ms). Never animate excessively on refresh.
 
-Embed in glass panels for reports.
+Embed in white hairline panels for reports.
 
 ---
 
@@ -318,48 +303,33 @@ Never mix icon packs. Icons support text, never replace labels.
 
 # Motion System
 
-Motion is a first-class design primitive. Use Framer Motion for all UI animation.
+Page content appears. Hover is a color change.
 
-Durations: instant (100ms), fast (150ms), normal (200ms), moderate (300ms), slow (400ms), reveal (500ms)
+Do not add blur fades, line-by-line headline reveals, count-up stats, spring nav pills, card lift, or tilt.
 
-Easing: ease/out default; spring/snappy for buttons; spring/gentle for cards and modals
+Toasts (Sonner): slide up + fade, top right, 4s dismiss.
 
-Patterns:
-
-- Page transitions: fade + rise, AnimatePresence
-- Card hover: lift + elevation
-- Button press: scale 0.98
-- Modal: backdrop fade + content scale
-- Scroll reveals: whileInView stagger, once only
-- Metric counters: count-up on viewport entry
-- Toasts (Sonner): slide up + fade, top right, 4s dismiss
-
-Never flashy. Never bouncy. Respect `prefers-reduced-motion`, disable tilt, scroll reveals, counters; keep opacity transitions ≤150ms.
+Respect `prefers-reduced-motion`.
 
 ---
 
 # Reactive Interface
 
-The UI subtly responds to the user:
+The UI responds with color:
 
-- Cards lift on hover
-- Cursor-aware lighting on hero upload and feature cards (max 15% luminance)
-- Gentle tilt on landing cards (max 2°)
-- Animated progress states
-- Metric counters
-- Smooth state transitions
-
-Everything feels alive without distracting from content. Max one ambient animation per viewport. Disable all reactive effects under reduced motion.
+- Cards and buttons change background on hover
+- Progress fills while work is running
+- No cursor lighting, tilt, or metric counters
 
 ---
 
 # Micro Interactions
 
-Buttons: brightness +4% hover, scale 0.98 on press
+Buttons: brightness on hover. No scale.
 
-Cards: lift 4px + elevation on hover
+Cards: background change on hover. No lift.
 
-Inputs: blue focus ring with soft glow
+Inputs: forest green focus ring
 
 Links: underline grow on hover
 
@@ -371,13 +341,13 @@ Badges: static on hover; subtle scale-in on appear only
 
 Minimum touch target: 44px
 
-Keyboard accessible. Visible focus ring (2px blue, 2px offset).
+Keyboard accessible. Visible focus ring (2px forest green, 2px offset).
 
 WCAG AA contrast. Semantic HTML. Proper labels.
 
 Accessible motion: respect `prefers-reduced-motion`. No flashing >3Hz.
 
-Glass surfaces: maintain contrast at documented minimum opacities.
+Field bands stay light enough that near-black text and forest green figures both meet WCAG AA.
 
 ---
 
@@ -415,11 +385,9 @@ Every page: Header → Primary Content → Secondary Content → Footer / Action
 
 # Landing Page
 
-Premium product-launch experience. Editorial layout. Large typography (`display-hero`).
+Large sans headline, one short sentence, two compact buttons. The leakage figure sits beside the headline.
 
-Upload zone is the visual centerpiece, above fold on desktop.
-
-Staggered scroll reveals for features. Trust strip in glass cards.
+A hairline stat band sits under the hero. No upload drop zone on the landing page.
 
 Single primary CTA.
 
@@ -431,7 +399,7 @@ Executive workspace, not a traditional SaaS dashboard.
 
 Priority order: (1) Revenue recovered, (2) High-impact findings, (3) Audit coverage, (4) Next actions
 
-One hero metric, 2–3 supporting glass cards above fold. No widget grids. No sidebar. Breathing room.
+One hero metric, 2–3 supporting white cards above the fold. No widget grids. No sidebar. Breathing room.
 
 ---
 
@@ -441,7 +409,7 @@ Consulting presentation quality (McKinsey/Bain). Evidence-first.
 
 Flow: Executive Summary → Opportunity → Verification → Findings → Recommendations → Downloads
 
-Large whitespace. Typography-driven hierarchy. Charts in glass panels. Decoration last.
+Large whitespace. Typography-driven hierarchy. Charts in white hairline panels. Decoration last.
 
 ---
 
@@ -463,8 +431,8 @@ Every completed page must feel:
 - Expensive
 - Trustworthy
 - Executive-ready
-- Soft glass surfaces
-- Intentional motion
+- White surfaces and pale green bands
+- Quiet color, not decoration
 - Reduced-motion safe
 
 If the page feels busy, remove elements rather than adding them.
@@ -475,8 +443,8 @@ If the page feels busy, remove elements rather than adding them.
 
 Verify:
 
-- Matches Design System v2 tokens
-- Soft glass applied where specified
+- Matches the current design system tokens
+- Field bands and white surfaces alternate
 - Responsive
 - Accessible (focus, contrast, touch target)
 - Consistent spacing and typography

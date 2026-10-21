@@ -210,6 +210,7 @@ export function EstimatorQuestionnaireClient() {
   return (
     <>
       <ProgressRail sectionLabel={sectionLabel} completionRate={progress.completion_rate} />
+      <div className="bg-field">
       <div className="mx-auto grid min-h-[calc(100vh-8rem)] max-w-marketing gap-8 px-6 py-8 md:grid-cols-[minmax(0,1fr)_280px] md:gap-10 md:px-10 md:py-16">
         <div className="min-w-0">
           {question ? (
@@ -260,6 +261,7 @@ export function EstimatorQuestionnaireClient() {
           ) : null}
         </div>
         <LiveProfilePanel arrUsd={arrUsd} complexity={complexity} />
+      </div>
       </div>
     </>
   );

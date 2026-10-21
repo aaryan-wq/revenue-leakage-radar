@@ -14,10 +14,7 @@ export const glide = [0.16, 1, 0.3, 1] as const;
 
 export function Reveal({
   children,
-  delay = 0,
-  y = 24,
   className,
-  once = true,
 }: {
   children: ReactNode;
   delay?: number;
@@ -25,87 +22,29 @@ export function Reveal({
   className?: string;
   once?: boolean;
 }) {
-  const motionEnabled = useMotionEnabled();
-
-  if (!motionEnabled) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once, margin: "-12% 0px -12% 0px" }}
-      transition={{ duration: 1, ease: glide, delay }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function Stagger({
   children,
   className,
-  gap = 0.08,
 }: {
   children: ReactNode;
   className?: string;
   gap?: number;
 }) {
-  const motionEnabled = useMotionEnabled();
-
-  if (!motionEnabled) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-10% 0px" }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: gap } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function StaggerItem({
   children,
   className,
-  y = 20,
 }: {
   children: ReactNode;
   className?: string;
   y?: number;
 }) {
-  const motionEnabled = useMotionEnabled();
-
-  if (!motionEnabled) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: { opacity: 0, y, filter: "blur(4px)" },
-        show: {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          transition: { duration: 0.9, ease: glide },
-        },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function Magnetic({
@@ -183,9 +122,6 @@ export function PressButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      whileHover={{ scale: 1.015 }}
-      whileTap={{ scale: 0.965 }}
-      transition={{ type: "spring", stiffness: 400, damping: 28, mass: 0.7 }}
       className={className}
     >
       {children}

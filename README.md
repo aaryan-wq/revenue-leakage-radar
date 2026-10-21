@@ -218,6 +218,7 @@ docs/           Product, technical, and design specs
 - [Product Spec](docs/product-spec.md)
 - [Technical Spec](docs/technical-spec.md)
 - [Design System](docs/design-system.md)
+- [Design Language](docs/design/design-language.md)
 - [Build Plan](docs/build-plan.md)
 
 ## Production Deploy

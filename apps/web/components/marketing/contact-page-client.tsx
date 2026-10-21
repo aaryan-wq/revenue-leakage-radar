@@ -16,18 +16,19 @@ interface ContactPageClientProps {
 
 export function ContactPageClient({ email }: ContactPageClientProps) {
   return (
-    <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-28">
+    <>
+    <div className="bg-field">
+      <div className="mx-auto max-w-reading px-6 py-14 md:px-10 md:py-20">
+        <Reveal>
+          <h1 className="text-h1 text-balance text-foreground">We are here to help</h1>
+          <p className="mt-4 leading-relaxed text-muted-foreground">
+            Questions about your audit, billing, or security? Reach out to our team.
+          </p>
+        </Reveal>
+      </div>
+    </div>
+    <div className="mx-auto max-w-reading px-6 py-12 md:px-10 md:pb-28">
       <Reveal>
-        <p className="text-[0.78rem] uppercase tracking-[0.18em] text-muted-foreground">Contact</p>
-        <h1 className="mt-4 font-heading text-[clamp(1.85rem,7vw,3.4rem)] leading-[1.02] tracking-tight text-balance md:text-[clamp(2rem,4.5vw,3.4rem)]">
-          We are here to help
-        </h1>
-        <p className="mt-4 leading-relaxed text-muted-foreground">
-          Questions about your audit, billing, or security? Reach out to our team.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.08} className="mt-10 md:mt-12">
         <HairlineCard padding="none" className="p-6 md:p-10">
           <h2 className="font-heading text-xl tracking-tight md:text-2xl">Send us a message</h2>
           <p className="mt-2 text-[0.92rem] leading-relaxed text-muted-foreground">
@@ -78,5 +79,6 @@ export function ContactPageClient({ email }: ContactPageClientProps) {
         <LegalLinks className="justify-center" />
       </Reveal>
     </div>
+    </>
   );
 }

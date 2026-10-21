@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       colors: {
         background: "var(--background)",
+        field: "var(--field)",
         foreground: "var(--foreground)",
         card: {
           DEFAULT: "var(--card)",
@@ -50,7 +51,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        heading: ["var(--font-fraunces)", "Georgia", "serif"],
+        heading: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
       spacing: {

@@ -40,7 +40,9 @@ export function EstimatorMethodologyClient() {
   };
 
   return (
-    <div className="mx-auto max-w-marketing px-6 pb-20 pt-16 md:px-10 md:pt-20">
+    <>
+    <div className="bg-field">
+    <div className="mx-auto max-w-marketing px-6 py-16 md:px-10 md:py-20">
       <Reveal className="mx-auto max-w-readable text-center">
         <p className="text-overline text-muted-foreground">Calculator methodology</p>
         <h1 className="text-h1 mt-4 text-foreground">How the estimate is built</h1>
@@ -49,12 +51,14 @@ export function EstimatorMethodologyClient() {
           leaders who want a starting point before uploading billing data.
         </p>
       </Reveal>
-
-      <Stagger className="mt-16 grid gap-6 md:grid-cols-3">
+    </div>
+    </div>
+    <div className="mx-auto max-w-marketing px-6 py-16 md:px-10 md:pb-20">
+      <Stagger className="grid gap-6 md:grid-cols-3">
         {STEPS.map((step) => (
           <StaggerItem key={step.title}>
-            <HairlineCard padding="lg" className="h-full space-y-4">
-              <step.icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+            <HairlineCard padding="lg" className="h-full space-y-4 border-t-2 border-t-primary">
+              <step.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
               <h2 className="text-h4 text-foreground">{step.title}</h2>
               <p className="text-body text-muted-foreground">{step.body}</p>
             </HairlineCard>
@@ -130,5 +134,6 @@ export function EstimatorMethodologyClient() {
         </HairlineCard>
       </Reveal>
     </div>
+    </>
   );
 }

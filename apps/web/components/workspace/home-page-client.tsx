@@ -104,13 +104,13 @@ function HomeDashboardContent({
 
   return (
     <div>
-      <section className="border-b border-line">
+      <section className="border-b border-line bg-field">
         <div className="mx-auto max-w-marketing px-6 py-12 md:px-10">
           <Reveal>
-            <p className="text-[0.72rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Recoverable revenue
             </p>
-            <div className="mt-4 font-heading text-[clamp(2.4rem,5vw,3.6rem)] leading-none tracking-tight tnum">
+            <div className="mt-4 font-heading text-[clamp(2.4rem,5vw,3.6rem)] leading-none tracking-tight text-primary tnum">
               <CountUp to={recoverable} prefix="$" duration={1.4} />
             </div>
             <p className="mt-3 text-muted-foreground">

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { AnalyticsEvents } from "@rlr/shared";
 
 import { WORKSPACE_UPLOAD_HREF } from "@/lib/audit-session";
@@ -14,12 +13,13 @@ interface RunFreeAuditCtaProps {
   showArrow?: boolean;
   fromWorkspace?: boolean;
   analyticsSource?: string;
+  label?: string;
 }
 
 const sizeClasses = {
-  sm: "h-9 px-4 text-[0.8rem]",
-  md: "px-6 py-3.5 text-[0.92rem]",
-  lg: "px-7 py-4 text-[0.95rem]",
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
+  lg: "h-10 px-5 text-sm",
 };
 
 export function RunFreeAuditCta({
@@ -28,6 +28,7 @@ export function RunFreeAuditCta({
   showArrow = true,
   fromWorkspace = false,
   analyticsSource,
+  label = "Run Free Audit",
 }: RunFreeAuditCtaProps) {
   return (
     <Link
@@ -42,19 +43,15 @@ export function RunFreeAuditCta({
         }
       }}
     >
-      <motion.span
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      <span
         className={cn(
-          "group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary font-medium text-primary-foreground shadow-[0_12px_40px_-10px] shadow-primary/40 transition-shadow hover:shadow-[0_16px_50px_-12px] hover:shadow-primary/50",
+          "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary font-medium text-primary-foreground transition-colors hover:brightness-110",
           sizeClasses[size],
         )}
       >
-        Run Free Audit
-        {showArrow && (
-          <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
-        )}
-      </motion.span>
+        {label}
+        {showArrow ? <span aria-hidden="true">→</span> : null}
+      </span>
     </Link>
   );
 }

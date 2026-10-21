@@ -43,7 +43,7 @@ function RulesAvailableHover({
           "group-focus-within:pointer-events-auto group-focus-within:opacity-100",
         )}
       >
-        <p className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Available checks
         </p>
         {availableRules.length > 0 ? (
@@ -93,7 +93,7 @@ export function CoverageAnalysisPanel({ coverage, compact = false }: CoverageAna
   if (!coverage) {
     return (
       <HairlineCard padding="sm">
-        <p className="text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Coverage Analysis
         </p>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -115,7 +115,7 @@ export function CoverageAnalysisPanel({ coverage, compact = false }: CoverageAna
         transition={{ duration: 0.25 }}
       >
         <HairlineCard padding="sm">
-        <p className="text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Coverage Analysis
         </p>
 
@@ -169,7 +169,7 @@ export function CoverageAnalysisPanel({ coverage, compact = false }: CoverageAna
 
       {!compact && (
         <HairlineCard padding="sm">
-          <p className="text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Revenue Leakage Coverage
           </p>
           <div className="mt-5 space-y-4">

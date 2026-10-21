@@ -19,7 +19,7 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
   const mayUnderstate = result.benchmark_context?.may_understate ?? false;
 
   return (
-    <HairlineCard padding="lg" className="overflow-hidden">
+    <HairlineCard padding="lg" className="overflow-hidden bg-field">
       <div className="space-y-6">
         {result.confidence ? (
           <div className="flex justify-center">
@@ -29,7 +29,7 @@ export function EstimatorResultHero({ result }: EstimatorResultHeroProps) {
 
         <div className="space-y-4 text-center">
           <h1 className="text-h2 text-foreground">Estimated recoverable revenue</h1>
-          <p className="text-metric-xl tabular-nums text-foreground">
+          <p className="text-metric-xl tabular-nums text-primary">
             <CountUp to={headline} prefix="~$" />
             <span className="text-h4 text-muted-foreground"> /year</span>
           </p>
