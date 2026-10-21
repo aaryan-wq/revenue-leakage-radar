@@ -204,4 +204,55 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    transition:
+      border-color 200ms var(--ease-glide),
+      box-shadow 200ms var(--ease-glide);
+  }
+
+  .page-enter {
+    animation: page-enter 300ms var(--ease-glide);
+  }
+
+  .menu-enter {
+    animation: menu-enter 200ms var(--ease-glide);
+  }
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes menu-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-enter,
+    .menu-enter {
+      animation: none;
+    }
+
+    input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select {
+      transition: none;
+    }
+  }
 }

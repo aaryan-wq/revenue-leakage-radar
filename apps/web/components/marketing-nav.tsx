@@ -71,11 +71,17 @@ export function MarketingNav() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "px-3 py-2 text-sm transition-colors",
+                  "group relative px-3 py-2 text-sm transition-colors duration-fast",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {link.label}
+                <span
+                  className={cn(
+                    "absolute bottom-1 left-3 h-px bg-current transition-[width] duration-fast ease-glide",
+                    active ? "w-[calc(100%-1.5rem)]" : "w-0 group-hover:w-[calc(100%-1.5rem)]",
+                  )}
+                />
               </Link>
             );
           })}
@@ -98,7 +104,7 @@ export function MarketingNav() {
           <MarketingAuthActions className="shrink-0 items-center" />
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-[background-color,transform] duration-fast ease-glide hover:bg-secondary active:scale-[0.98] motion-reduce:transform-none lg:hidden"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls={menuId}
@@ -110,7 +116,7 @@ export function MarketingNav() {
       </nav>
 
       {menuOpen ? (
-        <div id={menuId} className="border-t border-line bg-background lg:hidden">
+        <div id={menuId} className="menu-enter border-t border-line bg-background lg:hidden">
           <div className="flex flex-col gap-2 px-4 pt-3">
             <RunFreeAuditCta
               size="md"
@@ -129,7 +135,7 @@ export function MarketingNav() {
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
                     className={cn(
-                      "flex min-h-11 items-center rounded-lg px-3 text-sm",
+                      "flex min-h-11 items-center rounded-lg px-3 text-sm transition-colors duration-fast hover:bg-secondary",
                       active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                     )}
                   >

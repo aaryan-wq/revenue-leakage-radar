@@ -303,21 +303,24 @@ Never mix icon packs. Icons support text, never replace labels.
 
 # Motion System
 
-Page content appears. Hover is a color change.
+One quiet language: 150ms press, 200ms hover, 280ms appear, 300ms route change. Easing is the glide curve.
+
+Press scales a control to 0.98. Hover changes color, grows a nav underline, and nudges arrows 2px. `Reveal` and `Stagger` fade and rise 8px, once. Route changes fade and rise 8px. Skeletons shimmer.
 
 Do not add blur fades, line-by-line headline reveals, count-up stats, spring nav pills, card lift, or tilt.
 
 Toasts (Sonner): slide up + fade, top right, 4s dismiss.
 
-Respect `prefers-reduced-motion`.
+Respect `prefers-reduced-motion`. It removes transforms, route fades, and reveals.
 
 ---
 
 # Reactive Interface
 
-The UI responds with color:
+The UI responds with color and a short movement:
 
 - Cards and buttons change background on hover
+- Buttons and tiles press to 0.98 scale
 - Progress fills while work is running
 - No cursor lighting, tilt, or metric counters
 
@@ -325,9 +328,9 @@ The UI responds with color:
 
 # Micro Interactions
 
-Buttons: brightness on hover. No scale.
+Buttons: brightness on hover. Scale to 0.98 on press. No lift.
 
-Cards: background change on hover. No lift.
+Cards: background and border change on hover. No lift.
 
 Inputs: forest green focus ring
 

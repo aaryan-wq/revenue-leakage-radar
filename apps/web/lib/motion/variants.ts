@@ -6,12 +6,11 @@ export const springSnappy = { type: "spring" as const, stiffness: 400, damping: 
 export const springGentle = { type: "spring" as const, stiffness: 260, damping: 28 };
 
 export const fadeUp = {
-  hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 8 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 1, ease: easeOut },
+    transition: { duration: 0.28, ease: easeOut },
   },
 };
 
@@ -19,7 +18,7 @@ export const fadeIn = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { duration: 0.9, ease: easeOut },
+    transition: { duration: 0.28, ease: easeOut },
   },
 };
 
@@ -28,8 +27,8 @@ export const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.04,
+      delayChildren: 0.04,
     },
   },
 };
@@ -39,8 +38,8 @@ export const staggerFast = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.05,
+      staggerChildren: 0.04,
+      delayChildren: 0.02,
     },
   },
 };

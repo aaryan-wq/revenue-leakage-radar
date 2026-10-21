@@ -66,7 +66,7 @@ function BusinessTypeOption({
       className={cn(
         "group flex w-full rounded-lg border text-left text-sm",
         "border-line bg-background text-foreground",
-        "transition-colors hover:bg-secondary",
+        "transition-[background-color,border-color,transform] duration-fast ease-glide hover:border-foreground/25 hover:bg-secondary active:scale-[0.98] motion-reduce:transform-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         tile
           ? "min-h-24 flex-col items-start justify-between px-5 py-5"
@@ -80,7 +80,7 @@ function BusinessTypeOption({
         <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
       ) : (
         <ArrowRight
-          className="h-4 w-4 text-muted-foreground"
+          className="h-4 w-4 text-muted-foreground transition-transform duration-fast ease-glide group-hover:translate-x-0.5 motion-reduce:transform-none"
           aria-hidden
         />
       )}

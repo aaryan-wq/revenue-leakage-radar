@@ -45,12 +45,19 @@ export function RunFreeAuditCta({
     >
       <span
         className={cn(
-          "inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary font-medium text-primary-foreground transition-colors hover:brightness-110",
+          "group inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary font-medium text-primary-foreground transition-[filter,transform] duration-fast ease-glide hover:brightness-110 active:scale-[0.98] motion-reduce:transform-none",
           sizeClasses[size],
         )}
       >
         {label}
-        {showArrow ? <span aria-hidden="true">→</span> : null}
+        {showArrow ? (
+          <span
+            aria-hidden="true"
+            className="transition-transform duration-fast ease-glide group-hover:translate-x-0.5 motion-reduce:transform-none"
+          >
+            →
+          </span>
+        ) : null}
       </span>
     </Link>
   );

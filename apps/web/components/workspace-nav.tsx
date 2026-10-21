@@ -77,11 +77,17 @@ export function WorkspaceNav() {
                 href={link.href}
                 prefetch={link.prefetch}
                 className={cn(
-                  "shrink-0 px-3 py-2 text-sm transition-colors",
+                  "group relative shrink-0 px-3 py-2 text-sm transition-colors duration-fast",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {link.label}
+                <span
+                  className={cn(
+                    "absolute bottom-1 left-3 h-px bg-current transition-[width] duration-fast ease-glide",
+                    active ? "w-[calc(100%-1.5rem)]" : "w-0 group-hover:w-[calc(100%-1.5rem)]",
+                  )}
+                />
               </Link>
             );
           })}
@@ -95,7 +101,7 @@ export function WorkspaceNav() {
           ) : (
             <Link
               href="/sign-in"
-              className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
+              className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-[filter,transform] duration-fast ease-glide hover:brightness-110 active:scale-[0.98] motion-reduce:transform-none"
             >
               Sign In
             </Link>

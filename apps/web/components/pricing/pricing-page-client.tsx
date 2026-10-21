@@ -53,8 +53,8 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative flex h-full flex-col rounded-xl bg-card p-6 md:p-8 ${
-        highlighted ? "border-2 border-primary" : "border border-line"
+      className={`relative flex h-full flex-col rounded-xl bg-card p-6 transition-[background-color,border-color] duration-normal ease-glide hover:bg-secondary motion-reduce:transition-none md:p-8 ${
+        highlighted ? "border-2 border-primary" : "border border-line hover:border-foreground/20"
       }`}
     >
       {highlighted && (

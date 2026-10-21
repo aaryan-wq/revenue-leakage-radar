@@ -163,7 +163,7 @@ Demo, FAQ, and Feedback live in the footer, not the primary nav.
 | Danger | Solid `destructive` |
 | Link | `text-primary`, underline on hover |
 
-Sizes: `sm` is 32px tall, `md` and `lg` are 40px tall. Radius 8px. No pills, no glow, no scale on hover.
+Sizes: `sm` is 32px tall, `md` and `lg` are 40px tall. Radius 8px. No pills, no glow. A press scales the control to 0.98 for 150ms. Hover does not scale or lift.
 
 There is no Glass button variant.
 
@@ -211,13 +211,18 @@ A `field` banner states that the data is a sample. The report body stays white.
 
 ## 9. Motion
 
-Content is present when the page loads. Hover is a color or brightness change.
+One quiet language. Durations: 150ms press, 200ms hover, 280ms appear, 300ms route change. Easing is `cubic-bezier(0.16, 1, 0.3, 1)`.
+
+- Press: buttons and tiles scale to 0.98 while held.
+- Hover: background or border color. Arrows shift 2px. Nav underlines grow from the left. Cards do not lift.
+- Appear: `Reveal` and `Stagger` fade in and rise 8px, once. Lists stagger by about 40ms. No blur.
+- Route: marketing and audit pages fade and rise 8px through `PageTransition`.
+- Loading: skeletons shimmer. They do not count up.
+- Toasts (Sonner) slide up and fade, top right, and dismiss in about 4 seconds.
+
+`prefers-reduced-motion` removes transforms, route fades, and reveal motion. No flashing above 3Hz.
 
 Do not add blur fades, line-by-line headline reveals, count-up stats, spring nav pills, card lift, tilt, or cursor lighting.
-
-Toasts (Sonner) slide up and fade, top right, and dismiss in about 4 seconds.
-
-Respect `prefers-reduced-motion`. No flashing above 3Hz.
 
 ---
 
@@ -246,7 +251,7 @@ Empty states have a headline, supporting text, and one primary action.
 - Glass, backdrop blur, glow, and dashed cards
 - Pill buttons
 - Blue as a brand or focus color
-- Card lift, scale, or tilt
+- Card lift, hover scale, or tilt. A 0.98 press scale is part of the motion language
 - Count-up metrics and line-by-line reveals
 - Dark mode canvases copied from Vercel or Linear
 - The upload zone as the landing centerpiece

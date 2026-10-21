@@ -39,9 +39,9 @@ export const HairlineCard = forwardRef<HTMLDivElement, HairlineCardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-xl border",
+          "rounded-xl border transition-[background-color,border-color] duration-normal ease-glide motion-reduce:transition-none",
           surfaceClass,
-          interactive && "transition-colors duration-normal hover:bg-secondary/30",
+          interactive && "hover:border-foreground/20 hover:bg-secondary",
           paddingMap[padding],
           className,
         )}

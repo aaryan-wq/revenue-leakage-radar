@@ -30,8 +30,8 @@ The page should feel calm and current. Headlines and numbers do the work.
 | Band | Pale green `field` behind intros, a quiet section, and the footer |
 | Accent | `primary` forest green on the filled button, links, key figures, and short rules |
 | Surfaces | White, 1px `border-line`, 8px radius |
-| Hover | Background color or button brightness. No lift, scale, or tilt |
-| Motion | Content is just there. No blur fades, count-ups, or spring pills |
+| Hover | Background or border color, underline grow, 2px arrow nudge. No lift or tilt |
+| Motion | 150ms press scale to 0.98, 280ms fade-up reveals, 300ms route fade. No blur, count-ups, or spring pills |
 | Nav | `h-16`, solid white, logo left, links beside it, actions right |
 
 Use `text-display`, `text-h1` through `text-h4`, `text-body`, `text-small`, `text-caption`, and `text-metric-xl`. Money uses tabular numerals.

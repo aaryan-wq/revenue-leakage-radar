@@ -3,6 +3,7 @@
 import {
   motion,
   useMotionValue,
+  useReducedMotion,
   useSpring,
   useTransform,
 } from "framer-motion";
@@ -12,9 +13,14 @@ import { useMotionEnabled } from "@/lib/motion/use-motion-enabled";
 
 export const glide = [0.16, 1, 0.3, 1] as const;
 
+const revealEase = glide;
+
 export function Reveal({
   children,
   className,
+  delay = 0,
+  y = 8,
+  once = true,
 }: {
   children: ReactNode;
   delay?: number;
@@ -22,29 +28,86 @@ export function Reveal({
   className?: string;
   once?: boolean;
 }) {
-  return <div className={className}>{children}</div>;
+  const reduceMotion = useReducedMotion() === true;
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once, margin: "-40px" }}
+      transition={{ duration: 0.28, delay, ease: revealEase }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 export function Stagger({
   children,
   className,
+  gap = 0.04,
 }: {
   children: ReactNode;
   className?: string;
   gap?: number;
 }) {
-  return <div className={className}>{children}</div>;
+  const reduceMotion = useReducedMotion() === true;
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: gap } },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 export function StaggerItem({
   children,
   className,
+  y = 8,
 }: {
   children: ReactNode;
   className?: string;
   y?: number;
 }) {
-  return <div className={className}>{children}</div>;
+  const reduceMotion = useReducedMotion() === true;
+
+  if (reduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      variants={{
+        hidden: { opacity: 0, y },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.28, ease: revealEase },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
 export function Magnetic({
